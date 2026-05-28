@@ -1,6 +1,6 @@
 ---
 name: forge
-description: Use when the user invokes /forge with an issue or Jira-ticket reference, or asks to investigate, fix, resolve, triage, solve, or work on a specific issue ID or ticket in the current repo (any git host — GitHub, GitLab, etc. — or Atlassian Jira). Triggers on phrases like "forge issue 42", "solve issue 42", "fix #123", "work on issue 7", "solve ticket PROJ-123", "forge ticket 42", or any direct issue-number / Jira-key reference paired with intent to make changes — including the optional modifiers "automode" (no user gates), "docs" (doc-driven), "tdd" (failing test first, then implement), "worktree" (work in a sibling worktree instead of switching in-place), "lookup" (fetch current library docs at Step 4), "codex" (Codex review loop) and "codex challenge" (Codex adversarial review), e.g. "forge issue 47 automode docs tdd worktree lookup codex challenge". Covers the full lifecycle: propose → gated approval → implement → review-loop → refactor → spin-off issues → self-evolve.
+description: Use when the user invokes /forge with an issue or Jira-ticket reference, or asks to investigate, fix, resolve, triage, solve, or work on a specific issue ID or ticket in the current repo (any git host — GitHub, GitLab, etc. — or Atlassian Jira). Triggers on phrases like "forge issue 42", "solve issue 42", "fix #123", "work on issue 7", "solve ticket PROJ-123", "forge ticket 42", or any direct issue-number / Jira-key reference paired with intent to make changes — including the optional modifiers "automode" (no user gates), "docs" (doc-driven), "tdd" (failing test first, then implement), "worktree" (work in a sibling worktree instead of switching in-place), "lookup" (fetch current library docs at Step 4), "secure" (post-Step-8 security-review pass), "codex" (Codex review loop) and "codex challenge" (Codex adversarial review), e.g. "forge issue 47 automode docs tdd worktree lookup secure codex challenge". Covers the full lifecycle: propose → gated approval → implement → review-loop → refactor → spin-off issues → self-evolve.
 ---
 
 # Forge
@@ -20,7 +20,7 @@ Two parts, **one numbered workflow** (Steps 1–12):
 
 ## Parameters
 
-Parse invocation: `/forge <ref> [automode] [docs] [tdd] [worktree] [lookup] [codex | codex challenge]` (words anywhere in request count). `<ref>` → git-host issue **or** Jira ticket per grammar. Flags orthogonal, compose freely.
+Parse invocation: `/forge <ref> [automode] [docs] [tdd] [worktree] [lookup] [secure] [codex | codex challenge]` (words anywhere in request count). `<ref>` → git-host issue **or** Jira ticket per grammar. Flags orthogonal, compose freely.
 
 Full flag matrix (status, composition rules, conflicts, planned flags): **[references/flags.md](references/flags.md)**.
 
@@ -48,6 +48,7 @@ Bare number → Jira only if `ticket` precedes. Key-shaped ref → always Jira, 
 | `tdd` | Compose `superpowers:test-driven-development` at Step 7: write the failing test first, observe red, then implement. Discipline binds under `automode` (agent runs the test and confirms red itself). → [references/modes/tdd.md](references/modes/tdd.md). |
 | `worktree` | Compose `superpowers:using-git-worktrees` at Step 3: create a sibling worktree on the chosen branch instead of switching in-place. Step 12 closing appends a cleanup reminder. Cleanup never auto-runs (even under `automode`). → [references/modes/worktree.md](references/modes/worktree.md). |
 | `lookup` | At Step 4, compose `find-docs` (and `context7` MCP if available) for every library/framework/SDK/CLI/cloud service the issue mentions. Step 5 proposal carries `(per <library> docs, fetched <date>)` attribution on library-specific claims. Under `automode`, fetch failures become Risks, not blockers. → [references/modes/lookup.md](references/modes/lookup.md). |
+| `secure` | After Step 8 converges (zero actionable from regular reviewers), compose `security-review`. Must-fix findings reopen Step 8 (one dedicated security pass; further regular passes still bound by the 3-pass cap). Required before Step 9. → [references/modes/secure.md](references/modes/secure.md). |
 
 Compose any order: `forge ticket PROJ-7 automode docs codex challenge`. `automode`+`docs` → write `CONTEXT.md` directly, no interview, → Step 7. **Non-Claude-Code runtime: `codex`/`codex challenge` ignored with a one-line warning; generic reviewer stays `superpowers:requesting-code-review`** (skill itself stays runtime-generic — only the Codex path is CC-bound).
 
@@ -223,6 +224,8 @@ Project reviewer subagents (`.agents/agents/` or runtime equivalent) **+** the g
 Terminate at zero actionable findings; nits don't block. Cap **3 passes**. Each non-converged pass: **⟲**, fix, re-review.
 
 → **[references/review-loop.md](references/review-loop.md)** for engine selection details, the `/greploop` fallback and `/diagnose` sub-pass, pass discipline, the trim-only-cleanup skip rule, and `automode` behavior.
+
+**`secure`** flag set → after zero actionable findings, run a post-convergence `security-review` pass. Must-fix security findings reopen Step 8 with one dedicated security-pass budget. See **[references/modes/secure.md](references/modes/secure.md)** — security must clear before Step 9.
 
 ### Step 8a/8b — Codex reviewer (`codex` / `codex challenge`)
 
