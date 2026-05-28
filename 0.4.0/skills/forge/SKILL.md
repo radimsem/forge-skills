@@ -31,11 +31,12 @@ First reference-shaped token (or token after `ticket` / `pr` keyword) = target. 
 | Form | → | Examples |
 |---|---|---|
 | bare number, `#N`, `issue N` | **git-host issue** (Step 1b) | `forge 42`, `fix #123`, `issue 7` |
-| matches `[A-Z][A-Z0-9]+-\d+` | **Jira ticket** (Step 1c) | `forge PROJ-123`, `solve AB12-9` |
+| matches `[A-Z]+-\d+` | **Jira ticket** OR **Linear issue** (disambiguate if both configured — see [references/trackers/linear.md](references/trackers/linear.md)) | `forge PROJ-123`, `solve ENG-42`, `forge AB12-9` |
 | after `ticket` keyword | **Jira ticket**; number-only → ask project key | `forge ticket PROJ-123`, `solve ticket 42` |
+| after `linear` keyword | **Linear issue** (forces Linear routing, skips disambiguation) | `forge linear ENG-42` |
 | after `pr` keyword | **PR-review entry mode** (skips Steps 4–7; enters at Step 8 against the PR diff) | `forge pr 47`, `forge pr #123` |
 
-Bare number → Jira only if `ticket` precedes; PR mode requires the `pr` keyword. Key-shaped ref → always Jira, keyword or not.
+Bare number → tracker only if `ticket` or `linear` precedes; PR mode requires the `pr` keyword. Key-shaped ref → Jira **or** Linear — if both trackers are configured, the agent disambiguates per [references/trackers/linear.md](references/trackers/linear.md) §Jira/Linear disambiguation. Single-tracker setups skip the prompt.
 
 → **[references/modes/pr-entry.md](references/modes/pr-entry.md)** for the PR-entry mode step modifications, allowed/ignored flags, and the PR-specific Step 12 closing menu.
 
