@@ -1,6 +1,6 @@
 ---
 name: forge
-description: Use when the user invokes /forge with an issue or Jira-ticket reference, or asks to investigate, fix, resolve, triage, solve, or work on a specific issue ID or ticket in the current repo (any git host — GitHub, GitLab, etc. — or Atlassian Jira). Triggers on phrases like "forge issue 42", "solve issue 42", "fix #123", "work on issue 7", "solve ticket PROJ-123", "forge ticket 42", or any direct issue-number / Jira-key reference paired with intent to make changes — including the optional modifiers "automode" (no user gates), "docs" (doc-driven), "tdd" (failing test first, then implement), "worktree" (work in a sibling worktree instead of switching in-place), "lookup" (fetch current library docs at Step 4), "secure" (post-Step-8 security-review pass), "codex" (Codex review loop) and "codex challenge" (Codex adversarial review), e.g. "forge issue 47 automode docs tdd worktree lookup secure codex challenge". Covers the full lifecycle: propose → gated approval → implement → review-loop → refactor → spin-off issues → self-evolve.
+description: Use when the user invokes /forge with an issue or Jira-ticket reference, or asks to investigate, fix, resolve, triage, solve, or work on a specific issue ID or ticket in the current repo (any git host — GitHub, GitLab, etc. — or Atlassian Jira). Triggers on phrases like "forge issue 42", "solve issue 42", "fix #123", "work on issue 7", "solve ticket PROJ-123", "forge ticket 42", or any direct issue-number / Jira-key reference paired with intent to make changes — including the optional modifiers "automode" (no user gates), "docs" (doc-driven), "tdd" (failing test first, then implement), "worktree" (work in a sibling worktree instead of switching in-place), "lookup" (fetch current library docs at Step 4), "secure" (post-Step-8 security-review pass), "changelog" (draft changelog entry at Step 12), "codex" (Codex review loop) and "codex challenge" (Codex adversarial review), e.g. "forge issue 47 automode docs tdd worktree lookup secure changelog codex challenge". Covers the full lifecycle: propose → gated approval → implement → review-loop → refactor → spin-off issues → self-evolve.
 ---
 
 # Forge
@@ -20,7 +20,7 @@ Two parts, **one numbered workflow** (Steps 1–12):
 
 ## Parameters
 
-Parse invocation: `/forge <ref> [automode] [docs] [tdd] [worktree] [lookup] [secure] [codex | codex challenge]` (words anywhere in request count). `<ref>` → git-host issue **or** Jira ticket per grammar. Flags orthogonal, compose freely.
+Parse invocation: `/forge <ref> [automode] [docs] [tdd] [worktree] [lookup] [secure] [changelog] [codex | codex challenge]` (words anywhere in request count). `<ref>` → git-host issue **or** Jira ticket per grammar. Flags orthogonal, compose freely.
 
 Full flag matrix (status, composition rules, conflicts, planned flags): **[references/flags.md](references/flags.md)**.
 
@@ -49,6 +49,7 @@ Bare number → Jira only if `ticket` precedes. Key-shaped ref → always Jira, 
 | `worktree` | Compose `superpowers:using-git-worktrees` at Step 3: create a sibling worktree on the chosen branch instead of switching in-place. Step 12 closing appends a cleanup reminder. Cleanup never auto-runs (even under `automode`). → [references/modes/worktree.md](references/modes/worktree.md). |
 | `lookup` | At Step 4, compose `find-docs` (and `context7` MCP if available) for every library/framework/SDK/CLI/cloud service the issue mentions. Step 5 proposal carries `(per <library> docs, fetched <date>)` attribution on library-specific claims. Under `automode`, fetch failures become Risks, not blockers. → [references/modes/lookup.md](references/modes/lookup.md). |
 | `secure` | After Step 8 converges (zero actionable from regular reviewers), compose `security-review`. Must-fix findings reopen Step 8 (one dedicated security pass; further regular passes still bound by the 3-pass cap). Required before Step 9. → [references/modes/secure.md](references/modes/secure.md). |
+| `changelog` | At Step 12 (after `/goal` verifies green), draft a changelog entry per the repo's existing format and include it in the proposed commit list. Skips silently with a one-line note if no changelog file is detected. → [references/modes/changelog.md](references/modes/changelog.md). |
 
 Compose any order: `forge ticket PROJ-7 automode docs codex challenge`. `automode`+`docs` → write `CONTEXT.md` directly, no interview, → Step 7. **Non-Claude-Code runtime: `codex`/`codex challenge` ignored with a one-line warning; generic reviewer stays `superpowers:requesting-code-review`** (skill itself stays runtime-generic — only the Codex path is CC-bound).
 
@@ -253,6 +254,8 @@ A caveat **automatable for future agentic sessions** → propose **`/write-a-ski
 **Verify `/goal` before anything else ★.** Before assembling the proposal: run the Step 7 `/goal` pass criteria **and** the repo's standard pre-commit checks (build/test/lint per the repo guide). Show the exact command(s) + their output. Any failure (or you cannot run them) → **you are not done**: return to Step 8 with the failure as a finding. Never assemble a commit proposal on unverified `/goal` — an unproven "done" is the one failure mode forge must not ship. `automode` does not lift this gate; it runs the checks itself and only proceeds on green.
 
 Then assemble the **commit/PR proposal**. Default = **small atomic commits** matching the branch's existing granularity + message style (inspect `git log --oneline <base>..HEAD`) — **not** one squashed mega-commit. Repo git/contribution guide (Step 3) still wins: mandates another shape (e.g. squash-on-merge) → follow it, say why.
+
+**`changelog`** flag set → after `/goal` verifies green and before assembling the commit list, draft a changelog entry per the repo's existing format and include it in the proposed history. See **[references/modes/changelog.md](references/modes/changelog.md)** for the file-detection order and entry conventions.
 
 Then ask **one** closing question — exact 6-option menu in **[references/proposal-template.md](references/proposal-template.md)** §Step 12. Step 4 proposed-answer format: user selects; `(Recommended)` marked; "Other" implicit. Show the 3rd line only when the target was a Jira ticket.
 
