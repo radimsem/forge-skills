@@ -4,7 +4,7 @@
 - **Status:** Draft (awaiting user review)
 - **Originating handoff:** `/tmp/forge-redesign-handoff-2026-05-28.md`
 - **Target layout ADR:** [`../adr/0001-packaged-plugin-layout.md`](../adr/0001-packaged-plugin-layout.md)
-- **Phase 0 baseline:** the initial scaffold lived under `0.1.0/` (commit `c5bf9fc`). Phase 1 → `0.2.0/`, Phase 2 → `0.3.0/`, Phase 3 → `0.4.0/`, Phase 4 → `0.5.0/`, Phase 5 → `0.6.0/`. Current spine: [`../../0.6.0/skills/forge/SKILL.md`](../../0.6.0/skills/forge/SKILL.md).
+- **Phase 0 baseline:** the initial scaffold lived under `0.1.0/` (commit `c5bf9fc`). Phase 1 → `0.2.0/`, Phase 2 → `0.3.0/`, Phase 3 → `0.4.0/`, Phase 4 → `0.5.0/`, Phase 5 → `0.6.0/`. **1.0.0 cut** after polish PR. Current spine: [`../../1.0.0/skills/forge/SKILL.md`](../../1.0.0/skills/forge/SKILL.md).
 
 ## 1. Context and decisions locked from prior session
 
@@ -28,7 +28,7 @@ This repository (`forge-skills`) is the source of truth for the forge skill. It 
 
 ```
 forge-skills/
-  <version>/                   ← currently 0.6.0 (Phase 5 complete; pre-1.0); originally 0.1.0
+  <version>/                   ← currently 1.0.0 (Phase 5 + polish complete; stable); originally 0.1.0
     .claude-plugin/plugin.json
     README.md
     CLAUDE.md
@@ -291,7 +291,7 @@ Each unit ships as one PR. Target ≤ ~400 LOC delta per PR. Acceptance criteria
 | First scaffold | `0.1.0` (this commit) |
 | Final PR of each phase | Minor bump (e.g. `0.1.0` → `0.2.0`) via directory rename + `plugin.json` edit |
 | Bug fix mid-phase | Patch bump optional; default is no bump until phase ends |
-| Phase 5 final + post-soak | Cut `1.0.0` |
+| Phase 5 final + polish | Cut `1.0.0` (shipped 2026-05-28 same session as Phase 5; soak deferred to real-world use rather than calendar time) |
 | Breaking flag rename or removal after 1.0 | Major bump |
 
 The version field in `plugin.json` is the source of truth; the directory name MUST match. Mismatch is a release-blocker the CI (when we add it) will check.
