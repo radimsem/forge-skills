@@ -29,6 +29,9 @@ Both sections bind under `automode` too — `automode` lifts user gates, not saf
 | Forcing `PROJ-123` into commit subjects | Repo guide wins; default = key in branch only (Step 3). |
 | Proposing commits without running `/goal` | Step 12 verify gate — run pass criteria + repo checks, show output, green first. Binds under `automode` too. |
 | Re-running the full Step 8 loop (⟲ + both reviewers) for pure trim cleanup after a clean substantive pass | Apply the trims inline, run the repo verify command, move to Step 9. The 3-pass cap is for non-convergence, not for nit verification. Trim = doc-comment edits, blank-line grouping, naming touch-ups; no logic touched. |
+| Writing implementation code before observing the failing test under the `tdd` flag | Compose `superpowers:test-driven-development` per the [modes/tdd.md](modes/tdd.md) contract: write the test first, run it, confirm red, then implement. `automode` does not lift this discipline; the agent runs the test itself and confirms red before any implementation edit. |
+| Leaving the worktree behind after Step 12 closes (`git worktree list` fills with stale entries; disk usage grows) | Read the Step 12 closing addendum; run `git worktree remove <path>` (or `git worktree prune` if the branch was deleted) when the changes are merged or discarded. Cleanup never auto-runs, even under `automode` — losing in-progress state on inferred completion is the wrong default. See [modes/worktree.md](modes/worktree.md). |
+| Relying on training-data recall for library-specific API claims when `lookup` is available | If the issue mentions a library/framework/SDK/CLI/cloud service and the proposal makes specific API claims, set `lookup` so the proposal is grounded in fetched current docs. Training data ages; library APIs do not stand still. Skip `lookup` only when the issue is pure business logic with no library surface. See [modes/lookup.md](modes/lookup.md). |
 
 ## Red Flags — STOP
 
