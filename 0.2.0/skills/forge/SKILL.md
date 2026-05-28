@@ -1,6 +1,6 @@
 ---
 name: forge
-description: Use when the user invokes /forge with an issue or Jira-ticket reference, or asks to investigate, fix, resolve, triage, solve, or work on a specific issue ID or ticket in the current repo (any git host — GitHub, GitLab, etc. — or Atlassian Jira). Triggers on phrases like "forge issue 42", "solve issue 42", "fix #123", "work on issue 7", "solve ticket PROJ-123", "forge ticket 42", or any direct issue-number / Jira-key reference paired with intent to make changes — including the optional modifiers "automode" (no user gates), "docs" (doc-driven; accepts the deprecated alias "with docs" for one release), "codex" (Codex review loop) and "codex challenge" (Codex adversarial review), e.g. "forge issue 47 automode docs codex challenge". Covers the full lifecycle: propose → gated approval → implement → review-loop → refactor → spin-off issues → self-evolve.
+description: Use when the user invokes /forge with an issue or Jira-ticket reference, or asks to investigate, fix, resolve, triage, solve, or work on a specific issue ID or ticket in the current repo (any git host — GitHub, GitLab, etc. — or Atlassian Jira). Triggers on phrases like "forge issue 42", "solve issue 42", "fix #123", "work on issue 7", "solve ticket PROJ-123", "forge ticket 42", or any direct issue-number / Jira-key reference paired with intent to make changes — including the optional modifiers "automode" (no user gates), "docs" (doc-driven; accepts the deprecated alias "with docs" for one release), "tdd" (failing test first, then implement), "codex" (Codex review loop) and "codex challenge" (Codex adversarial review), e.g. "forge issue 47 automode docs tdd codex challenge". Covers the full lifecycle: propose → gated approval → implement → review-loop → refactor → spin-off issues → self-evolve.
 ---
 
 # Forge
@@ -20,7 +20,9 @@ Two parts, **one numbered workflow** (Steps 1–12):
 
 ## Parameters
 
-Parse invocation: `/forge <ref> [automode] [docs] [codex | codex challenge]` (words anywhere in request count). `<ref>` → git-host issue **or** Jira ticket per grammar. Flags orthogonal, compose freely.
+Parse invocation: `/forge <ref> [automode] [docs] [tdd] [codex | codex challenge]` (words anywhere in request count). `<ref>` → git-host issue **or** Jira ticket per grammar. Flags orthogonal, compose freely.
+
+Full flag matrix (status, composition rules, conflicts, planned flags): **[references/flags.md](references/flags.md)**.
 
 ### Target grammar — `<ref>`
 
@@ -43,6 +45,7 @@ Bare number → Jira only if `ticket` precedes. Key-shaped ref → always Jira, 
 | `docs` | `/grill-with-docs` not `/grill-me`. Proposal → `CONTEXT.md` (repo root); Part 2 plan sourced from it. Step 12 proposal → `/tmp/forge-<ref>.md`. **Aliases**: accepts the prior spelling `with docs` for one release; the alias will be removed in 0.3.0. |
 | `codex` | **Claude Code only** (codex plugin is CC-exclusive). Step 8 generic reviewer → Codex (`codex-companion.mjs review`) instead of `superpowers:requesting-code-review`. Project reviewer agents still run. Degrades gracefully if Codex absent (§8a). |
 | `codex challenge` | **Implies `codex`.** Codex `review` → `adversarial-review` (challenges approach/design/assumptions, not just defects). |
+| `tdd` | Compose `superpowers:test-driven-development` at Step 7: write the failing test first, observe red, then implement. Discipline binds under `automode` (agent runs the test and confirms red itself). → [references/modes/tdd.md](references/modes/tdd.md). |
 
 Compose any order: `forge ticket PROJ-7 automode docs codex challenge`. `automode`+`docs` → write `CONTEXT.md` directly, no interview, → Step 7. **Non-Claude-Code runtime: `codex`/`codex challenge` ignored with a one-line warning; generic reviewer stays `superpowers:requesting-code-review`** (skill itself stays runtime-generic — only the Codex path is CC-bound).
 
@@ -203,7 +206,9 @@ Open with, in order:
 1. Set **`/goal`** = desired result + Step 4/5 pass criteria (exact build/test/behavior that proves done). Set once; never restate.
 2. Re-source **`/karpathy-guidelines`**.
 
-`docs` → load plan from `CONTEXT.md`. Implement the approved plan — minimal, surgical, in scope. No edits before both 1 and 2 done.
+**`tdd`** flag set → write the failing test first, run it, observe red, then implement. See **[references/modes/tdd.md](references/modes/tdd.md)** (composes `superpowers:test-driven-development`; discipline binds under `automode`).
+
+`docs` → load plan from `CONTEXT.md`. Implement the approved plan — minimal, surgical, in scope. No edits before the opener and (if `tdd` set) the observed-red test are done.
 
 ## Step 8 — Review loop
 
