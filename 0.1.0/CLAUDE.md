@@ -18,6 +18,12 @@ If you are an agent editing files in this directory, read this before touching a
 
 5. **No `.gitignore`-bypassed files.** Anything the skill references at runtime must be checked in under this version directory; otherwise installs break.
 
+6. **Run `humanizer` on every Markdown edit.** After writing or substantially editing any `*.md` file in this version directory or `../docs/`, load the `humanizer` skill and apply it to the changed file. It strips AI-tell patterns (em-dash overuse, inflated adjectives, rule-of-three padding, passive-voice filler) without touching technical content. Code, JSON manifests, and scripts are exempt. The spec's §11 details the rule.
+
+7. **Run `caveman` on heavy files.** When a file's body (excluding YAML frontmatter and code fences) crosses **~150 lines** OR **~6 KB**, load the `caveman` skill and use its compression principles to refactor the file in-place. Preserve link targets, file paths, command names, and code identifiers verbatim — caveman drops articles and filler, not technical tokens. The spine `SKILL.md` MUST stay under the threshold; reference files should as well. Record the pre/post `git diff --stat HEAD~1` line in the PR description.
+
+8. **Humanizer before caveman, always.** Reversed order can re-inflate compressed prose. If both passes apply to the same file in the same PR, run humanizer first, then caveman.
+
 ## Where things live
 
 | Need to change… | Edit… |

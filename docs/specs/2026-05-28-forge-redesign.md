@@ -220,7 +220,7 @@ No silent precedence — the user must re-invoke. This is the safest behavior be
 
 ## 8. Atomic implementation roadmap (Section 6 — the meat)
 
-Each unit ships as one PR. Target ≤ ~400 LOC delta per PR. Acceptance criteria for every PR include: (a) installs cleanly, (b) one named `/forge` invocation exercises the new path or proves the old path is unchanged.
+Each unit ships as one PR. Target ≤ ~400 LOC delta per PR. Acceptance criteria for every PR include: (a) installs cleanly, (b) one named `/forge` invocation exercises the new path or proves the old path is unchanged, (c) the two §11 content-style passes (humanizer on all changed Markdown, caveman on any file that crossed the heavy-file threshold) have been run and recorded in the PR description.
 
 ### Phase 0 — Repo scaffold (single PR)
 
@@ -299,6 +299,20 @@ The version field in `plugin.json` is the source of truth; the directory name MU
 - **`docs` flag rename.** Two-release alias window (0.2.0 ships both; 0.3.0 removes `with docs`). Users who scripted `with docs` get one minor cycle to migrate. If real users complain, extend the alias by one more minor.
 - **`/forge pr <N>` overlap with `/check-pr` and `/review`.** Document the boundary in `references/modes/pr-entry.md` (Phase 4): `pr-entry` runs the full forge reviewer pipeline against an existing PR, while `/check-pr` and `/review` are lighter-weight single-pass reviewers. If users find the boundary fuzzy, consider deprecating one of the lighter commands in favor of `/forge pr`.
 
-## 11. Transition
+## 11. Content style and token-budget guardrails
+
+Every PR that creates or substantially edits a Markdown file under `0.1.0/skills/forge/`, `docs/specs/`, `docs/adr/`, or the repo READMEs follows two standing post-write passes, applied in this order:
+
+1. **Humanize the prose.** Load `humanizer` and apply it to the changed Markdown. The skill removes the patterns enumerated in the Wikipedia "Signs of AI writing" guide: inflated symbolism, promotional adjectives, em-dash overuse, rule-of-three list padding, vague attribution, passive-voice filler, negative parallelism, AI vocabulary tells. Code (`scripts/*.py`, JSON manifests) is exempt. Apply judgement on the design spec itself and ADRs — they describe technical intent and tolerate a denser register than user-facing READMEs do.
+
+2. **Compress if heavy.** If a file's body (excluding YAML frontmatter and fenced code blocks) crosses **~150 lines** OR **~6 KB**, load `caveman` and use its compression principles to refactor the prose in-place: drop filler, articles, pleasantries; keep all technical substance; preserve link targets, file paths, command names, and code identifiers **verbatim**. The threshold is a soft trigger — apply judgement when a file is right at the border. Reference files for a single flag should rarely cross it; the spine `SKILL.md` MUST stay under it (§4 target ~150 lines).
+
+Both passes are *idempotent* and *content-preserving*. If a humanize or caveman pass would change technical meaning (drop a clause that carries a constraint, condense a list that hides a step), do not commit that change — refine the source instead.
+
+The PR description for each unit named in §8 records which files crossed which threshold, along with the post-pass `git diff --stat HEAD~1` line so reviewers can confirm the compression actually happened.
+
+Caveman is normally a *communication mode* for chat. Here it is repurposed as a *refactor lens* applied to file contents — load the skill, follow its compression rules, write the result back to the file. This is a slight deviation from the skill's default usage; flag it once in the PR description rather than embedding the explanation in every commit message.
+
+## 12. Transition
 
 On user approval of this spec, the next step is `superpowers:writing-plans` against this document. `writing-plans` produces the executable plan that `superpowers:executing-plans` will then drive PR-by-PR. **No other skill** is invoked between brainstorming and writing-plans — the brainstorming terminal-state rule binds.
