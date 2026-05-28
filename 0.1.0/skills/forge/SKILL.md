@@ -301,9 +301,11 @@ Act only on the selected option. Option 2 follows the repo guide for base branch
 
 ### Autonomy
 
-Default: after "yes, implement", run autonomously, stopping **only** at: Step 6 entry gate · Step 9 refactor proposal · Step 10 issue-post confirm · Step 11 self-evolution confirm · Step 12 commit proposal. No "may I continue?" between steps.
+Default: after "yes, implement", run autonomously, stopping **only** at the substantive gates — Step 6 entry · Step 9 refactor · Step 10 spinoff-issue post · Step 11 self-evolution · Step 12 commit proposal. No "may I continue?" between steps.
 
-`automode`: **no user gates** — Steps 6, 9, 10, 11 auto-decide (incl. the §8b Codex-rescue delegation call); Step 12 skips the closing question and emits the small-commit plan only (never auto-commits/pushes/Jira-writes-back — the hard floor `automode` does not lift). Two things still bind under `automode`: the **Step 12 `/goal` verification gate** (it runs the checks itself, proceeds only on green) and the **Step 2 Jira-absent fallback** (a missing data source, not a gate).
+`automode` lifts those gates but never the hard floors: no auto-commit / auto-push / Jira write-back; Step 12 `/goal` verify still runs; Step 2 Jira-absent fallback still triggers.
+
+→ **[references/autonomy.md](references/autonomy.md)** for the full per-step matrix, the rationale behind each hard floor, and `automode` composability with other flags.
 
 ---
 
