@@ -146,14 +146,7 @@ Before proposing, the issue must answer:
 
 Required field missing → **interview the user**, never open free-text. Per gap: **2–4 proposed answers**, most likely marked **`(Recommended)`**, user picks. Runtimes with a selection UI (e.g. Claude Code's interview TUI): user highlights + Enter; "Other" free-type always implicitly available.
 
-```
-Q1: <gap, one line>
-  - <option A> (Recommended)
-  - <option B>
-  - <option C>
-```
-
-Never invent the chosen answer — propose, user selects. Never continue past this step on unanswered required gaps.
+→ **[references/proposal-template.md](references/proposal-template.md)** §Step 4 for the literal Q-block format. Never invent the chosen answer — propose, user selects. Never continue past this step on unanswered required gaps.
 
 `with docs` → interview run by `/grill-with-docs` (challenges plan vs repo domain model/docs). `automode` → skip interview; proceed on the issue as written, picking the `(Recommended)` answer per gap, noting the assumption in the proposal. `automode`+`with docs` → no interview; → Step 5 CONTEXT.md write.
 
@@ -169,38 +162,11 @@ Only when getting the approach wrong is costly. Clear low-risk fix → straight 
 
 ## Step 5 — Propose the solution
 
-Emit **one** proposal:
-
-```
-**Issue #<N>: <title>**
-
-**Restated:** <one sentence>
-
-**Root cause / design:** <2–4 sentences>
-
-**Files to touch:**
-- path/to/file.ext:<lineish> — <what changes>
-
-**Plan:**
-1. <step>
-2. <step>
-
-**Pass criteria (→ /goal):** <exact build/test/behavior that must hold>
-
-**Tests:** <added or updated>
-
-**Risks / open questions:** <unsure points; mark any UNANSWERED risky design fork>
-```
-
-Verify file paths exist (Read/Grep) before listing; drop `:line` if you haven't opened the file.
+Emit **one** proposal — exact block format in **[references/proposal-template.md](references/proposal-template.md)** §Step 5 (Issue line, Restated, Root cause / design, Files to touch, Plan, Pass criteria, Tests, Risks). Verify file paths exist (Read/Grep) before listing; drop `:line` if you haven't opened the file.
 
 **`with docs`:** write the proposal to `CONTEXT.md` (repo root) instead of / in addition to chat; Part 2 sources the plan from `CONTEXT.md`, not chat scrollback.
 
-**Next-turn options.** End the proposal stating the user's choices:
-
-- `yes, implement` — open the gate → Step 7.
-- `interview me on risky questions` — **only if a risky design fork is still unanswered**; runs Step 4a grilling (proposed-answer, Step 4 structure), re-proposes.
-- otherwise: any adjustment → revise, re-propose.
+**Next-turn options.** End the proposal stating the user's choices (template §Step 5 next-turn options): `yes, implement` opens the gate → Step 7; `interview me on risky questions` runs Step 4a grilling and re-proposes (only if a risky design fork is unanswered); any other adjustment → revise, re-propose.
 
 **`automode`:** no options, no wait — straight to Step 7 (with `with docs`: after writing `CONTEXT.md`).
 
@@ -278,17 +244,7 @@ A caveat **automatable for future agentic sessions** → propose **`/write-a-ski
 
 Then assemble the **commit/PR proposal**. Default = **small atomic commits** matching the branch's existing granularity + message style (inspect `git log --oneline <base>..HEAD`) — **not** one squashed mega-commit. Repo git/contribution guide (Step 3) still wins: mandates another shape (e.g. squash-on-merge) → follow it, say why.
 
-Then ask **one** closing question, Step 4 proposed-answer format (user selects; `(Recommended)` marked; "Other" implicit):
-
-```
-Forge is done — how should the changes land?
-  - Lay down the proposed small-commit history on this branch, push nothing (Recommended)
-  - Lay down that history, push to origin, and open a PR to the base branch
-  - Lay down that history, push, open the PR, and comment + transition <KEY> on Jira   ← Jira target only
-  - Walk me through the implementation at a high level first — run /zoom-out, then re-ask
-  - Write the whole proposal (commit plan + diff summary) to /tmp/<name>.md and stop
-  - Hold — leave the working tree uncommitted for my own manual review
-```
+Then ask **one** closing question — exact 6-option menu in **[references/proposal-template.md](references/proposal-template.md)** §Step 12. Step 4 proposed-answer format: user selects; `(Recommended)` marked; "Other" implicit. Show the 3rd line only when the target was a Jira ticket.
 
 Act only on the selected option. Option 2 follows the repo guide for base branch + PR target.
 
