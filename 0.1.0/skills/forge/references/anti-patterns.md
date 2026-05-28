@@ -28,6 +28,7 @@ Both sections bind under `automode` too — `automode` lifts user gates, not saf
 | Both Codex review + adversarial-review | `codex challenge` implies `codex`, replaces the pass — never both (§8a). |
 | Forcing `PROJ-123` into commit subjects | Repo guide wins; default = key in branch only (Step 3). |
 | Proposing commits without running `/goal` | Step 12 verify gate — run pass criteria + repo checks, show output, green first. Binds under `automode` too. |
+| Re-running the full Step 8 loop (⟲ + both reviewers) for pure trim cleanup after a clean substantive pass | Apply the trims inline, run the repo verify command, move to Step 9. The 3-pass cap is for non-convergence, not for nit verification. Trim = doc-comment edits, blank-line grouping, naming touch-ups; no logic touched. |
 
 ## Red Flags — STOP
 
