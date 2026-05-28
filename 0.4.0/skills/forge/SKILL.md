@@ -20,21 +20,24 @@ Two parts, **one numbered workflow** (Steps 1–12):
 
 ## Parameters
 
-Parse invocation: `/forge <ref> [automode] [docs] [tdd] [worktree] [lookup] [secure] [changelog] [ci-watch] [codex | codex challenge]` (words anywhere in request count). `<ref>` → git-host issue **or** Jira ticket per grammar. Flags orthogonal, compose freely.
+Parse invocation: `/forge <ref> [automode] [docs] [tdd] [worktree] [lookup] [secure] [changelog] [ci-watch] [codex | codex challenge]` or `/forge pr <N> [...]` (words anywhere in request count). `<ref>` → git-host issue **or** Jira ticket per grammar. `pr <N>` → PR-review entry mode. Flags orthogonal, compose freely (with mode-specific allowed/ignored list — see [references/modes/pr-entry.md](references/modes/pr-entry.md) for PR-mode).
 
 Full flag matrix (status, composition rules, conflicts, planned flags): **[references/flags.md](references/flags.md)**.
 
 ### Target grammar — `<ref>`
 
-First reference-shaped token (or token after `ticket` keyword) = target. Routing = **keyword OR key-shape**:
+First reference-shaped token (or token after `ticket` / `pr` keyword) = target. Routing = **keyword OR key-shape**:
 
 | Form | → | Examples |
 |---|---|---|
 | bare number, `#N`, `issue N` | **git-host issue** (Step 1b) | `forge 42`, `fix #123`, `issue 7` |
 | matches `[A-Z][A-Z0-9]+-\d+` | **Jira ticket** (Step 1c) | `forge PROJ-123`, `solve AB12-9` |
 | after `ticket` keyword | **Jira ticket**; number-only → ask project key | `forge ticket PROJ-123`, `solve ticket 42` |
+| after `pr` keyword | **PR-review entry mode** (skips Steps 4–7; enters at Step 8 against the PR diff) | `forge pr 47`, `forge pr #123` |
 
-Bare number → Jira only if `ticket` precedes. Key-shaped ref → always Jira, keyword or not.
+Bare number → Jira only if `ticket` precedes; PR mode requires the `pr` keyword. Key-shaped ref → always Jira, keyword or not.
+
+→ **[references/modes/pr-entry.md](references/modes/pr-entry.md)** for the PR-entry mode step modifications, allowed/ignored flags, and the PR-specific Step 12 closing menu.
 
 ### Modifier flags
 
