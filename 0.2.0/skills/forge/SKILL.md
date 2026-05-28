@@ -1,6 +1,6 @@
 ---
 name: forge
-description: Use when the user invokes /forge with an issue or Jira-ticket reference, or asks to investigate, fix, resolve, triage, solve, or work on a specific issue ID or ticket in the current repo (any git host — GitHub, GitLab, etc. — or Atlassian Jira). Triggers on phrases like "forge issue 42", "solve issue 42", "fix #123", "work on issue 7", "solve ticket PROJ-123", "forge ticket 42", or any direct issue-number / Jira-key reference paired with intent to make changes — including the optional modifiers "automode" (no user gates), "docs" (doc-driven; accepts the deprecated alias "with docs" for one release), "tdd" (failing test first, then implement), "codex" (Codex review loop) and "codex challenge" (Codex adversarial review), e.g. "forge issue 47 automode docs tdd codex challenge". Covers the full lifecycle: propose → gated approval → implement → review-loop → refactor → spin-off issues → self-evolve.
+description: Use when the user invokes /forge with an issue or Jira-ticket reference, or asks to investigate, fix, resolve, triage, solve, or work on a specific issue ID or ticket in the current repo (any git host — GitHub, GitLab, etc. — or Atlassian Jira). Triggers on phrases like "forge issue 42", "solve issue 42", "fix #123", "work on issue 7", "solve ticket PROJ-123", "forge ticket 42", or any direct issue-number / Jira-key reference paired with intent to make changes — including the optional modifiers "automode" (no user gates), "docs" (doc-driven; accepts the deprecated alias "with docs" for one release), "tdd" (failing test first, then implement), "worktree" (work in a sibling worktree instead of switching in-place), "codex" (Codex review loop) and "codex challenge" (Codex adversarial review), e.g. "forge issue 47 automode docs tdd worktree codex challenge". Covers the full lifecycle: propose → gated approval → implement → review-loop → refactor → spin-off issues → self-evolve.
 ---
 
 # Forge
@@ -20,7 +20,7 @@ Two parts, **one numbered workflow** (Steps 1–12):
 
 ## Parameters
 
-Parse invocation: `/forge <ref> [automode] [docs] [tdd] [codex | codex challenge]` (words anywhere in request count). `<ref>` → git-host issue **or** Jira ticket per grammar. Flags orthogonal, compose freely.
+Parse invocation: `/forge <ref> [automode] [docs] [tdd] [worktree] [codex | codex challenge]` (words anywhere in request count). `<ref>` → git-host issue **or** Jira ticket per grammar. Flags orthogonal, compose freely.
 
 Full flag matrix (status, composition rules, conflicts, planned flags): **[references/flags.md](references/flags.md)**.
 
@@ -46,6 +46,7 @@ Bare number → Jira only if `ticket` precedes. Key-shaped ref → always Jira, 
 | `codex` | **Claude Code only** (codex plugin is CC-exclusive). Step 8 generic reviewer → Codex (`codex-companion.mjs review`) instead of `superpowers:requesting-code-review`. Project reviewer agents still run. Degrades gracefully if Codex absent (§8a). |
 | `codex challenge` | **Implies `codex`.** Codex `review` → `adversarial-review` (challenges approach/design/assumptions, not just defects). |
 | `tdd` | Compose `superpowers:test-driven-development` at Step 7: write the failing test first, observe red, then implement. Discipline binds under `automode` (agent runs the test and confirms red itself). → [references/modes/tdd.md](references/modes/tdd.md). |
+| `worktree` | Compose `superpowers:using-git-worktrees` at Step 3: create a sibling worktree on the chosen branch instead of switching in-place. Step 12 closing appends a cleanup reminder. Cleanup never auto-runs (even under `automode`). → [references/modes/worktree.md](references/modes/worktree.md). |
 
 Compose any order: `forge ticket PROJ-7 automode docs codex challenge`. `automode`+`docs` → write `CONTEXT.md` directly, no interview, → Step 7. **Non-Claude-Code runtime: `codex`/`codex challenge` ignored with a one-line warning; generic reviewer stays `superpowers:requesting-code-review`** (skill itself stays runtime-generic — only the Codex path is CC-bound).
 
@@ -126,6 +127,8 @@ Compare to the current branch:
 - Match → continue.
 - Mismatch → show both, ask: **"Switch to a new branch `<prefix>/<slug>` forked off `<base>`? (y/n)"**. Pick `<base>` per the repo guide, else probe `dev` → `develop` → `main` → `master`.
 - On `y`: confirm the tree is clean (`git status --short`); if dirty, surface the files and ask before any switch. Then `git switch -c <prefix>/<slug> <base>`.
+
+**`worktree`** flag set → create a sibling worktree on the chosen branch instead of an in-place switch. See **[references/modes/worktree.md](references/modes/worktree.md)** (composes `superpowers:using-git-worktrees`; Step 12 closing appends a cleanup reminder).
 
 ## Step 4 — Check context sufficiency
 
@@ -255,6 +258,7 @@ Act only on the selected option. Option 2 follows the repo guide for base branch
 
 - `docs`: still ask, but pre-mark the `/tmp/<name>.md` option `(Recommended)` over option 1.
 - `automode`: skip the question — emit the proposed small-commit history as a **plan only** (to `/tmp/forge-<ref>.md` under `docs`, else inline), then stop. `automode` never executes commits, pushes, or Jira write-backs.
+- `worktree`: append the cleanup reminder ("Worktree at `<path>` — run `git worktree remove <path>` when done") to the closing message. Cleanup never auto-runs, even under `automode`. → [references/modes/worktree.md](references/modes/worktree.md).
 
 ### Autonomy
 
