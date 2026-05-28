@@ -42,5 +42,9 @@
 | `automode` + `secure` | Security pass runs unprompted. Must-fix findings apply via the regular `automode` Step 8 pick-safest path. Pass-budget rule still binds. See [modes/secure.md](modes/secure.md). |
 | `automode` + `changelog` | Entry is drafted without prompt at Step 12. The commit list is emitted as a plan (per `automode` Step 12 behavior); the changelog entry rides along in that plan. See [modes/changelog.md](modes/changelog.md). |
 | `automode` + `ci-watch` | Functionally inert. `automode` skips the closing menu and emits a plan only — no push, so nothing to poll. Combination is valid but no work happens. See [modes/ci-watch.md](modes/ci-watch.md). |
+| `automode` + `/forge pr <N>` | Skip the PR-review closing menu; emit the review summary as a plan to `/tmp/forge-pr-<N>.md` and stop. No auto-push of fixup commits, no auto-approve, no auto-request-changes. See [modes/pr-entry.md](modes/pr-entry.md). |
+| `automode` + Linear (or Jira/Linear ambiguity) | Cannot interview to disambiguate; attempt Linear first if both trackers connected, record assumption, abort if Linear lookup 404s. See [trackers/linear.md](trackers/linear.md). |
+| `automode` + `backport` | Targets MUST come from a non-interactive source (flag value / `.backport-branches` / env / `CONTRIBUTING.md`). User prompt is not available; abort if no source. Conflicting cherry-pick targets abort that target only; others continue. See [modes/backport.md](modes/backport.md). |
+| `automode` + `stacked` | Base PR MUST come from flag value or tool detection (Graphite / spr). User prompt unavailable; abort. Auto-rebase only on fast-forward conflicts; surface and pause on real conflicts — one of the rare automode interrupts. See [modes/stacked.md](modes/stacked.md). |
 
 (This table grows as new flags land. Each flag's reference file states its `automode` behavior in a single row and links here.)

@@ -16,9 +16,17 @@ The full set of flags the forge skill understands, with composition rules and co
 | `secure` | ✓ 0.4.0 (PR 3a) | Compose `security-review` after Step 8 convergence; findings re-enter Step 8 as must-fix | [modes/secure.md](modes/secure.md) |
 | `changelog` | ✓ 0.4.0 (PR 3b) | At Step 12, draft a changelog entry per repo convention | [modes/changelog.md](modes/changelog.md) |
 | `ci-watch` | ✓ 0.4.0 (PR 3c) | After Step 12 push, poll CI; on red, re-enter Step 8 with the failure as a finding | [modes/ci-watch.md](modes/ci-watch.md) |
-| `backport` | Phase 4 | At Step 12, cherry-pick merged commits onto additional base branches | planned — `modes/backport.md` |
-| `stacked` | Phase 4 | Step 3 branches off another in-flight PR's HEAD; Step 12 push targets the stacked-PR convention | planned — `modes/stacked.md` |
+| `backport` | ✓ 0.5.0 (PR 4c) | At Step 12, cherry-pick merged commits onto additional base branches | [modes/backport.md](modes/backport.md) |
+| `stacked` | ✓ 0.5.0 (PR 4d) | Step 3 branches off another in-flight PR's HEAD; Step 12 push targets the stacked-PR convention | [modes/stacked.md](modes/stacked.md) |
 | `coderabbit` | Phase 5 | Generic reviewer → CodeRabbit. Claude Code only. **XOR with `codex`** | planned — `reviewers/coderabbit.md` |
+
+## Entry verbs
+
+In addition to the flags above, the skill supports an entry-mode verb:
+
+| Verb | Status | Effect | Detail |
+|---|---|---|---|
+| `/forge pr <N>` | ✓ 0.5.0 (PR 4a) | Skip Steps 4–7; enter Step 8 against the existing PR diff. Pre-Step-8 flags are ignored; Step-8-or-later flags apply | [modes/pr-entry.md](modes/pr-entry.md) |
 
 ## Composition rules
 
