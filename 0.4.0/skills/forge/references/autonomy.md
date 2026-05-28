@@ -39,5 +39,8 @@
 | `automode` + `tdd` | TDD discipline binds. The agent writes the test, runs it, confirms red itself, then implements. No user prompt; the failing-test observation is the agent's own. See [modes/tdd.md](modes/tdd.md). |
 | `automode` + `worktree` | Worktree is created without prompting. Step 12 cleanup never auto-runs — losing in-progress state on inferred completion is the wrong default. See [modes/worktree.md](modes/worktree.md). |
 | `automode` + `lookup` | Fetches happen without prompts. Failures (rate limit, network) become Risks in the proposal, not blockers. See [modes/lookup.md](modes/lookup.md). |
+| `automode` + `secure` | Security pass runs unprompted. Must-fix findings apply via the regular `automode` Step 8 pick-safest path. Pass-budget rule still binds. See [modes/secure.md](modes/secure.md). |
+| `automode` + `changelog` | Entry is drafted without prompt at Step 12. The commit list is emitted as a plan (per `automode` Step 12 behavior); the changelog entry rides along in that plan. See [modes/changelog.md](modes/changelog.md). |
+| `automode` + `ci-watch` | Functionally inert. `automode` skips the closing menu and emits a plan only — no push, so nothing to poll. Combination is valid but no work happens. See [modes/ci-watch.md](modes/ci-watch.md). |
 
 (This table grows as new flags land. Each flag's reference file states its `automode` behavior in a single row and links here.)

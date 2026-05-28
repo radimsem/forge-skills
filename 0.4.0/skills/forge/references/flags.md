@@ -13,9 +13,9 @@ The full set of flags the forge skill understands, with composition rules and co
 | `tdd` | ✓ 0.3.0 (PR 2a) | Compose `superpowers:test-driven-development` at Step 7; observe failing test before implementation | [modes/tdd.md](modes/tdd.md) |
 | `worktree` | ✓ 0.3.0 (PR 2b) | Compose `superpowers:using-git-worktrees` at Step 3 instead of in-place branch switch | [modes/worktree.md](modes/worktree.md) |
 | `lookup` | ✓ 0.3.0 (PR 2c) | Compose `find-docs` (+ `context7` MCP if available) at Step 4 for library-specific facts | [modes/lookup.md](modes/lookup.md) |
-| `secure` | Phase 3 | Compose `security-review` after Step 8 convergence; findings re-enter Step 8 as must-fix | planned — `modes/secure.md` |
-| `changelog` | Phase 3 | At Step 12, draft a changelog entry per repo convention | planned — `modes/changelog.md` |
-| `ci-watch` | Phase 3 | After Step 12 push, poll CI; on red, re-enter Step 8 with the failure as a finding | planned — `modes/ci-watch.md` |
+| `secure` | ✓ 0.4.0 (PR 3a) | Compose `security-review` after Step 8 convergence; findings re-enter Step 8 as must-fix | [modes/secure.md](modes/secure.md) |
+| `changelog` | ✓ 0.4.0 (PR 3b) | At Step 12, draft a changelog entry per repo convention | [modes/changelog.md](modes/changelog.md) |
+| `ci-watch` | ✓ 0.4.0 (PR 3c) | After Step 12 push, poll CI; on red, re-enter Step 8 with the failure as a finding | [modes/ci-watch.md](modes/ci-watch.md) |
 | `backport` | Phase 4 | At Step 12, cherry-pick merged commits onto additional base branches | planned — `modes/backport.md` |
 | `stacked` | Phase 4 | Step 3 branches off another in-flight PR's HEAD; Step 12 push targets the stacked-PR convention | planned — `modes/stacked.md` |
 | `coderabbit` | Phase 5 | Generic reviewer → CodeRabbit. Claude Code only. **XOR with `codex`** | planned — `reviewers/coderabbit.md` |
