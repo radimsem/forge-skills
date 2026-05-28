@@ -7,12 +7,12 @@ The full set of flags the forge skill understands, with composition rules and co
 | Flag | Status | Effect | Detail |
 |---|---|---|---|
 | `automode` | ✓ 0.1.0 | No user gates; auto-decide Steps 6/9/10/11; emit Step 12 as plan only | [autonomy.md](autonomy.md) |
-| `docs` | ✓ 0.2.0 (was `with docs`) | Source plan from `CONTEXT.md`; Step 12 proposal → `/tmp/forge-<ref>.md`. Accepts `with docs` alias for 0.2.0 only | — |
+| `docs` | ✓ 0.2.0 (was `with docs`; alias dropped in 0.3.0) | Source plan from `CONTEXT.md`; Step 12 proposal → `/tmp/forge-<ref>.md` | — |
 | `codex` | ✓ 0.1.0 | Generic reviewer → Codex (resolve via `scripts/resolve-codex.py`). Claude Code only | [reviewers/codex.md](reviewers/codex.md) |
 | `codex challenge` | ✓ 0.1.0 | Codex `review` → `adversarial-review`. Implies `codex` | [reviewers/codex.md](reviewers/codex.md) |
 | `tdd` | ✓ 0.3.0 (PR 2a) | Compose `superpowers:test-driven-development` at Step 7; observe failing test before implementation | [modes/tdd.md](modes/tdd.md) |
-| `worktree` | Phase 2 (PR 2b) | Compose `superpowers:using-git-worktrees` at Step 3 instead of in-place branch switch | planned — `modes/worktree.md` |
-| `lookup` | Phase 2 (PR 2c) | Compose `find-docs` (+ `context7` MCP if available) at Step 4 for library-specific facts | planned — `modes/lookup.md` |
+| `worktree` | ✓ 0.3.0 (PR 2b) | Compose `superpowers:using-git-worktrees` at Step 3 instead of in-place branch switch | [modes/worktree.md](modes/worktree.md) |
+| `lookup` | ✓ 0.3.0 (PR 2c) | Compose `find-docs` (+ `context7` MCP if available) at Step 4 for library-specific facts | [modes/lookup.md](modes/lookup.md) |
 | `secure` | Phase 3 | Compose `security-review` after Step 8 convergence; findings re-enter Step 8 as must-fix | planned — `modes/secure.md` |
 | `changelog` | Phase 3 | At Step 12, draft a changelog entry per repo convention | planned — `modes/changelog.md` |
 | `ci-watch` | Phase 3 | After Step 12 push, poll CI; on red, re-enter Step 8 with the failure as a finding | planned — `modes/ci-watch.md` |

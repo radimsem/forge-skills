@@ -36,5 +36,8 @@
 | `automode` + `docs` | No interview; write `CONTEXT.md` directly; Step 12 emits plan to `/tmp/forge-<ref>.md` |
 | `automode` + `codex` (or `codex challenge`) | Codex review/adversarial-review runs without user prompts; §8b rescue delegation auto-decides |
 | `automode` + project reviewer subagents missing + no PR | `/greploop` cannot run (needs a PR). Skip to Step 9 with the unmet condition noted. |
+| `automode` + `tdd` | TDD discipline binds. The agent writes the test, runs it, confirms red itself, then implements. No user prompt; the failing-test observation is the agent's own. See [modes/tdd.md](modes/tdd.md). |
+| `automode` + `worktree` | Worktree is created without prompting. Step 12 cleanup never auto-runs — losing in-progress state on inferred completion is the wrong default. See [modes/worktree.md](modes/worktree.md). |
+| `automode` + `lookup` | Fetches happen without prompts. Failures (rate limit, network) become Risks in the proposal, not blockers. See [modes/lookup.md](modes/lookup.md). |
 
-(This table grows as Phase 2+ flags land. Each new flag's reference file states its `automode` behavior in a single row and links here.)
+(This table grows as new flags land. Each flag's reference file states its `automode` behavior in a single row and links here.)

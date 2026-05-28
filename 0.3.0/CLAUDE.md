@@ -1,4 +1,4 @@
-# Contributor guidance for agents working in `0.2.0/`
+# Contributor guidance for agents working in `0.3.0/`
 
 If you are an agent editing files in this directory, read this before touching anything.
 
