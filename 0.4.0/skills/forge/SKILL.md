@@ -56,6 +56,7 @@ Bare number → tracker only if `ticket` or `linear` precedes; PR mode requires 
 | `changelog` | At Step 12 (after `/goal` verifies green), draft a changelog entry per the repo's existing format and include it in the proposed commit list. Skips silently with a one-line note if no changelog file is detected. → [references/modes/changelog.md](references/modes/changelog.md). |
 | `ci-watch` | After Step 12 closing-menu push (options 2 or 3), poll the repo's CI for the pushed HEAD. On red, re-enter Step 8 with the CI failure as a must-fix finding. On green, report and exit. Silently inert when no push happens. → [references/modes/ci-watch.md](references/modes/ci-watch.md). |
 | `backport` (or `backport:<branches>`) | After Step 12 primary push, cherry-pick the merged commits onto additional base branches and open follow-up PRs to each. Targets come from the flag value, `.backport-branches`, `BACKPORT_BRANCHES` env, `CONTRIBUTING.md`, or a Step 12 user prompt. Conflicts pause (or abort that target under `automode`); other targets continue. → [references/modes/backport.md](references/modes/backport.md). |
+| `stacked` (or `stacked:<N>`) | Step 3 branches off PR `<N>`'s head ref instead of the repo base. Step 12 push targets the stacked-PR convention (PR opens against `<N>`'s head ref). Compose freely with `worktree` (recommended). Auto-detects Graphite (`gt`) and spr if present. → [references/modes/stacked.md](references/modes/stacked.md). |
 
 Compose any order: `forge ticket PROJ-7 automode docs codex challenge`. `automode`+`docs` → write `CONTEXT.md` directly, no interview, → Step 7. **Non-Claude-Code runtime: `codex`/`codex challenge` ignored with a one-line warning; generic reviewer stays `superpowers:requesting-code-review`** (skill itself stays runtime-generic — only the Codex path is CC-bound).
 
@@ -138,6 +139,8 @@ Compare to the current branch:
 - On `y`: confirm the tree is clean (`git status --short`); if dirty, surface the files and ask before any switch. Then `git switch -c <prefix>/<slug> <base>`.
 
 **`worktree`** flag set → create a sibling worktree on the chosen branch instead of an in-place switch. See **[references/modes/worktree.md](references/modes/worktree.md)** (composes `superpowers:using-git-worktrees`; Step 12 closing appends a cleanup reminder).
+
+**`stacked`** flag set → branch off the specified PR's head ref instead of the repo base, and target Step 12 push at the stacked-PR convention. See **[references/modes/stacked.md](references/modes/stacked.md)** for base-PR specification, Graphite/spr auto-detection, and rebase discipline.
 
 ## Step 4 — Check context sufficiency
 
