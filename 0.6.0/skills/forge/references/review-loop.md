@@ -8,10 +8,23 @@ Disciplined critique cycle. Runs after each implementation pass. Terminates when
 |---|---|---|
 | Default | Project reviewer subagents from `.agents/agents/` (or runtime equivalent, e.g. `.claude/agents/`) matched to the diff **+** generic reviewer `superpowers:requesting-code-review` | Every Step 8 pass |
 | `codex` / `codex challenge` | Project subagents **+** Codex (`review` or `adversarial-review`) — see [reviewers/codex.md](reviewers/codex.md) | Step 8 when the flag is set; Claude Code runtime only |
+| `coderabbit` | Project subagents **+** `coderabbit:code-review` — see [reviewers/coderabbit.md](reviewers/coderabbit.md) | Step 8 when the flag is set; Claude Code runtime only |
 | Fallback (no project reviewer agents, PR exists) | `/greploop` against the pushed PR | When no project reviewers configured AND a PR exists. Never auto-push to create one. |
 | Sub-pass (suspected bug or perf regression) | `/diagnose` | Surface findings, return to the main loop |
 
-**Project subagents always run.** `codex` swaps only the generic reviewer slot; it never replaces project agents.
+**Project subagents always run.** Reviewer flags (`codex`, `coderabbit`) swap only the generic reviewer slot; they never replace project agents. **`codex` and `coderabbit` are mutually exclusive** — combining errors before Step 1.
+
+## Rework delegation (§8b paths)
+
+Findings that exceed a single in-pass fix can be delegated to a companion rework skill before re-entering Step 8:
+
+| Reviewer flag | §8b rework skill | Notes |
+|---|---|---|
+| Default (no flag) | none | In-pass fixes only |
+| `codex` / `codex challenge` | `codex:codex-rescue` | ⟲ first, inline karpathy constraints, foreground `--wait` |
+| `coderabbit` | `coderabbit:autofix` | Same discipline as codex-rescue |
+
+After the rework returns, re-enter Step 8 with the rework diff as a new pass input. The 3-pass cap applies to subsequent passes.
 
 ## Termination
 
@@ -38,6 +51,7 @@ After a clean substantive pass (project reviewers + generic reviewer return 0 mu
 
 See [autonomy.md](autonomy.md) §Step 8 row. Same engines, same cap; non-convergence picks safest and continues instead of asking the user. The Jira-absent fallback still binds even under `automode`.
 
-## Codex specifics
+## Reviewer specifics
 
-[reviewers/codex.md](reviewers/codex.md) holds §8a (generic Codex reviewer resolution + graceful degrade) and §8b (rework delegation to `codex:codex-rescue`).
+- [reviewers/codex.md](reviewers/codex.md) — §8a Codex reviewer resolution + graceful degrade; §8b rework delegation to `codex:codex-rescue`.
+- [reviewers/coderabbit.md](reviewers/coderabbit.md) — §8a CodeRabbit reviewer; §8b rework delegation to `coderabbit:autofix`; XOR rule against `codex`.

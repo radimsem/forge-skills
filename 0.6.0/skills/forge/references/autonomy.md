@@ -46,5 +46,6 @@
 | `automode` + Linear (or Jira/Linear ambiguity) | Cannot interview to disambiguate; attempt Linear first if both trackers connected, record assumption, abort if Linear lookup 404s. See [trackers/linear.md](trackers/linear.md). |
 | `automode` + `backport` | Targets MUST come from a non-interactive source (flag value / `.backport-branches` / env / `CONTRIBUTING.md`). User prompt is not available; abort if no source. Conflicting cherry-pick targets abort that target only; others continue. See [modes/backport.md](modes/backport.md). |
 | `automode` + `stacked` | Base PR MUST come from flag value or tool detection (Graphite / spr). User prompt unavailable; abort. Auto-rebase only on fast-forward conflicts; surface and pause on real conflicts — one of the rare automode interrupts. See [modes/stacked.md](modes/stacked.md). |
+| `automode` + `coderabbit` | Reviewer runs unprompted; §8b rework delegation to `coderabbit:autofix` auto-decides. The XOR rule against `codex` binds even under `automode` — combination still errors before Step 1. See [reviewers/coderabbit.md](reviewers/coderabbit.md). |
 
 (This table grows as new flags land. Each flag's reference file states its `automode` behavior in a single row and links here.)

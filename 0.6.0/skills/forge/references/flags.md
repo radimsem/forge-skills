@@ -18,7 +18,7 @@ The full set of flags the forge skill understands, with composition rules and co
 | `ci-watch` | ✓ 0.4.0 (PR 3c) | After Step 12 push, poll CI; on red, re-enter Step 8 with the failure as a finding | [modes/ci-watch.md](modes/ci-watch.md) |
 | `backport` | ✓ 0.5.0 (PR 4c) | At Step 12, cherry-pick merged commits onto additional base branches | [modes/backport.md](modes/backport.md) |
 | `stacked` | ✓ 0.5.0 (PR 4d) | Step 3 branches off another in-flight PR's HEAD; Step 12 push targets the stacked-PR convention | [modes/stacked.md](modes/stacked.md) |
-| `coderabbit` | Phase 5 | Generic reviewer → CodeRabbit. Claude Code only. **XOR with `codex`** | planned — `reviewers/coderabbit.md` |
+| `coderabbit` | ✓ 0.6.0 (PR 5a) | Generic reviewer → CodeRabbit. §8b rework path uses `coderabbit:autofix`. Claude Code only. **XOR with `codex`** | [reviewers/coderabbit.md](reviewers/coderabbit.md) |
 
 ## Entry verbs
 
