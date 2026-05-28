@@ -207,15 +207,11 @@ Open with, in order:
 
 ## Step 8 — Review loop
 
-Pick engine:
+Project reviewer subagents (`.agents/agents/` or runtime equivalent) **+** the generic reviewer (`superpowers:requesting-code-review` by default; **Codex** under `codex` / `codex challenge`). Project subagents always run.
 
-- **Primary:** project reviewer subagents from the agent config dir (`.agents/agents/` or runtime equivalent e.g. `.claude/agents/`) matched to the diff, **+** the **generic reviewer** — `superpowers:requesting-code-review` by default, or **Codex** under `codex`/`codex challenge` (→ [references/codex.md](references/codex.md), Claude Code only). **Project subagents always run** — `codex` swaps only the generic reviewer, never replaces project agents.
-- **Fallback** (no project reviewer agents) **+ PR exists:** `/greploop` (needs the pushed PR — never auto-push to get one; Step 12).
-- **Branch:** suspected bug / perf regression → `/diagnose`, return to loop.
+Terminate at zero actionable findings; nits don't block. Cap **3 passes**. Each non-converged pass: **⟲**, fix, re-review.
 
-Terminate at **zero actionable (must-fix / should-fix) findings** — nits don't block. Cap **3 passes**; not converged → summarize remainder, ask user (`automode`: pick safest, continue).
-
-Each non-converged pass: **⟲**, fix findings, re-review.
+→ **[references/review-loop.md](references/review-loop.md)** for engine selection details, the `/greploop` fallback and `/diagnose` sub-pass, pass discipline, the trim-only-cleanup skip rule, and `automode` behavior.
 
 ### Step 8a/8b — Codex reviewer (`codex` / `codex challenge`)
 
