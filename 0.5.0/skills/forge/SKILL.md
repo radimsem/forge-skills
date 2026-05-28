@@ -238,9 +238,19 @@ Terminate at zero actionable findings; nits don't block. Cap **3 passes**. Each 
 
 **`secure`** flag set → after zero actionable findings, run a post-convergence `security-review` pass. Must-fix security findings reopen Step 8 with one dedicated security-pass budget. See **[references/modes/secure.md](references/modes/secure.md)** — security must clear before Step 9.
 
-### Step 8a/8b — Codex reviewer (`codex` / `codex challenge`)
+### Step 8a/8b — Generic reviewer swaps
 
-→ **[references/reviewers/codex.md](references/reviewers/codex.md)** — §8a generic Codex reviewer (resolve via `scripts/resolve-codex.py`, foreground `review`/`adversarial-review`, graceful degrade) + §8b optional rework delegation to `codex:codex-rescue` (⟲ first, inline karpathy constraints, foreground `--wait`). **Claude Code only**; non-CC runtime → ignore the flag, warn once, stay on `superpowers:requesting-code-review`, don't load the file.
+The default generic reviewer (`superpowers:requesting-code-review`) can be swapped at Step 8 by a flag. Each swap brings its own §8a (the reviewer engine) and §8b (the rework-delegation path mirrored to the reviewer's companion skill). Project subagents always run alongside; the flags swap **only** the generic-reviewer slot. **Mutually exclusive** with one another — pick exactly one (or neither, for the default).
+
+| Flag | §8a engine | §8b rework path |
+|---|---|---|
+| *(none — default)* | `superpowers:requesting-code-review` | (no dedicated rework skill; in-pass fixes only) |
+| `codex` / `codex challenge` | Codex `review` / `adversarial-review` via `scripts/resolve-codex.py` foreground | `codex:codex-rescue` foreground `--wait` (⟲ first, inline karpathy constraints) |
+| `coderabbit` | `coderabbit:code-review` | `coderabbit:autofix` foreground `--wait` (⟲ first, inline karpathy constraints) |
+
+→ **[references/reviewers/codex.md](references/reviewers/codex.md)** for Codex specifics. → **[references/reviewers/coderabbit.md](references/reviewers/coderabbit.md)** for CodeRabbit specifics.
+
+**Claude Code only** for both `codex` and `coderabbit` — non-CC runtimes ignore the flag with a one-line warning and stay on the default generic reviewer.
 
 ## Step 9 — Refactor (propose-only)
 
