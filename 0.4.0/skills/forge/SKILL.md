@@ -55,6 +55,7 @@ Bare number → tracker only if `ticket` or `linear` precedes; PR mode requires 
 | `secure` | After Step 8 converges (zero actionable from regular reviewers), compose `security-review`. Must-fix findings reopen Step 8 (one dedicated security pass; further regular passes still bound by the 3-pass cap). Required before Step 9. → [references/modes/secure.md](references/modes/secure.md). |
 | `changelog` | At Step 12 (after `/goal` verifies green), draft a changelog entry per the repo's existing format and include it in the proposed commit list. Skips silently with a one-line note if no changelog file is detected. → [references/modes/changelog.md](references/modes/changelog.md). |
 | `ci-watch` | After Step 12 closing-menu push (options 2 or 3), poll the repo's CI for the pushed HEAD. On red, re-enter Step 8 with the CI failure as a must-fix finding. On green, report and exit. Silently inert when no push happens. → [references/modes/ci-watch.md](references/modes/ci-watch.md). |
+| `backport` (or `backport:<branches>`) | After Step 12 primary push, cherry-pick the merged commits onto additional base branches and open follow-up PRs to each. Targets come from the flag value, `.backport-branches`, `BACKPORT_BRANCHES` env, `CONTRIBUTING.md`, or a Step 12 user prompt. Conflicts pause (or abort that target under `automode`); other targets continue. → [references/modes/backport.md](references/modes/backport.md). |
 
 Compose any order: `forge ticket PROJ-7 automode docs codex challenge`. `automode`+`docs` → write `CONTEXT.md` directly, no interview, → Step 7. **Non-Claude-Code runtime: `codex`/`codex challenge` ignored with a one-line warning; generic reviewer stays `superpowers:requesting-code-review`** (skill itself stays runtime-generic — only the Codex path is CC-bound).
 
@@ -271,6 +272,8 @@ Act only on the selected option. Option 2 follows the repo guide for base branch
 **Never auto-commit, auto-push, or write back to Jira** outside an explicit selection.
 
 **`ci-watch`** flag set + push option chosen (option 2 or 3) → after the push completes, poll CI for the pushed HEAD; on red, re-enter Step 8 with the CI failure as a must-fix finding. See **[references/modes/ci-watch.md](references/modes/ci-watch.md)** for polling cadence and host CLI selection. Silently inert if no push option was chosen.
+
+**`backport`** flag set + push option chosen → after the primary push, cherry-pick the merged commits onto additional base branches (from flag value, `.backport-branches`, env, `CONTRIBUTING.md`, or user prompt) and open follow-up PRs. See **[references/modes/backport.md](references/modes/backport.md)** for target detection order and conflict handling.
 
 - `docs`: still ask, but pre-mark the `/tmp/<name>.md` option `(Recommended)` over option 1.
 - `automode`: skip the question — emit the proposed small-commit history as a **plan only** (to `/tmp/forge-<ref>.md` under `docs`, else inline), then stop. `automode` never executes commits, pushes, or Jira write-backs.
