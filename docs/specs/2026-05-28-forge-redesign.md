@@ -4,7 +4,7 @@
 - **Status:** Draft (awaiting user review)
 - **Originating handoff:** `/tmp/forge-redesign-handoff-2026-05-28.md`
 - **Target layout ADR:** [`../adr/0001-packaged-plugin-layout.md`](../adr/0001-packaged-plugin-layout.md)
-- **Phase 0 baseline:** [`../../0.1.0/skills/forge/SKILL.md`](../../0.1.0/skills/forge/SKILL.md)
+- **Phase 0 baseline:** the initial scaffold lived under `0.1.0/` (commit `c5bf9fc`); after the Phase 1 finalizer (PR 1f) the directory was renamed to `0.2.0/`. Current spine: [`../../0.2.0/skills/forge/SKILL.md`](../../0.2.0/skills/forge/SKILL.md).
 
 ## 1. Context and decisions locked from prior session
 
@@ -28,14 +28,19 @@ This repository (`forge-skills`) is the source of truth for the forge skill. It 
 
 ```
 forge-skills/
-  0.1.0/                       ← Phase 0 baseline (verbatim copy of pre-redesign forge)
+  <version>/                   ← currently 0.2.0 (Phase 1 complete); originally 0.1.0
     .claude-plugin/plugin.json
     README.md
     CLAUDE.md
     skills/forge/
       SKILL.md
-      references/jira.md
-      references/codex.md
+      references/
+        anti-patterns.md
+        autonomy.md
+        proposal-template.md
+        review-loop.md
+        trackers/jira.md
+        reviewers/codex.md
       scripts/resolve-codex.py
   docs/
     specs/2026-05-28-forge-redesign.md     ← this file
@@ -301,7 +306,7 @@ The version field in `plugin.json` is the source of truth; the directory name MU
 
 ## 11. Content style and token-budget guardrails
 
-Every PR that creates or substantially edits a Markdown file under `0.1.0/skills/forge/`, `docs/specs/`, `docs/adr/`, or the repo READMEs follows two standing post-write passes, applied in this order:
+Every PR that creates or substantially edits a Markdown file under the current version directory's `skills/forge/`, `docs/specs/`, `docs/adr/`, or the repo READMEs follows two standing post-write passes, applied in this order:
 
 1. **Humanize the prose.** Load `humanizer` and apply it to the changed Markdown. The skill removes the patterns enumerated in the Wikipedia "Signs of AI writing" guide: inflated symbolism, promotional adjectives, em-dash overuse, rule-of-three list padding, vague attribution, passive-voice filler, negative parallelism, AI vocabulary tells. Code (`scripts/*.py`, JSON manifests) is exempt. Apply judgement on the design spec itself and ADRs — they describe technical intent and tolerate a denser register than user-facing READMEs do.
 

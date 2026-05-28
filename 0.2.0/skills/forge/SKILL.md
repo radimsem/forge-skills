@@ -1,6 +1,6 @@
 ---
 name: forge
-description: Use when the user invokes /forge with an issue or Jira-ticket reference, or asks to investigate, fix, resolve, triage, solve, or work on a specific issue ID or ticket in the current repo (any git host — GitHub, GitLab, etc. — or Atlassian Jira). Triggers on phrases like "forge issue 42", "solve issue 42", "fix #123", "work on issue 7", "solve ticket PROJ-123", "forge ticket 42", or any direct issue-number / Jira-key reference paired with intent to make changes — including the optional modifiers "automode" (no user gates), "with docs" (doc-driven), "codex" (Codex review loop) and "codex challenge" (Codex adversarial review), e.g. "forge issue 47 automode with docs codex challenge". Covers the full lifecycle: propose → gated approval → implement → review-loop → refactor → spin-off issues → self-evolve.
+description: Use when the user invokes /forge with an issue or Jira-ticket reference, or asks to investigate, fix, resolve, triage, solve, or work on a specific issue ID or ticket in the current repo (any git host — GitHub, GitLab, etc. — or Atlassian Jira). Triggers on phrases like "forge issue 42", "solve issue 42", "fix #123", "work on issue 7", "solve ticket PROJ-123", "forge ticket 42", or any direct issue-number / Jira-key reference paired with intent to make changes — including the optional modifiers "automode" (no user gates), "docs" (doc-driven; accepts the deprecated alias "with docs" for one release), "codex" (Codex review loop) and "codex challenge" (Codex adversarial review), e.g. "forge issue 47 automode docs codex challenge". Covers the full lifecycle: propose → gated approval → implement → review-loop → refactor → spin-off issues → self-evolve.
 ---
 
 # Forge
@@ -20,7 +20,7 @@ Two parts, **one numbered workflow** (Steps 1–12):
 
 ## Parameters
 
-Parse invocation: `/forge <ref> [automode] [with docs] [codex | codex challenge]` (words anywhere in request count). `<ref>` → git-host issue **or** Jira ticket per grammar. Flags orthogonal, compose freely.
+Parse invocation: `/forge <ref> [automode] [docs] [codex | codex challenge]` (words anywhere in request count). `<ref>` → git-host issue **or** Jira ticket per grammar. Flags orthogonal, compose freely.
 
 ### Target grammar — `<ref>`
 
@@ -40,11 +40,11 @@ Bare number → Jira only if `ticket` precedes. Key-shaped ref → always Jira, 
 |---|---|
 | *(none)* | Interview if needed → propose → wait at gate (Step 6). Review = project reviewer agents **+** `superpowers:requesting-code-review`. |
 | `automode` | **No user gates.** Never source `/grill-me` / `/grill-with-docs`. Auto-decide Steps 9 & 11. Skip Step 6 (proposal → Step 7). Never Jira-writes-back / auto-commits / auto-pushes — hard floor, never lifts. |
-| `with docs` | `/grill-with-docs` not `/grill-me`. Proposal → `CONTEXT.md` (repo root); Part 2 plan sourced from it. Step 12 proposal → `/tmp/forge-<ref>.md`. |
+| `docs` | `/grill-with-docs` not `/grill-me`. Proposal → `CONTEXT.md` (repo root); Part 2 plan sourced from it. Step 12 proposal → `/tmp/forge-<ref>.md`. **Aliases**: accepts the prior spelling `with docs` for one release; the alias will be removed in 0.3.0. |
 | `codex` | **Claude Code only** (codex plugin is CC-exclusive). Step 8 generic reviewer → Codex (`codex-companion.mjs review`) instead of `superpowers:requesting-code-review`. Project reviewer agents still run. Degrades gracefully if Codex absent (§8a). |
 | `codex challenge` | **Implies `codex`.** Codex `review` → `adversarial-review` (challenges approach/design/assumptions, not just defects). |
 
-Compose any order: `forge ticket PROJ-7 automode with docs codex challenge`. `automode`+`with docs` → write `CONTEXT.md` directly, no interview, → Step 7. **Non-Claude-Code runtime: `codex`/`codex challenge` ignored with a one-line warning; generic reviewer stays `superpowers:requesting-code-review`** (skill itself stays runtime-generic — only the Codex path is CC-bound).
+Compose any order: `forge ticket PROJ-7 automode docs codex challenge`. `automode`+`docs` → write `CONTEXT.md` directly, no interview, → Step 7. **Non-Claude-Code runtime: `codex`/`codex challenge` ignored with a one-line warning; generic reviewer stays `superpowers:requesting-code-review`** (skill itself stays runtime-generic — only the Codex path is CC-bound).
 
 ## When to Use
 
@@ -82,7 +82,7 @@ If neither `origin` nor `upstream` resolves to a known issue host: stop, tell th
 
 ### Step 1c — Jira ticket
 
-→ **[references/jira.md](references/jira.md)** (resolve + fetch + absent-fallback + key-in-branch + write-back). Load it now; the rest of Steps 1–3 and Step 12 defer their Jira specifics there. Git-host issues never read it.
+→ **[references/trackers/jira.md](references/trackers/jira.md)** (resolve + fetch + absent-fallback + key-in-branch + write-back). Load it now; the rest of Steps 1–3 and Step 12 defer their Jira specifics there. Git-host issues never read it.
 
 ## Step 2 — Fetch the issue / ticket
 
@@ -102,7 +102,7 @@ Read **body + every comment** — latest comments often carry the missing repro 
 
 ### Jira ticket
 
-→ **[references/jira.md](references/jira.md)** §Step 2 (pull fields + comments) and §Jira-absent fallback ★ (warn + 3-choice paste/auth/abort; stops even under `automode`).
+→ **[references/trackers/jira.md](references/trackers/jira.md)** §Step 2 (pull fields + comments) and §Jira-absent fallback ★ (warn + 3-choice paste/auth/abort; stops even under `automode`).
 
 ## Step 3 — Verify the branch
 
@@ -117,7 +117,7 @@ git branch --show-current
 - Pick `<prefix>` from the issue: bug-shaped → `fix`; new behavior → `feat`; docs → `docs`; deps/CI/tooling → `chore`; ambiguous → ask.
 - `<slug>`: from the title, lowercase ASCII kebab-case, drop stop-words, ≤ 50 chars. *"Parser fails on UTF-16 BOM"* → `fix/parser-fails-utf-16-bom`.
 
-**Jira — key in branch & commits** → **[references/jira.md](references/jira.md)** §Step 3 (repo guide wins; else branch `<prefix>/<KEY>-<slug>`, key not forced into subjects).
+**Jira — key in branch & commits** → **[references/trackers/jira.md](references/trackers/jira.md)** §Step 3 (repo guide wins; else branch `<prefix>/<KEY>-<slug>`, key not forced into subjects).
 
 Compare to the current branch:
 - Match → continue.
@@ -148,14 +148,14 @@ Required field missing → **interview the user**, never open free-text. Per gap
 
 → **[references/proposal-template.md](references/proposal-template.md)** §Step 4 for the literal Q-block format. Never invent the chosen answer — propose, user selects. Never continue past this step on unanswered required gaps.
 
-`with docs` → interview run by `/grill-with-docs` (challenges plan vs repo domain model/docs). `automode` → skip interview; proceed on the issue as written, picking the `(Recommended)` answer per gap, noting the assumption in the proposal. `automode`+`with docs` → no interview; → Step 5 CONTEXT.md write.
+`docs` → interview run by `/grill-with-docs` (challenges plan vs repo domain model/docs). `automode` → skip interview; proceed on the issue as written, picking the `(Recommended)` answer per gap, noting the assumption in the proposal. `automode`+`docs` → no interview; → Step 5 CONTEXT.md write.
 
 ### Step 4a — Optional grilling for risky design forks
 
 Step 4 interview = *missing facts*. Context sufficient to propose **but a design/approach fork is genuinely ambiguous and a wrong pick = expensive rework** → deeper interview before the proposal:
 
 - default → **`/grill-me`**
-- `with docs` → **`/grill-with-docs`**
+- `docs` → **`/grill-with-docs`**
 - `automode` → **never** (both interview the user); record the fork + chosen branch as an explicit proposal assumption.
 
 Only when getting the approach wrong is costly. Clear low-risk fix → straight to Step 5.
@@ -164,11 +164,11 @@ Only when getting the approach wrong is costly. Clear low-risk fix → straight 
 
 Emit **one** proposal — exact block format in **[references/proposal-template.md](references/proposal-template.md)** §Step 5 (Issue line, Restated, Root cause / design, Files to touch, Plan, Pass criteria, Tests, Risks). Verify file paths exist (Read/Grep) before listing; drop `:line` if you haven't opened the file.
 
-**`with docs`:** write the proposal to `CONTEXT.md` (repo root) instead of / in addition to chat; Part 2 sources the plan from `CONTEXT.md`, not chat scrollback.
+**`docs`:** write the proposal to `CONTEXT.md` (repo root) instead of / in addition to chat; Part 2 sources the plan from `CONTEXT.md`, not chat scrollback.
 
 **Next-turn options.** End the proposal stating the user's choices (template §Step 5 next-turn options): `yes, implement` opens the gate → Step 7; `interview me on risky questions` runs Step 4a grilling and re-proposes (only if a risky design fork is unanswered); any other adjustment → revise, re-propose.
 
-**`automode`:** no options, no wait — straight to Step 7 (with `with docs`: after writing `CONTEXT.md`).
+**`automode`:** no options, no wait — straight to Step 7 (with `docs`: after writing `CONTEXT.md`).
 
 ## Step 6 — The gate ★
 
@@ -203,7 +203,7 @@ Open with, in order:
 1. Set **`/goal`** = desired result + Step 4/5 pass criteria (exact build/test/behavior that proves done). Set once; never restate.
 2. Re-source **`/karpathy-guidelines`**.
 
-`with docs` → load plan from `CONTEXT.md`. Implement the approved plan — minimal, surgical, in scope. No edits before both 1 and 2 done.
+`docs` → load plan from `CONTEXT.md`. Implement the approved plan — minimal, surgical, in scope. No edits before both 1 and 2 done.
 
 ## Step 8 — Review loop
 
@@ -215,7 +215,7 @@ Terminate at zero actionable findings; nits don't block. Cap **3 passes**. Each 
 
 ### Step 8a/8b — Codex reviewer (`codex` / `codex challenge`)
 
-→ **[references/codex.md](references/codex.md)** — §8a generic Codex reviewer (resolve via `scripts/resolve-codex.py`, foreground `review`/`adversarial-review`, graceful degrade) + §8b optional rework delegation to `codex:codex-rescue` (⟲ first, inline karpathy constraints, foreground `--wait`). **Claude Code only**; non-CC runtime → ignore the flag, warn once, stay on `superpowers:requesting-code-review`, don't load the file.
+→ **[references/reviewers/codex.md](references/reviewers/codex.md)** — §8a generic Codex reviewer (resolve via `scripts/resolve-codex.py`, foreground `review`/`adversarial-review`, graceful degrade) + §8b optional rework delegation to `codex:codex-rescue` (⟲ first, inline karpathy constraints, foreground `--wait`). **Claude Code only**; non-CC runtime → ignore the flag, warn once, stay on `superpowers:requesting-code-review`, don't load the file.
 
 ## Step 9 — Refactor (propose-only)
 
@@ -244,12 +244,12 @@ Then ask **one** closing question — exact 6-option menu in **[references/propo
 
 Act only on the selected option. Option 2 follows the repo guide for base branch + PR target.
 
-**Jira write-back (3rd option)** → **[references/jira.md](references/jira.md)** §Step 12 (opt-in only; comment + confirmed transition; never on other options, never under `automode`). Show the 3rd menu line only when the target was a Jira ticket.
+**Jira write-back (3rd option)** → **[references/trackers/jira.md](references/trackers/jira.md)** §Step 12 (opt-in only; comment + confirmed transition; never on other options, never under `automode`). Show the 3rd menu line only when the target was a Jira ticket.
 
 **Never auto-commit, auto-push, or write back to Jira** outside an explicit selection.
 
-- `with docs`: still ask, but pre-mark the `/tmp/<name>.md` option `(Recommended)` over option 1.
-- `automode`: skip the question — emit the proposed small-commit history as a **plan only** (to `/tmp/forge-<ref>.md` under `with docs`, else inline), then stop. `automode` never executes commits, pushes, or Jira write-backs.
+- `docs`: still ask, but pre-mark the `/tmp/<name>.md` option `(Recommended)` over option 1.
+- `automode`: skip the question — emit the proposed small-commit history as a **plan only** (to `/tmp/forge-<ref>.md` under `docs`, else inline), then stop. `automode` never executes commits, pushes, or Jira write-backs.
 
 ### Autonomy
 

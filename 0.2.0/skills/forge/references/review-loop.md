@@ -7,7 +7,7 @@ Disciplined critique cycle. Runs after each implementation pass. Terminates when
 | Mode | Engines | When it runs |
 |---|---|---|
 | Default | Project reviewer subagents from `.agents/agents/` (or runtime equivalent, e.g. `.claude/agents/`) matched to the diff **+** generic reviewer `superpowers:requesting-code-review` | Every Step 8 pass |
-| `codex` / `codex challenge` | Project subagents **+** Codex (`review` or `adversarial-review`) — see [codex.md](codex.md) | Step 8 when the flag is set; Claude Code runtime only |
+| `codex` / `codex challenge` | Project subagents **+** Codex (`review` or `adversarial-review`) — see [reviewers/codex.md](reviewers/codex.md) | Step 8 when the flag is set; Claude Code runtime only |
 | Fallback (no project reviewer agents, PR exists) | `/greploop` against the pushed PR | When no project reviewers configured AND a PR exists. Never auto-push to create one. |
 | Sub-pass (suspected bug or perf regression) | `/diagnose` | Surface findings, return to the main loop |
 
@@ -40,4 +40,4 @@ See [autonomy.md](autonomy.md) §Step 8 row. Same engines, same cap; non-converg
 
 ## Codex specifics
 
-[codex.md](codex.md) holds §8a (generic Codex reviewer resolution + graceful degrade) and §8b (rework delegation to `codex:codex-rescue`).
+[reviewers/codex.md](reviewers/codex.md) holds §8a (generic Codex reviewer resolution + graceful degrade) and §8b (rework delegation to `codex:codex-rescue`).
