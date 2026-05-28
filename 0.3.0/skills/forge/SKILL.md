@@ -1,6 +1,6 @@
 ---
 name: forge
-description: Use when the user invokes /forge with an issue or Jira-ticket reference, or asks to investigate, fix, resolve, triage, solve, or work on a specific issue ID or ticket in the current repo (any git host — GitHub, GitLab, etc. — or Atlassian Jira). Triggers on phrases like "forge issue 42", "solve issue 42", "fix #123", "work on issue 7", "solve ticket PROJ-123", "forge ticket 42", or any direct issue-number / Jira-key reference paired with intent to make changes — including the optional modifiers "automode" (no user gates), "docs" (doc-driven), "tdd" (failing test first, then implement), "worktree" (work in a sibling worktree instead of switching in-place), "lookup" (fetch current library docs at Step 4), "secure" (post-Step-8 security-review pass), "changelog" (draft changelog entry at Step 12), "codex" (Codex review loop) and "codex challenge" (Codex adversarial review), e.g. "forge issue 47 automode docs tdd worktree lookup secure changelog codex challenge". Covers the full lifecycle: propose → gated approval → implement → review-loop → refactor → spin-off issues → self-evolve.
+description: Use when the user invokes /forge with an issue or Jira-ticket reference, or asks to investigate, fix, resolve, triage, solve, or work on a specific issue ID or ticket in the current repo (any git host — GitHub, GitLab, etc. — or Atlassian Jira). Triggers on phrases like "forge issue 42", "solve issue 42", "fix #123", "work on issue 7", "solve ticket PROJ-123", "forge ticket 42", or any direct issue-number / Jira-key reference paired with intent to make changes — including the optional modifiers "automode" (no user gates), "docs" (doc-driven), "tdd" (failing test first, then implement), "worktree" (work in a sibling worktree instead of switching in-place), "lookup" (fetch current library docs at Step 4), "secure" (post-Step-8 security-review pass), "changelog" (draft changelog entry at Step 12), "ci-watch" (poll CI after Step 12 push), "codex" (Codex review loop) and "codex challenge" (Codex adversarial review), e.g. "forge issue 47 automode docs tdd worktree lookup secure changelog ci-watch codex challenge". Covers the full lifecycle: propose → gated approval → implement → review-loop → refactor → spin-off issues → self-evolve.
 ---
 
 # Forge
@@ -20,7 +20,7 @@ Two parts, **one numbered workflow** (Steps 1–12):
 
 ## Parameters
 
-Parse invocation: `/forge <ref> [automode] [docs] [tdd] [worktree] [lookup] [secure] [changelog] [codex | codex challenge]` (words anywhere in request count). `<ref>` → git-host issue **or** Jira ticket per grammar. Flags orthogonal, compose freely.
+Parse invocation: `/forge <ref> [automode] [docs] [tdd] [worktree] [lookup] [secure] [changelog] [ci-watch] [codex | codex challenge]` (words anywhere in request count). `<ref>` → git-host issue **or** Jira ticket per grammar. Flags orthogonal, compose freely.
 
 Full flag matrix (status, composition rules, conflicts, planned flags): **[references/flags.md](references/flags.md)**.
 
@@ -50,6 +50,7 @@ Bare number → Jira only if `ticket` precedes. Key-shaped ref → always Jira, 
 | `lookup` | At Step 4, compose `find-docs` (and `context7` MCP if available) for every library/framework/SDK/CLI/cloud service the issue mentions. Step 5 proposal carries `(per <library> docs, fetched <date>)` attribution on library-specific claims. Under `automode`, fetch failures become Risks, not blockers. → [references/modes/lookup.md](references/modes/lookup.md). |
 | `secure` | After Step 8 converges (zero actionable from regular reviewers), compose `security-review`. Must-fix findings reopen Step 8 (one dedicated security pass; further regular passes still bound by the 3-pass cap). Required before Step 9. → [references/modes/secure.md](references/modes/secure.md). |
 | `changelog` | At Step 12 (after `/goal` verifies green), draft a changelog entry per the repo's existing format and include it in the proposed commit list. Skips silently with a one-line note if no changelog file is detected. → [references/modes/changelog.md](references/modes/changelog.md). |
+| `ci-watch` | After Step 12 closing-menu push (options 2 or 3), poll the repo's CI for the pushed HEAD. On red, re-enter Step 8 with the CI failure as a must-fix finding. On green, report and exit. Silently inert when no push happens. → [references/modes/ci-watch.md](references/modes/ci-watch.md). |
 
 Compose any order: `forge ticket PROJ-7 automode docs codex challenge`. `automode`+`docs` → write `CONTEXT.md` directly, no interview, → Step 7. **Non-Claude-Code runtime: `codex`/`codex challenge` ignored with a one-line warning; generic reviewer stays `superpowers:requesting-code-review`** (skill itself stays runtime-generic — only the Codex path is CC-bound).
 
@@ -264,6 +265,8 @@ Act only on the selected option. Option 2 follows the repo guide for base branch
 **Jira write-back (3rd option)** → **[references/trackers/jira.md](references/trackers/jira.md)** §Step 12 (opt-in only; comment + confirmed transition; never on other options, never under `automode`). Show the 3rd menu line only when the target was a Jira ticket.
 
 **Never auto-commit, auto-push, or write back to Jira** outside an explicit selection.
+
+**`ci-watch`** flag set + push option chosen (option 2 or 3) → after the push completes, poll CI for the pushed HEAD; on red, re-enter Step 8 with the CI failure as a must-fix finding. See **[references/modes/ci-watch.md](references/modes/ci-watch.md)** for polling cadence and host CLI selection. Silently inert if no push option was chosen.
 
 - `docs`: still ask, but pre-mark the `/tmp/<name>.md` option `(Recommended)` over option 1.
 - `automode`: skip the question — emit the proposed small-commit history as a **plan only** (to `/tmp/forge-<ref>.md` under `docs`, else inline), then stop. `automode` never executes commits, pushes, or Jira write-backs.
