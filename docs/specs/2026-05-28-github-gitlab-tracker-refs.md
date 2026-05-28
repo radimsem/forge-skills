@@ -1,9 +1,9 @@
 # GitHub & GitLab tracker references — design spec
 
 - **Date:** 2026-05-28
-- **Status:** Draft (awaiting user review)
-- **Target version:** 1.0.1 (doc-only patch per the post-1.0 SemVer policy)
-- **Related:** [`2026-05-28-forge-redesign.md`](2026-05-28-forge-redesign.md) §3 (target reference tree); [`../adr/0002-1.0.0-cut.md`](../adr/0002-1.0.0-cut.md) (1.0.0 stability promise)
+- **Status:** Approved (user-resolved open questions inline; ready for writing-plans)
+- **Target version:** *deferred* — see §8. No plugin-manifest bump in this PR.
+- **Related:** [`2026-05-28-forge-redesign.md`](2026-05-28-forge-redesign.md) §3 (target reference tree); [`../adr/0002-1.0.0-cut.md`](../adr/0002-1.0.0-cut.md) (1.0.0 stability promise — context only, not a constraint here)
 - **Originating session:** brainstorming session pivot from "broad ideation menu" → focused two-file extract (see this conversation's transcript).
 
 ## 1. Goal
@@ -71,7 +71,7 @@ Mirrors `jira.md`/`linear.md` preamble + per-Step section convention. Sections p
 | §Step 2 — Pull the issue | §Step 2 git-host first paragraph (`gh issue view --json …` command) | extracted verbatim |
 | §GitHub-absent fallback | §Step 2 git-host curl block | extracted verbatim |
 
-### 5.3 Content (concrete draft)
+### 5.3 Content (final, strict purity)
 
 ```markdown
 # Forge — GitHub issue reference
@@ -80,7 +80,7 @@ Loaded on demand by SKILL.md **only when `git remote get-url origin` (fallback `
 
 ## Step 1b — Fetch source (resolve)
 
-`gh` is the primary CLI. GitHub Enterprise hosts are reached by `gh` via its standard host resolution (`GH_HOST` env or `--hostname` flag — `gh` handles this itself; the skill does not configure it).
+`gh` is the primary CLI.
 
 ## Step 2 — Pull the issue
 
@@ -88,7 +88,7 @@ Loaded on demand by SKILL.md **only when `git remote get-url origin` (fallback `
 gh issue view <N> --json number,title,body,state,labels,comments,author,url
 ```
 
-Comments are included in the JSON above. Read **body + every comment** — latest comments often carry the missing repro / decision.
+Read **body + every comment** — latest comments often carry the missing repro / decision.
 
 ### GitHub-absent fallback ★
 
@@ -103,12 +103,17 @@ curl -sH "Accept: application/vnd.github+json" \
 Unauth REST is rate-limited — say so if you fall back.
 ```
 
-Estimated final length: ~30 lines.
+Estimated final length: ~22 lines.
 
-### 5.4 Notes on borderline items
+### 5.4 Strict-purity discipline
 
-- The "GitHub Enterprise hosts are reached by `gh` via its standard host resolution" sentence is not strict extraction (SKILL.md does not name GHE behavior). It is canonical `gh` behavior, not invented behavior — included because the preamble already names "GH Enterprise" and a reader otherwise has no answer to "how does `gh` know which host?". If strict purity is preferred, drop the sentence; the preamble's host-match rule is sufficient.
-- The "Comments are included in the JSON above" sentence is also not strict extraction. SKILL.md only says "Read body + every comment" without telling the reader where the comments come from. The added sentence answers that. Drop it for strict purity; the `--json …,comments,…` field name in the command already encodes the same answer for an attentive reader.
+The draft above contains **no prose that is not already in SKILL.md** verbatim or trivially-rearranged. Specifically:
+
+- No "GHE reached via `GH_HOST`" sentence (cut — canonical `gh` behavior, but not in SKILL.md today).
+- No "Comments are included in the JSON above" sentence (cut — the `--json …,comments,…` field name encodes the same fact for an attentive reader).
+- No prose explaining what fields the JSON contains beyond the command itself.
+
+Headings, code fences, and preamble structure are presentation — not new content. The preamble's "loaded on demand…" sentence pattern is copied from `jira.md`/`linear.md`.
 
 ## 6. File 2 — `references/trackers/gitlab.md`
 
@@ -125,7 +130,7 @@ Same shape as `github.md`.
 | §Step 2 — Pull the issue | §Step 2 git-host CLI line for `glab` | extracted |
 | §GitLab-absent fallback | §Step 2 git-host parenthetical REST hint | extracted + a synthesized curl block in github.md's shape |
 
-### 6.3 Content (concrete draft)
+### 6.3 Content (final, strict purity)
 
 ```markdown
 # Forge — GitLab issue reference
@@ -134,36 +139,32 @@ Loaded on demand by SKILL.md **only when `git remote get-url origin` (fallback `
 
 ## Step 1b — Fetch source (resolve)
 
-`glab` is the primary CLI. Self-hosted GitLab instances are reached by `glab` via `GITLAB_HOST` env (`glab` handles this itself; the skill does not configure it).
+`glab` is the primary CLI.
 
 ## Step 2 — Pull the issue
 
 ```bash
-glab issue view <N> -F json   # confirm flag via `glab issue view --help` — the JSON output flag changed across `glab` versions
+glab issue view <N> -F json   # confirm flag via `glab issue view --help`
 ```
 
-Comments are included in the JSON above. Read **body + every comment** — latest comments often carry the missing repro / decision.
+Read **body + every comment** — latest comments often carry the missing repro / decision.
 
 ### GitLab-absent fallback ★
 
-`glab` missing or unauthenticated → host REST API:
-
-```bash
-curl -sH "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
-     "https://gitlab.com/api/v4/projects/:id/issues/:iid"   # comments: same URL + "/notes"
+`glab` missing or unauthenticated → host REST API: `GET /projects/:id/issues/:iid` + `/notes`, token in `PRIVATE-TOKEN`. Unauth REST is rate-limited — say so if you fall back.
 ```
 
-`:id` is the URL-encoded project path (`owner%2Frepo`) or the numeric project ID. Unauth REST is rate-limited — say so if you fall back.
-```
+Estimated final length: ~18 lines.
 
-Estimated final length: ~30 lines.
+### 6.4 Strict-purity discipline
 
-### 6.4 Notes on borderline items
+Same discipline as §5.4. Specifically:
 
-- The "self-hosted GitLab instances are reached by `glab` via `GITLAB_HOST`" sentence parallels the github.md GHE sentence. Same drop-for-strict-purity offer.
-- The "Comments are included in the JSON above" sentence parallels the github.md one. Same drop-for-strict-purity offer.
-- The curl block is synthesized in github.md's shape; the original SKILL.md parenthetical (`GET /projects/:id/issues/:iid` + `/notes`, token in `PRIVATE-TOKEN`) carries the same information in prose. The shape change is purely a presentation choice for symmetry. If strict purity is preferred, replace the code block with a one-line prose description in SKILL.md's original wording.
-- The `:id` encoding sentence is canonical GitLab REST behavior, not invented. Same borderline call as the GHE sentence — drop for strict purity if desired.
+- No "self-hosted reached via `GITLAB_HOST`" sentence (cut).
+- No "Comments are included in the JSON above" sentence (cut).
+- No synthesized curl block — the original SKILL.md parenthetical is preserved verbatim as the prose form of the fallback. github.md keeps a curl block because **that block was already in SKILL.md**; gitlab.md gets prose because **the GitLab fallback was already prose**. The two files end up asymmetric in shape, but each is faithful to what existed.
+- No `:id` encoding explanation (cut — canonical GitLab REST behavior, but not in SKILL.md).
+- The "the JSON output flag changed across `glab` versions" trailing-clause is dropped; only the `--help` hint remains, matching SKILL.md's wording verbatim.
 
 ## 7. SKILL.md changes
 
@@ -242,21 +243,21 @@ After:
 | File | Before | After | Δ |
 |---|---|---|---|
 | `skills/forge/SKILL.md` | 308 lines | ~294 lines | −14 |
-| `skills/forge/references/trackers/github.md` | absent | ~30 lines | +30 |
-| `skills/forge/references/trackers/gitlab.md` | absent | ~30 lines | +30 |
-| **Total** | | | **+46** |
+| `skills/forge/references/trackers/github.md` | absent | ~22 lines | +22 |
+| `skills/forge/references/trackers/gitlab.md` | absent | ~18 lines | +18 |
+| **Total** | | | **+26** |
 
-Always-loaded surface (SKILL.md) shrinks by ~14 lines; on-demand surface grows by 60. Net total grows because of new preambles + the GHE/self-hosted clarifier sentences.
+Always-loaded surface (SKILL.md) shrinks by ~14 lines; on-demand surface grows by ~40. Net total grows modestly because of two new preambles. Under strict purity the new files carry no extension content; they exist to host what was already inlined and to give future PRs a place to append host-specific behavior without re-shuffling SKILL.md.
 
-## 8. Versioning & rollback
+## 8. Distribution model & rollback
 
-- **Bump (target):** 1.0.0 → 1.0.1. Doc-only refactor with no behavior change qualifies as a patch under the post-1.0 SemVer policy.
-- **plugin.json status:** **no `plugin.json` exists anywhere in the repo as of 2026-05-28** (verified via `find . -name plugin.json -not -path '*/.git/*'` → empty). The README and the redesign spec both reference `1.0.0/.claude-plugin/plugin.json`, but the recent `chore: move v1.0.0 into root skills folder` commit (13d52fb) flattened the version directory without re-creating the manifest at a new location. This is a pre-existing repo issue, not caused by this spec.
-- **Implication for this PR:** the version-bump step in §10 cannot land until the manifest situation is resolved. Three resolutions, each a separate decision the user must make before writing-plans runs:
-  - **(R1)** Recreate `.claude-plugin/plugin.json` at the repo root with `"version": "1.0.1"`, ship the bump in this PR.
-  - **(R2)** Ship this PR without a version bump; defer the bump until the manifest is recreated as its own PR. SemVer promise resumes once the manifest is back.
-  - **(R3)** Decide the repo no longer ships as a single-version plugin (rooted vs versioned dirs is in flux) and remove all manifest-bump steps from forge-skills' shipping process.
-- **Rollback:** revert the single PR. SKILL.md anchors are preserved, so no downstream link rot regardless of which resolution is chosen.
+**User decision (2026-05-28):** `forge-skills` is a **skill repository**, not a plugin repository. The plugin-manifest model from 1.0.0 is **deprecated for this repo**:
+
+- **Primary install path** is now [`npx skills`](https://github.com/vercel/skills) (Vercel's skill runner). The skill is consumed directly from the source tree; no manifest required.
+- **Plugin manifests are optional per-consumer.** A Claude Code `.claude-plugin/plugin.json`, a Cursor manifest, a Codex manifest, etc. may each be added as separate opt-in artifacts in future PRs if the matching consumer wants one. None is the canonical install path.
+- **No version bump in this PR.** SemVer-policy language from `1.0.0/README.md` no longer governs how this repo ships. The 1.0.0 cut ADR remains accurate as history; it is not a constraint on doc-only refactors going forward.
+- **README rewrite.** The user will recreate `README.md` separately via `/humanizer` to document the `npx skills` install path and the forge skill's capabilities. **Out of scope for this PR.**
+- **Rollback:** revert the single PR. SKILL.md anchors are preserved; the two new files are independent; no downstream link rot.
 
 ## 9. Verification
 
@@ -268,18 +269,19 @@ Always-loaded surface (SKILL.md) shrinks by ~14 lines; on-demand surface grows b
 
 Single atomic PR, sequenced as:
 
-1. Create `skills/forge/references/trackers/github.md` (~30 lines, content per §5.3).
-2. Create `skills/forge/references/trackers/gitlab.md` (~30 lines, content per §6.3).
+1. Create `skills/forge/references/trackers/github.md` (~22 lines, content per §5.3).
+2. Create `skills/forge/references/trackers/gitlab.md` (~18 lines, content per §6.3).
 3. Edit `skills/forge/SKILL.md` §Step 1b table per §7.1.
 4. Edit `skills/forge/SKILL.md` §Step 2 git-host paragraph per §7.2.
-5. **Conditional on §8 resolution:** if (R1), recreate `plugin.json` and bump to `1.0.1`. If (R2) or (R3), skip — no manifest change in this PR.
-6. Verify §9 (manual link-walk + content read).
-7. Commit per Conventional Commits convention: `refactor(forge): extract github/gitlab tracker refs from SKILL.md spine`.
+5. Verify §9 (manual link-walk + content read).
+6. Commit per Conventional Commits convention: `refactor(forge): extract github/gitlab tracker refs from SKILL.md spine`.
 
-writing-plans owns the per-step ordering, commit decomposition (if more than one), and verification command list.
+No plugin-manifest step (see §8 — distribution-model pivot). writing-plans owns the per-step ordering, commit decomposition (if more than one), and verification command list.
 
-## 11. Open questions for the user before writing-plans
+## 11. Resolved questions (audit trail)
 
-- **Manifest resolution (§8 R1/R2/R3).** Pick one before writing-plans; the plan's step 5 depends on which.
-- **Strict purity.** The borderline-extension sentences (§5.4, §6.4) are kept in the draft. If you'd rather strict purity, say so before writing-plans and the spec gets a one-line amendment.
-- **README update.** The repo `README.md` still references `1.0.0/skills/forge/SKILL.md` and `1.0.0/CLAUDE.md` (paths that no longer exist post-flatten). Adjacent to this PR or out of scope? Recommendation: out of scope — fix in its own PR, but flag here so it's not lost.
+All §11 open questions were resolved by the user at the writing-plans handoff:
+
+- **Manifest (was R1/R2/R3).** Resolved by §8 rewrite: skill-first repo, plugin manifest is optional per-consumer, no version bump in this PR, primary install via `npx skills`.
+- **Strict purity.** Adopted. Both borderline-extension sentence pairs dropped; gitlab.md fallback returns to SKILL.md's original prose form (no synthesized curl block). See §5.4 / §6.4 for the discipline.
+- **README path rot.** Out of scope for this PR. User will recreate `README.md` via `/humanizer` in a separate session — folded into the §8 distribution-model pivot.

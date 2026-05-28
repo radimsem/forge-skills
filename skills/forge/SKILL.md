@@ -84,14 +84,14 @@ Always `git remote get-url origin` (fallback `upstream`) regardless of ref kind 
 
 ### Step 1b — git-host issue
 
-Map host → CLI:
+Route by host in `origin` (fallback `upstream`):
 
-| Host in remote URL | CLI | Issue fetch |
-|---|---|---|
-| `github.com` / GH Enterprise | `gh` | `gh issue view <N> --json number,title,body,state,labels,comments,author,url` |
-| `gitlab.*` | `glab` | `glab issue view <N> -F json` (confirm flag via `glab issue view --help`) |
-| other (Gitea, Bitbucket, …) | that host's CLI if present | its issue-view JSON command |
-| any, no CLI / auth error | — | host REST API (see Step 2) |
+| Host in remote URL | Reference |
+|---|---|
+| `github.com` / GH Enterprise | → [references/trackers/github.md](references/trackers/github.md) |
+| `gitlab.*` (incl. self-hosted) | → [references/trackers/gitlab.md](references/trackers/gitlab.md) |
+| other (Gitea, Bitbucket, …) | that host's CLI's issue-view JSON command if present; else host REST API |
+| any, no CLI / auth error | host REST API per the loaded tracker ref (else generic curl) |
 
 If neither `origin` nor `upstream` resolves to a known issue host: stop, tell the user, do nothing else.
 
@@ -103,17 +103,7 @@ If neither `origin` nor `upstream` resolves to a known issue host: stop, tell th
 
 ### git-host issue
 
-Prefer the Step 1b CLI. Missing / auth error → host REST API, e.g. GitHub:
-
-```bash
-curl -sH "Accept: application/vnd.github+json" \
-     ${GITHUB_TOKEN:+-H "Authorization: Bearer $GITHUB_TOKEN"} \
-     "https://api.github.com/repos/owner/repo/issues/<N>"   # comments: same URL + "/comments"
-```
-
-(GitLab: `GET /projects/:id/issues/:iid` + `/notes`, token in `PRIVATE-TOKEN`.) Unauth REST is rate-limited — say so if you fall back.
-
-Read **body + every comment** — latest comments often carry the missing repro / decision.
+→ The loaded tracker ref ([references/trackers/github.md](references/trackers/github.md) §Step 2 or [references/trackers/gitlab.md](references/trackers/gitlab.md) §Step 2) for the fetch command and the REST fallback. For hosts without a dedicated ref: that host's CLI's issue-view JSON command if present, else curl the host's REST API. Read **body + every comment** regardless.
 
 ### Jira ticket
 
