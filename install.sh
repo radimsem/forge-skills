@@ -181,8 +181,8 @@ preflight() {
   [ "$_ok" -eq 0 ] || return 1
   # Non-fatal warnings:
   have_cmd claude || printf 'warn: `claude` CLI not on PATH — plugin steps will print paste-in commands instead of running.\n' >&2
-  have_cmd gh   || printf 'warn: `gh` (GitHub CLI) not found — needed for GitHub trackers / greploop on GitHub.\n' >&2
-  have_cmd glab || printf 'warn: `glab` (GitLab CLI) not found — needed for GitLab trackers.\n' >&2
+  have_cmd gh     || printf 'warn: `gh` (GitHub CLI) not found — needed for GitHub trackers / greploop on GitHub.\n' >&2
+  have_cmd glab   || printf 'warn: `glab` (GitLab CLI) not found — needed for GitLab trackers.\n' >&2
   return 0
 }
 

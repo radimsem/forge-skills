@@ -5,9 +5,7 @@ Replaces brittle inline globbing + JSON-by-grep in the skill body.
 
 Contract:
     stdout = absolute path to codex-companion.mjs   exit 0  -> usable
-    stdout = "UNAVAILABLE"                           exit 1  -> degrade to
-                                                                the superpowers
-                                                                reviewer
+    stdout = "UNAVAILABLE"                          exit 1  -> degrade to the superpowers reviewer
 
 "Unavailable" covers: codex plugin not installed, no script found, node or
 Codex CLI missing, or Codex not authenticated. Conservative by design — a
