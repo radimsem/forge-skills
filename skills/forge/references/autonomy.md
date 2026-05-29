@@ -15,7 +15,7 @@
 | Step 8 — Jira-absent fallback | Warn + 3-choice prompt (paste / auth / abort) | Same — the fallback **still binds** under `automode` because a missing data source is not a gate | Jira-absent fallback |
 | Step 9 (refactor) | `/improve-codebase-architecture` surfaces opportunities; user approves | Agent decides — apply only clearly net-positive, in-scope refactors; otherwise continue | — |
 | Step 10 (spinoff issues) | Draft via `/to-issues`, show drafts, post on explicit user yes | Post drafts directly | — |
-| Step 11 (self-evolution) | Propose `/write-a-skill` or agent-config edit; show diff + path; confirm before write | Apply the smaller-blast-radius option (prefer rule/guide edit over a new skill unless the pattern is clearly broad) | — |
+| Step 11 (self-evolution) | Propose `/write-a-skill`, agent-config edit, or memory write; show diff + path; confirm before write | Decide and apply the smaller-blast-radius option with no proposal, incl. memory writes (prefer rule/guide edit over a new skill unless the pattern is clearly broad) | — |
 | Step 12 — verify | Run `/goal` pass criteria + repo standard pre-commit checks; show output; green first | Same — agent runs the checks itself and proceeds only on green | `/goal` verification gate |
 | Step 12 — closing | Ask the closing question (the closing menu) | Skip the question; emit the proposed small-commit history as a plan only (to `/tmp/forge-<ref>.md` under `docs`, else inline); stop | Never auto-commit / auto-push / Jira write-back |
 | Throughout | Stop at substantive gates listed above (Steps 6, 9, 10, 11, 12) | No user gates between Steps 7–11; only hard floors bind | All hard floors above |

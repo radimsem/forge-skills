@@ -266,7 +266,7 @@ For bugs or improvements that belong in a separate issue, draft them via **`/to-
 
 ## Step 11 — Self-evolution
 
-If you hit a caveat that could be automated for future agentic sessions, propose **`/write-a-skill`** or an edit to the project agent config (the agent guide, rules, or reviewer-agent directory for the runtime). Show the exact diff and path, and confirm before writing. Under `automode`, the agent applies the smaller-blast-radius option, preferring a rule or guide edit over a new skill unless the pattern is clearly broad. If nothing can be automated, skip this step silently.
+If you hit a caveat that could be automated for future agentic sessions, propose **`/write-a-skill`** or an edit to the project agent config (the agent guide, rules, or reviewer-agent directory for the runtime). Also consider recording the caveat in the agent's project memory so a later session does not repeat it. Use whatever memory store the runtime exposes for this project. If the user has installed an external memory provider they favor (a memory plugin or MCP seen earlier in the conversation), write there instead of the built-in store. Show the exact diff and path, and confirm before writing. Under `automode`, the agent decides on its own and applies the smaller-blast-radius option with no proposal or confirmation. Memory writes are included: it picks the built-in store or the user's preferred external provider and writes directly. It still prefers a rule or guide edit over a new skill unless the pattern is clearly broad. If nothing can be automated, skip this step silently.
 
 ## Step 12 — Closing
 
