@@ -102,6 +102,24 @@ plugin_installed() { # $1=plugin@marketplace
     | grep -qE "(^|[[:space:]])$(printf '%s' "$1" | sed 's/[.[\*^$/]/\\&/g')([[:space:]]|$)"
 }
 
+# Build (do not run) the npx skills add command for a skill onto specific agents.
+build_skill_add_cmd() { # $1=source $2=skill $3=csv-of-agent-slugs
+  _cmd="npx -y skills@latest add $1 -s $2"
+  _oldifs=$IFS; IFS=','
+  for _a in $3; do _cmd="$_cmd -a $_a"; done
+  IFS=$_oldifs
+  [ -n "$OPT_YES" ] && _cmd="$_cmd -y"
+  printf '%s' "$_cmd"
+}
+
+build_plugin_marketplace_cmd() { # $1=marketplace source (owner/repo)
+  printf 'claude plugin marketplace add %s' "$1"
+}
+
+build_plugin_install_cmd() { # $1=plugin@marketplace
+  printf 'claude plugin install %s -s user' "$1"
+}
+
 main() {
   parse_args "$@" || return $?
   printf 'install.sh scaffold OK (agents: %s)\n' "$OPT_AGENTS"

@@ -64,5 +64,24 @@ assert_true  plugin_installed "coderabbit@claude-plugins-official"  "plugin_inst
 assert_false plugin_installed "codex@openai-codex"                   "plugin_installed: codex absent"
 assert_false plugin_installed "super@claude-plugins-official"        "plugin_installed: no prefix match"
 
+# --- command builders ---
+OPT_YES=""
+assert_eq "$(build_skill_add_cmd mattpocock/skills tdd 'claude-code,codex')" \
+  "npx -y skills@latest add mattpocock/skills -s tdd -a claude-code -a codex" \
+  "build_skill_add_cmd: basic"
+
+OPT_YES="1"
+assert_eq "$(build_skill_add_cmd greptileai/skills greploop 'claude-code')" \
+  "npx -y skills@latest add greptileai/skills -s greploop -a claude-code -y" \
+  "build_skill_add_cmd: --yes appends -y"
+OPT_YES=""
+
+assert_eq "$(build_plugin_marketplace_cmd anthropics/claude-plugins-official)" \
+  "claude plugin marketplace add anthropics/claude-plugins-official" \
+  "build_plugin_marketplace_cmd"
+assert_eq "$(build_plugin_install_cmd superpowers@claude-plugins-official)" \
+  "claude plugin install superpowers@claude-plugins-official -s user" \
+  "build_plugin_install_cmd"
+
 printf '\n%s\n' "FAILS=$FAILS"
 [ "$FAILS" -eq 0 ]
