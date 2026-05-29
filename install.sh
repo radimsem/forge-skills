@@ -145,6 +145,37 @@ deps_table() {
 EOF
 }
 
+# Render one detection status line. "=" present (skip), "+" will install.
+status_row() { # $1=tier $2=kind $3=source $4=name
+  case "$2" in
+    skill)
+      _missing=$(agents_missing_skill "$4" "$OPT_AGENTS")
+      if [ -z "$_missing" ] && [ -z "$OPT_FORCE" ]; then
+        printf '= [skill] %s (present)' "$4"
+      else
+        [ -n "$OPT_FORCE" ] && _missing="$OPT_AGENTS (forced)" && _missing=$(printf '%s' "$_missing" | tr ',' ' ')
+        printf '+ [skill] %s (missing: %s)' "$4" "$_missing"
+      fi
+      ;;
+    plugin)
+      if plugin_installed "$4" && [ -z "$OPT_FORCE" ]; then
+        printf '= [plugin] %s (present)' "$4"
+      else
+        printf '+ [plugin] %s (will install)' "$4"
+      fi
+      ;;
+  esac
+}
+
+# Print the full status table by walking the inventory.
+print_status_table() {
+  printf '\nDependency status (target agents: %s):\n' "$OPT_AGENTS"
+  deps_table | while IFS='|' read -r _tier _kind _src _name; do
+    [ -n "$_tier" ] || continue
+    printf '  %s\n' "$(status_row "$_tier" "$_kind" "$_src" "$_name")"
+  done
+}
+
 main() {
   parse_args "$@" || return $?
   printf 'install.sh scaffold OK (agents: %s)\n' "$OPT_AGENTS"

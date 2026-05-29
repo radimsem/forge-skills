@@ -92,5 +92,17 @@ assert_eq "$(deps_table | awk -F'|' '$1==1 && $2=="skill"{c++} END{print c}')" "
 assert_eq "$(deps_table | awk -F'|' '$2=="skill"{last=$4} END{print last}')" "forge" \
   "deps_table: forge is the final skill row"
 
+# --- status row rendering ---
+# Uses the skills/plugins fixtures already loaded above.
+OPT_AGENTS="claude-code,codex"
+assert_eq "$(status_row 1 skill mattpocock/skills tdd)" \
+  "+ [skill] tdd (missing: codex)" "status_row: skill partially present"
+assert_eq "$(status_row 1 skill mattpocock/skills not-installed)" \
+  "+ [skill] not-installed (missing: claude-code codex)" "status_row: skill fully absent"
+assert_eq "$(status_row 2 plugin anthropics/claude-plugins-official superpowers@claude-plugins-official)" \
+  "= [plugin] superpowers@claude-plugins-official (present)" "status_row: plugin present"
+assert_eq "$(status_row 3 plugin openai/codex-plugin-cc codex@openai-codex)" \
+  "+ [plugin] codex@openai-codex (will install)" "status_row: plugin absent"
+
 printf '\n%s\n' "FAILS=$FAILS"
 [ "$FAILS" -eq 0 ]
