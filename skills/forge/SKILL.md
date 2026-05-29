@@ -1,6 +1,6 @@
 ---
 name: forge
-description: Forge an issue, ticket, or PR into a shipped fix: propose a plan, get it approved, then implement, review, and refactor. Use when the user runs /forge or asks to investigate, fix, resolve, triage, or solve one. See Parameters for modifier flags.
+description: "Forge an issue, ticket, or PR into a shipped fix: propose a plan, get it approved, then implement, review, and refactor. Use when the user runs /forge or asks to investigate, fix, resolve, triage, or solve one. See Parameters for modifier flags."
 ---
 
 # Forge
