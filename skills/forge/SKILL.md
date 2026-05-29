@@ -21,7 +21,7 @@ Part 2 — Lifecycle (7–12):   implement → review-loop → refactor → spin
 ```
 
 - **Part 1 — The gate.** The contract; do not weaken it.
-- **Part 2 — Lifecycle.** Runs autonomously after approval, stopping only at substantive gates (§Autonomy).
+- **Part 2 — Lifecycle.** Runs autonomously after approval, stopping only at substantive gates (the Autonomy section).
 
 "The agent" means whatever agent runs this skill. Adapt every reference, such as the config directory, the agent guide, and the interview UI, to your runtime. Nothing here is hardcoded to one assistant.
 
@@ -43,7 +43,7 @@ The target is the first reference-shaped token, or the token right after a `tick
 | after `linear` keyword | **Linear issue** (forces Linear routing, skips disambiguation) | `forge linear ENG-42` |
 | after `pr` keyword | **PR-review entry mode** (skips Steps 4–7; enters at Step 8 against the PR diff) | `forge pr 47`, `forge pr #123` |
 
-A bare number routes to a tracker only if `ticket` or `linear` precedes it, and PR mode requires the `pr` keyword. A key-shaped ref is either Jira or Linear: when both trackers are configured, the agent disambiguates per [references/trackers/linear.md](references/trackers/linear.md) §Jira/Linear disambiguation. Single-tracker setups skip the prompt.
+A bare number routes to a tracker only if `ticket` or `linear` precedes it, and PR mode requires the `pr` keyword. A key-shaped ref is either Jira or Linear: when both trackers are configured, the agent disambiguates per the Jira/Linear disambiguation section in [references/trackers/linear.md](references/trackers/linear.md). Single-tracker setups skip the prompt.
 
 Read **[references/modes/pr-entry.md](references/modes/pr-entry.md)** for the PR-entry mode step modifications, the allowed and ignored flags, and the PR-specific Step 12 closing menu.
 
@@ -110,11 +110,11 @@ Read **[references/trackers/jira.md](references/trackers/jira.md)**, which cover
 
 ### git-host issue
 
-Use the loaded tracker ref for the fetch command and the REST fallback: [references/trackers/github.md](references/trackers/github.md) §Step 2 or [references/trackers/gitlab.md](references/trackers/gitlab.md) §Step 2. For a host without a dedicated ref, run its CLI's issue-view JSON command if one exists, otherwise curl the host's REST API. Either way, read the body and every comment.
+Use the loaded tracker ref for the fetch command and the REST fallback: [references/trackers/github.md](references/trackers/github.md) Step 2 or [references/trackers/gitlab.md](references/trackers/gitlab.md) Step 2. For a host without a dedicated ref, run its CLI's issue-view JSON command if one exists, otherwise curl the host's REST API. Either way, read the body and every comment.
 
 ### Jira ticket
 
-Follow **[references/trackers/jira.md](references/trackers/jira.md)** §Step 2 to pull the fields and comments, and its §Jira-absent fallback ★ when the source is unreachable. The fallback warns the user and offers three choices (paste, authenticate, or abort), and it stops even under `automode`.
+Follow **[references/trackers/jira.md](references/trackers/jira.md)** Step 2 to pull the fields and comments, and its Jira-absent fallback section when the source is unreachable. The fallback warns the user and offers three choices (paste, authenticate, or abort), and it stops even under `automode`.
 
 ## Step 3 — Verify the branch
 
@@ -129,7 +129,7 @@ Only if no such guide exists, fall back to the default `<prefix>/<slug>`, where 
 - Pick `<prefix>` from the issue: use `fix` for a bug, `feat` for new behavior, `docs` for documentation, and `chore` for dependencies, CI, or tooling. When it is ambiguous, ask.
 - Build `<slug>` from the title: lowercase ASCII kebab-case, drop stop-words, and keep it to 50 characters or fewer. For example, *"Parser fails on UTF-16 BOM"* becomes `fix/parser-fails-utf-16-bom`.
 
-For Jira, see **[references/trackers/jira.md](references/trackers/jira.md)** §Step 3 for the key-in-branch and key-in-commit conventions. The repo guide still wins; otherwise the branch is `<prefix>/<KEY>-<slug>`, and the key is not forced into commit subjects.
+For Jira, see **[references/trackers/jira.md](references/trackers/jira.md)** Step 3 for the key-in-branch and key-in-commit conventions. The repo guide still wins; otherwise the branch is `<prefix>/<KEY>-<slug>`, and the key is not forced into commit subjects.
 
 Compare the chosen branch name to the current branch:
 - If they match, continue.
@@ -160,7 +160,7 @@ The acceptance criteria and the expected-versus-actual behavior are the `/goal` 
 
 When a required field is missing, interview the user rather than opening a free-text question. For each gap, offer two to four proposed answers, mark the most likely one `(Recommended)`, and let the user pick. On a runtime with a selection UI, such as Claude Code's interview TUI, the user highlights an option and presses Enter, and an "Other" free-text choice is always implicitly available.
 
-See **[references/proposal-template.md](references/proposal-template.md)** §Step 4 for the literal question-block format. Never invent the chosen answer: propose the options and let the user select. Never continue past this step while a required gap is unanswered.
+See **[references/proposal-template.md](references/proposal-template.md)** Step 4 for the literal question-block format. Never invent the chosen answer: propose the options and let the user select. Never continue past this step while a required gap is unanswered.
 
 The flags change how the interview runs:
 
@@ -182,15 +182,15 @@ Do this only when getting the approach wrong is costly. For a clear, low-risk fi
 
 ## Step 5 — Propose the solution
 
-Emit exactly one proposal. The block format is in **[references/proposal-template.md](references/proposal-template.md)** §Step 5 and covers the issue line, the restated problem, the root cause or design, the files to touch, the plan, the pass criteria, the tests, and the risks. Verify that file paths exist with Read or Grep before listing them, and drop the `:line` suffix if you have not opened the file.
+Emit exactly one proposal. The block format is in **[references/proposal-template.md](references/proposal-template.md)** Step 5 and covers the issue line, the restated problem, the root cause or design, the files to touch, the plan, the pass criteria, the tests, and the risks. Verify that file paths exist with Read or Grep before listing them, and drop the `:line` suffix if you have not opened the file.
 
 With **`docs`**, write the proposal to `CONTEXT.md` in the repo root, instead of or in addition to chat, since Part 2 sources the plan from `CONTEXT.md` rather than the chat scrollback.
 
-End the proposal by stating the user's next-turn choices, using the options in the template §Step 5. Saying `yes, implement` opens the gate and moves to Step 7. Saying `interview me on risky questions` runs the Step 4a grilling and re-proposes, and is offered only when a risky design fork is still unanswered. Any other adjustment means revise and re-propose.
+End the proposal by stating the user's next-turn choices, using the options in the template Step 5. Saying `yes, implement` opens the gate and moves to Step 7. Saying `interview me on risky questions` runs the Step 4a grilling and re-proposes, and is offered only when a risky design fork is still unanswered. Any other adjustment means revise and re-propose.
 
 Under **`automode`**, there are no options and no wait: go straight to Step 7, and with `docs`, do so after writing `CONTEXT.md`.
 
-## Step 6 — The gate ★
+## Step 6 — The gate
 
 Unless `automode` is set, **do not edit any file** until the user explicitly approves.
 
@@ -206,7 +206,7 @@ This is the most important rule of the skill. Skip it (outside `automode`) and t
 
 This part is deliberately terse. Each step delegates to a referenced skill, so read that skill rather than restating it here.
 
-### Re-hydrate block ⟲
+### Re-hydrate block
 
 Steps 8 and 9 reference this block. It is two actions, in order:
 
@@ -239,13 +239,13 @@ When the **`secure`** flag is set, run a `security-review` pass once there are z
 
 ### Step 8a/8b — Generic reviewer swaps
 
-A flag can swap the default generic reviewer (`superpowers:requesting-code-review`) at Step 8. Each swap brings its own §8a, the reviewer engine, and §8b, the rework-delegation path mirrored to the reviewer's companion skill. The project subagents always run alongside, and the flags swap only the generic-reviewer slot. The two reviewer flags are mutually exclusive, so pick exactly one, or neither for the default.
+A flag can swap the default generic reviewer (`superpowers:requesting-code-review`) at Step 8. Each swap brings its own Step 8a, the reviewer engine, and Step 8b, the rework-delegation path mirrored to the reviewer's companion skill. The project subagents always run alongside, and the flags swap only the generic-reviewer slot. The two reviewer flags are mutually exclusive, so pick exactly one, or neither for the default.
 
-| Flag | §8a engine | §8b rework path |
+| Flag | Step 8a engine | Step 8b rework path |
 |---|---|---|
 | *(none — default)* | `superpowers:requesting-code-review` | (no dedicated rework skill; in-pass fixes only) |
-| `codex` / `codex challenge` | Codex `review` / `adversarial-review` via `scripts/resolve-codex.py` foreground | `codex:codex-rescue` foreground `--wait` (⟲ first, inline karpathy constraints) |
-| `coderabbit` | `coderabbit:code-review` | `coderabbit:autofix` foreground `--wait` (⟲ first, inline karpathy constraints) |
+| `codex` / `codex challenge` | Codex `review` / `adversarial-review` via `scripts/resolve-codex.py` foreground | `codex:codex-rescue` foreground `--wait` (re-hydrate first, inline karpathy constraints) |
+| `coderabbit` | `coderabbit:code-review` | `coderabbit:autofix` foreground `--wait` (re-hydrate first, inline karpathy constraints) |
 
 See **[references/reviewers/codex.md](references/reviewers/codex.md)** for Codex specifics and **[references/reviewers/coderabbit.md](references/reviewers/coderabbit.md)** for CodeRabbit specifics.
 
@@ -270,17 +270,17 @@ If you hit a caveat that could be automated for future agentic sessions, propose
 
 ## Step 12 — Closing
 
-Verify `/goal` before anything else. ★ Before assembling the proposal, run the Step 7 `/goal` pass criteria and the repo's standard pre-commit checks (build, test, and lint per the repo guide). Show the exact commands and their output. If anything fails, or you cannot run the checks, you are not done: return to Step 8 with the failure as a finding. Never assemble a commit proposal on an unverified `/goal`, because an unproven "done" is the one failure mode forge must not ship. `automode` does not lift this gate; it runs the checks itself and proceeds only on green.
+Verify `/goal` before anything else. Before assembling the proposal, run the Step 7 `/goal` pass criteria and the repo's standard pre-commit checks (build, test, and lint per the repo guide). Show the exact commands and their output. If anything fails, or you cannot run the checks, you are not done: return to Step 8 with the failure as a finding. Never assemble a commit proposal on an unverified `/goal`, because an unproven "done" is the one failure mode forge must not ship. `automode` does not lift this gate; it runs the checks itself and proceeds only on green.
 
 Then assemble the commit or PR proposal. The default is small atomic commits that match the branch's existing granularity and message style, which you can inspect with `git log --oneline <base>..HEAD`, rather than one squashed mega-commit. The repo's git or contribution guide from Step 3 still wins: if it mandates another shape, such as squash-on-merge, follow it and say why.
 
 When the **`changelog`** flag is set, draft a changelog entry in the repo's existing format after `/goal` verifies green and before assembling the commit list, and include it in the proposed history. See **[references/modes/changelog.md](references/modes/changelog.md)** for the file-detection order and entry conventions.
 
-Then ask one closing question, using the six-option menu in **[references/proposal-template.md](references/proposal-template.md)** §Step 12. It follows the Step 4 proposed-answer format: the user selects, the recommended option is marked, and "Other" is implicit. Show the third line only when the target was a Jira ticket.
+Then ask one closing question, using the six-option menu in **[references/proposal-template.md](references/proposal-template.md)** Step 12. It follows the Step 4 proposed-answer format: the user selects, the recommended option is marked, and "Other" is implicit. Show the third line only when the target was a Jira ticket.
 
 Act only on the selected option. Option 2 follows the repo guide for the base branch and PR target.
 
-For the Jira write-back in the third option, follow **[references/trackers/jira.md](references/trackers/jira.md)** §Step 12. It is opt-in only, posts a comment and a confirmed transition, and never runs on the other options or under `automode`. Show the third menu line only when the target was a Jira ticket.
+For the Jira write-back in the third option, follow **[references/trackers/jira.md](references/trackers/jira.md)** Step 12. It is opt-in only, posts a comment and a confirmed transition, and never runs on the other options or under `automode`. Show the third menu line only when the target was a Jira ticket.
 
 **Never auto-commit, auto-push, or write back to Jira** outside an explicit selection.
 

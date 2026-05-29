@@ -14,7 +14,7 @@ gh issue view <N> --json number,title,body,state,labels,comments,author,url
 
 Read **body + every comment** — latest comments often carry the missing repro / decision.
 
-### GitHub-absent fallback ★
+### GitHub-absent fallback
 
 `gh` missing or unauthenticated → host REST API:
 

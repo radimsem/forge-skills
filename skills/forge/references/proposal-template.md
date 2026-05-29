@@ -78,4 +78,4 @@ Rules:
 - `docs` mode pre-marks the `/tmp/<name>.md` option `(Recommended)` over option 1.
 - Act only on the selected option. Option 2 follows the repo guide for base branch + PR target.
 - Jira write-back (3rd option) is opt-in only; never on other options, never under `automode`.
-- `automode` skips this question entirely and emits the small-commit plan only — see [autonomy.md](autonomy.md) §Step 12 closing.
+- `automode` skips this question entirely and emits the small-commit plan only — see [autonomy.md](autonomy.md) Step 12 closing.

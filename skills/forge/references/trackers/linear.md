@@ -9,7 +9,7 @@ Loaded on demand by SKILL.md **only when `<ref>` resolves to a Linear issue** (k
 Both trackers use the same key shape (`[A-Z]+-\d+`). When the user invokes `/forge ENG-42` with both trackers configured, ask which:
 
 ```
-⚠ Both Jira and Linear are connected, and `ENG-42` matches both key shapes.
+Warning: Both Jira and Linear are connected, and `ENG-42` matches both key shapes.
   - Linear (issue ENG-42 in <team-name>) (Recommended if Linear is the primary tracker)
   - Jira (project ENG, issue 42)
   - Abort
@@ -21,7 +21,7 @@ The `linear` keyword (e.g. `/forge linear ENG-42`) forces Linear routing without
 
 ## Step 1 — Fetch source (resolve)
 
-Fetch via the connected Linear MCP tools the runtime exposes (issue-fetch + comments; usually a Linear "get issue" tool, often needs a team-id or workspace-id prefix). No Linear MCP connected, or auth/permission error → **§Linear-absent fallback** below.
+Fetch via the connected Linear MCP tools the runtime exposes (issue-fetch + comments; usually a Linear "get issue" tool, often needs a team-id or workspace-id prefix). No Linear MCP connected, or auth/permission error → **Linear-absent fallback** below.
 
 ## Step 2 — Pull the issue
 
@@ -29,12 +29,12 @@ Pull via the runtime's Linear read tool: title, description, state (Triage / Bac
 
 Read **body + every comment**. Linear's comment surface is heavily used for inline implementation discussion; comments often carry the actual spec.
 
-### Linear-absent fallback ★
+### Linear-absent fallback
 
 No Linear MCP connected, or auth/permission error: warn explicitly that Linear sourcing is unavailable, then offer the three-choice fallback (proposed-answer; `automode` still stops here — missing data source, not a gate):
 
 ```
-⚠ Linear MCP not connected (or unauthorized) — can't fetch <ref>.
+Warning: Linear MCP not connected (or unauthorized) — can't fetch <ref>.
   - Paste the issue title + description (+ acceptance criteria) here (Recommended)
   - I'll authenticate the Linear MCP, then retry the fetch
   - Abort
@@ -48,7 +48,7 @@ Repo guide still wins (documented Linear convention overrides everything). Guide
 
 Key always in the Step 5 proposal text regardless.
 
-## Step 12 — Write-back ★
+## Step 12 — Write-back
 
 The Step 12 closing menu shows a Linear write-back option **only when the target was a Linear issue**:
 
@@ -58,4 +58,4 @@ The Step 12 closing menu shows a Linear write-back option **only when the target
 
 Linear write-back — **opt-in, never automatic**. On selection: comment on `<KEY>` (branch/PR link + one-line summary), then transition — but first read the issue's *available* states via the runtime's Linear tool and confirm the target state (workflow states are workspace-specific; ambiguous → ask, proposed-answer). Never invent a state id. **Never** Linear-write-back on any other menu option, without an explicit pick here, or under `automode`.
 
-The closing menu in `references/proposal-template.md` §Step 12 keeps a single "comment + transition <KEY>" line; the trailing tracker name (`Jira` or `Linear`) is filled in based on which tracker resolved `<ref>`.
+The closing menu in `references/proposal-template.md` Step 12 keeps a single "comment + transition <KEY>" line; the trailing tracker name (`Jira` or `Linear`) is filled in based on which tracker resolved `<ref>`.

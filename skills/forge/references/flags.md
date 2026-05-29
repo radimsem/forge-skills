@@ -16,7 +16,7 @@ The full set of flags the forge skill understands, with composition rules and co
 | `secure` | Compose `security-review` after Step 8 convergence; findings re-enter Step 8 as must-fix | [modes/secure.md](modes/secure.md) |
 | `changelog` | At Step 12, draft a changelog entry per repo convention | [modes/changelog.md](modes/changelog.md) |
 | `ci-watch` | After Step 12 push, poll CI; on red, re-enter Step 8 with the failure as a finding | [modes/ci-watch.md](modes/ci-watch.md) |
-| `coderabbit` | Generic reviewer → CodeRabbit. §8b rework path uses `coderabbit:autofix`. Claude Code only. **XOR with `codex`** | [reviewers/coderabbit.md](reviewers/coderabbit.md) |
+| `coderabbit` | Generic reviewer → CodeRabbit. Step 8b rework path uses `coderabbit:autofix`. Claude Code only. **XOR with `codex`** | [reviewers/coderabbit.md](reviewers/coderabbit.md) |
 
 ## Entry verbs
 

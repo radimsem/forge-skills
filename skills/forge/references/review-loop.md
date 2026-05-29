@@ -14,14 +14,14 @@ Disciplined critique cycle. Runs after each implementation pass. Terminates when
 
 **Project subagents always run.** Reviewer flags (`codex`, `coderabbit`) swap only the generic reviewer slot; they never replace project agents. **`codex` and `coderabbit` are mutually exclusive** — combining errors before Step 1.
 
-## Rework delegation (§8b paths)
+## Rework delegation (Step 8b paths)
 
 Findings that exceed a single in-pass fix can be delegated to a companion rework skill before re-entering Step 8:
 
-| Reviewer flag | §8b rework skill | Notes |
+| Reviewer flag | Step 8b rework skill | Notes |
 |---|---|---|
 | Default (no flag) | none | In-pass fixes only |
-| `codex` / `codex challenge` | `codex:codex-rescue` | ⟲ first, inline karpathy constraints, foreground `--wait` |
+| `codex` / `codex challenge` | `codex:codex-rescue` | re-hydrate first, inline karpathy constraints, foreground `--wait` |
 | `coderabbit` | `coderabbit:autofix` | Same discipline as codex-rescue |
 
 After the rework returns, re-enter Step 8 with the rework diff as a new pass input. The 3-pass cap applies to subsequent passes.
@@ -32,16 +32,16 @@ Terminate at **zero actionable findings**. Actionable = must-fix **or** should-f
 
 ## Pass cap
 
-Cap **3 passes**. Each non-converged pass: ⟲ (the re-hydrate block from SKILL.md), fix the findings, re-review. If pass 3 still has actionable findings, do not start pass 4 — summarize the remainder and ask the user. Under `automode`, pick the safest finding to act on and continue.
+Cap **3 passes**. On each non-converged pass, run the re-hydrate block (defined in SKILL.md), fix the findings, then re-review. If pass 3 still has actionable findings, do not start pass 4 — summarize the remainder and ask the user. Under `automode`, pick the safest finding to act on and continue.
 
 ## Pass discipline
 
 | Pass | Action |
 |---|---|
 | 1 | Implement → dispatch all configured engines in parallel where possible → collect findings |
-| 2+ | ⟲ first (`/compact` + re-source `/karpathy-guidelines`) → apply fixes → dispatch engines again |
+| 2+ | re-hydrate first (`/compact` + re-source `/karpathy-guidelines`) → apply fixes → dispatch engines again |
 
-`⟲` exists to shed stale reviewer-transcript tokens and reload clean-code discipline. It does NOT restate `/goal` — `/goal` is set once at Step 7.
+The re-hydrate block exists to shed stale reviewer-transcript tokens and reload clean-code discipline. It does not restate `/goal`; `/goal` is set once at Step 7.
 
 ## Skip-the-rerun rule (trim-only cleanup)
 
@@ -49,9 +49,9 @@ After a clean substantive pass (project reviewers + generic reviewer return 0 mu
 
 ## `automode` behavior
 
-See [autonomy.md](autonomy.md) §Step 8 row. Same engines, same cap; non-convergence picks safest and continues instead of asking the user. The Jira-absent fallback still binds even under `automode`.
+See [autonomy.md](autonomy.md) Step 8 row. Same engines, same cap; non-convergence picks safest and continues instead of asking the user. The Jira-absent fallback still binds even under `automode`.
 
 ## Reviewer specifics
 
-- [reviewers/codex.md](reviewers/codex.md) — §8a Codex reviewer resolution + graceful degrade; §8b rework delegation to `codex:codex-rescue`.
-- [reviewers/coderabbit.md](reviewers/coderabbit.md) — §8a CodeRabbit reviewer; §8b rework delegation to `coderabbit:autofix`; XOR rule against `codex`.
+- [reviewers/codex.md](reviewers/codex.md) — Step 8a Codex reviewer resolution + graceful degrade; Step 8b rework delegation to `codex:codex-rescue`.
+- [reviewers/coderabbit.md](reviewers/coderabbit.md) — Step 8a CodeRabbit reviewer; Step 8b rework delegation to `coderabbit:autofix`; XOR rule against `codex`.

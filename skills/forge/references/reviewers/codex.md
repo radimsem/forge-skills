@@ -23,9 +23,9 @@ Loaded on demand by SKILL.md Step 8 **only when the `codex` or `codex challenge`
 
 Codex-suited findings (mechanical refactors, a self-contained fix Codex itself proposed) → forge **may** hand rework to the `codex:codex-rescue` subagent instead of fixing inline. Judgment call; small fixes stay inline. `automode`: auto-decide — delegate only if net-positive + clearly Codex-suited.
 
-Delegation **follows the ⟲ re-hydration**:
+Delegation **follows the re-hydration**:
 
-1. **⟲** (`/compact` → re-source `/karpathy-guidelines`) Claude-side first — forge still reviews Codex's returned diff with fresh discipline.
+1. **Re-hydrate** (`/compact` → re-source `/karpathy-guidelines`) Claude-side first — forge still reviews Codex's returned diff with fresh discipline.
 2. Dispatch via the **Agent tool**, `subagent_type: "codex:codex-rescue"` (subagent, *not* a skill — never `Skill(codex:rescue)`; re-enters the command, hangs). Codex is a different runtime, **cannot source the `/karpathy-guidelines` skill** — inline its substance as task-prompt constraints:
    ```
    Constraints (follow strictly before touching code):

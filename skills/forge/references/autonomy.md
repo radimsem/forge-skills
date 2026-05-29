@@ -34,7 +34,7 @@
 | Combination | Effect |
 |---|---|
 | `automode` + `docs` | No interview; write `CONTEXT.md` directly; Step 12 emits plan to `/tmp/forge-<ref>.md` |
-| `automode` + `codex` (or `codex challenge`) | Codex review/adversarial-review runs without user prompts; §8b rescue delegation auto-decides |
+| `automode` + `codex` (or `codex challenge`) | Codex review/adversarial-review runs without user prompts; Step 8b rescue delegation auto-decides |
 | `automode` + project reviewer subagents missing + no PR | `/greploop` cannot run (needs a PR). Skip to Step 9 with the unmet condition noted. |
 | `automode` + `tdd` | TDD discipline binds. The agent writes the test, runs it, confirms red itself, then implements. No user prompt; the failing-test observation is the agent's own. See [modes/tdd.md](modes/tdd.md). |
 | `automode` + `worktree` | Worktree is created without prompting. Step 12 cleanup never auto-runs — losing in-progress state on inferred completion is the wrong default. See [modes/worktree.md](modes/worktree.md). |
@@ -44,6 +44,6 @@
 | `automode` + `ci-watch` | Functionally inert. `automode` skips the closing menu and emits a plan only — no push, so nothing to poll. Combination is valid but no work happens. See [modes/ci-watch.md](modes/ci-watch.md). |
 | `automode` + `/forge pr <N>` | Skip the PR-review closing menu; emit the review summary as a plan to `/tmp/forge-pr-<N>.md` and stop. No auto-push of fixup commits, no auto-approve, no auto-request-changes. See [modes/pr-entry.md](modes/pr-entry.md). |
 | `automode` + Linear (or Jira/Linear ambiguity) | Cannot interview to disambiguate; attempt Linear first if both trackers connected, record assumption, abort if Linear lookup 404s. See [trackers/linear.md](trackers/linear.md). |
-| `automode` + `coderabbit` | Reviewer runs unprompted; §8b rework delegation to `coderabbit:autofix` auto-decides. The XOR rule against `codex` binds even under `automode` — combination still errors before Step 1. See [reviewers/coderabbit.md](reviewers/coderabbit.md). |
+| `automode` + `coderabbit` | Reviewer runs unprompted; Step 8b rework delegation to `coderabbit:autofix` auto-decides. The XOR rule against `codex` binds even under `automode` — combination still errors before Step 1. See [reviewers/coderabbit.md](reviewers/coderabbit.md). |
 
 (This table grows as new flags land. Each flag's reference file states its `automode` behavior in a single row and links here.)

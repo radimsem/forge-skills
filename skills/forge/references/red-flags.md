@@ -11,7 +11,7 @@ Both this file and [mistakes.md](mistakes.md) bind under `automode` — `automod
 - "I'll grill the user even though it's `automode`." → no — record the assumption.
 - "Refactor looks good, I'll just commit it." → Step 12 proposes; it never commits.
 - "No Atlassian MCP — I'll guess the ticket from context." → no; warn + 3-choice fallback (Step 2).
-- "Codex unavailable, skip the review pass." → no; degrade to `superpowers:requesting-code-review`, keep the loop (§8a).
+- "Codex unavailable, skip the review pass." → no; degrade to `superpowers:requesting-code-review`, keep the loop (Step 8a).
 - "Not Claude Code but I'll run codex anyway." → no; codex plugin is CC-only — ignore flag, warn, generic reviewer.
 - "Codex proposed a fix, commit its diff from the loop." → re-review in Step 8 first; Step 12 proposes, never commits.
 - "Tests probably pass, I'll propose the commits." → no; Step 12 verify gate runs `/goal` + repo checks and shows output before any proposal.
