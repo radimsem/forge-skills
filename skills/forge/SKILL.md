@@ -1,6 +1,6 @@
 ---
 name: forge
-description: Forge an issue, ticket, or PR into a shipped fix by proposing a plan, getting it approved, then implementing, reviewing, and refactoring. Use when the user runs /forge or asks to investigate, fix, resolve, triage, or solve one. See Parameters for the modifier flags.
+description: Forge an issue, ticket, or PR into a shipped fix: propose a plan, get it approved, then implement, review, and refactor. Use when the user runs /forge or asks to investigate, fix, resolve, triage, or solve one. See Parameters for modifier flags.
 ---
 
 # Forge
@@ -23,11 +23,11 @@ Part 2 — Lifecycle (7–12):   implement → review-loop → refactor → spin
 - **Part 1 — The gate.** The contract; do not weaken it.
 - **Part 2 — Lifecycle.** Runs autonomously after approval, stopping only at substantive gates (the Autonomy section).
 
-"The agent" means whatever agent runs this skill. Adapt every reference, such as the config directory, the agent guide, and the interview UI, to your runtime. Nothing here is hardcoded to one assistant.
+"The agent" means whatever agent runs this skill. Adapt every reference (config directory, agent guide, interview UI) to your runtime. Nothing is hardcoded to one assistant.
 
 ## Parameters
 
-Parse the invocation as `/forge <ref> [automode] [docs] [tdd] [worktree] [lookup] [secure] [changelog] [ci-watch] [codex | codex challenge]`, or `/forge pr <N> [...]`. The words can appear anywhere in the request. A `<ref>` resolves to a git-host issue or a Jira ticket per the grammar below, and the `pr <N>` form selects PR-review entry mode. Flags are orthogonal and compose freely; some modes have their own allowed or ignored flags, listed in [references/modes/pr-entry.md](references/modes/pr-entry.md) for PR mode.
+Parse the invocation as `/forge <ref> [automode] [docs] [tdd] [worktree] [lookup] [secure] [changelog] [ci-watch] [codex | codex challenge] [coderabbit]`, or `/forge pr <N> [...]`. The words can appear anywhere in the request. A `<ref>` resolves to a git-host issue or a Jira ticket per the grammar below, and the `pr <N>` form selects PR-review entry mode. Flags are orthogonal and compose freely; some modes have their own allowed or ignored flags, listed in [references/modes/pr-entry.md](references/modes/pr-entry.md) for PR mode.
 
 Full flag matrix (effects, composition rules, conflicts): **[references/flags.md](references/flags.md)**.
 
@@ -35,7 +35,7 @@ Full flag matrix (effects, composition rules, conflicts): **[references/flags.md
 
 The target is the first reference-shaped token, or the token right after a `ticket` or `pr` keyword. Routing works by keyword or by key-shape:
 
-| Form | → | Examples |
+| Form | Routes to | Examples |
 |---|---|---|
 | bare number, `#N`, `issue N` | **git-host issue** (Step 1b) | `forge 42`, `fix #123`, `issue 7` |
 | matches `[A-Z]+-\d+` | **Jira ticket** OR **Linear issue** (disambiguate if both configured — see [references/trackers/linear.md](references/trackers/linear.md)) | `forge PROJ-123`, `solve ENG-42`, `forge AB12-9` |
@@ -49,7 +49,7 @@ Read **[references/modes/pr-entry.md](references/modes/pr-entry.md)** for the PR
 
 ### Modifier flags
 
-Flags are orthogonal and compose in any order. Each line says what the flag does and where it acts; the linked file owns the details, and **[references/flags.md](references/flags.md)** holds the canonical matrix and composition rules.
+Each line says what the flag does and where it acts; the linked file owns the details.
 
 - *(none)* — interview the user if a required field is missing, propose, then wait at the gate. The review uses the project reviewer agents plus `superpowers:requesting-code-review`.
 - `automode` — runs with no user gates and the agent decides Steps 6, 9, and 11. It never auto-commits, auto-pushes, or writes back to Jira; that is a hard floor. See [references/autonomy.md](references/autonomy.md).
@@ -95,8 +95,8 @@ Route by host in `origin` (fallback `upstream`):
 
 | Host in remote URL | Reference |
 |---|---|
-| `github.com` / GH Enterprise | → [references/trackers/github.md](references/trackers/github.md) |
-| `gitlab.*` (incl. self-hosted) | → [references/trackers/gitlab.md](references/trackers/gitlab.md) |
+| `github.com` / GH Enterprise | [references/trackers/github.md](references/trackers/github.md) |
+| `gitlab.*` (incl. self-hosted) | [references/trackers/gitlab.md](references/trackers/gitlab.md) |
 | other (Gitea, Bitbucket, …) | that host's CLI's issue-view JSON command if present; else host REST API |
 | any, no CLI / auth error | host REST API per the loaded tracker ref (else generic curl) |
 
