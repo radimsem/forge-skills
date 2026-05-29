@@ -104,5 +104,15 @@ assert_eq "$(status_row 2 plugin anthropics/claude-plugins-official superpowers@
 assert_eq "$(status_row 3 plugin openai/codex-plugin-cc codex@openai-codex)" \
   "+ [plugin] codex@openai-codex (will install)" "status_row: plugin absent"
 
+# --- preflight guards (have_cmd / require_cmd) ---
+assert_true  have_cmd sh   "have_cmd: sh exists"
+assert_false have_cmd this-command-does-not-exist-xyz "have_cmd: missing command"
+
+# require_cmd returns non-zero and prints to stderr when missing
+( require_cmd this-command-does-not-exist-xyz "test hint" ) 2>/dev/null
+assert_eq "$?" "1" "require_cmd: missing command returns 1"
+( require_cmd sh "test hint" ) 2>/dev/null
+assert_eq "$?" "0" "require_cmd: present command returns 0"
+
 printf '\n%s\n' "FAILS=$FAILS"
 [ "$FAILS" -eq 0 ]

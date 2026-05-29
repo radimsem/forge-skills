@@ -176,6 +176,38 @@ print_status_table() {
   done
 }
 
+have_cmd() { command -v "$1" >/dev/null 2>&1; }
+
+require_cmd() { # $1=cmd $2=install hint
+  if have_cmd "$1"; then return 0; fi
+  printf 'install.sh: required command not found: %s\n  %s\n' "$1" "$2" >&2
+  return 1
+}
+
+preflight() {
+  _ok=0
+  require_cmd node "Install Node.js: https://nodejs.org" || _ok=1
+  require_cmd npx  "npx ships with Node.js" || _ok=1
+  require_cmd git  "Install git: https://git-scm.com" || _ok=1
+  [ "$_ok" -eq 0 ] || return 1
+  # Non-fatal warnings:
+  have_cmd claude || printf 'warn: `claude` CLI not on PATH — plugin steps will print paste-in commands instead of running.\n' >&2
+  have_cmd gh   || printf 'warn: `gh` (GitHub CLI) not found — needed for GitHub trackers / greploop on GitHub.\n' >&2
+  have_cmd glab || printf 'warn: `glab` (GitLab CLI) not found — needed for GitLab trackers.\n' >&2
+  have_cmd ctx7 || printf 'warn: `ctx7` not found — the find-docs (lookup) skill needs it: npm i -g ctx7@latest\n' >&2
+  return 0
+}
+
+# Capture detection output ONCE into the globals the parsers read.
+capture_state() {
+  SKILLS_LIST_RAW=$(npx -y skills@latest list -g 2>/dev/null || printf '')
+  if have_cmd claude; then
+    PLUGINS_LIST_RAW=$(claude plugin list 2>/dev/null || printf '')
+  else
+    PLUGINS_LIST_RAW=""
+  fi
+}
+
 main() {
   parse_args "$@" || return $?
   printf 'install.sh scaffold OK (agents: %s)\n' "$OPT_AGENTS"
