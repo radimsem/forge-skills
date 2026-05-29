@@ -223,7 +223,7 @@ Open the step with two actions, in order:
 1. Set **`/goal`** to the desired result plus the Step 4 and 5 pass criteria, that is, the exact build, test, or behavior that proves the work is done. Set it once and never restate it.
 2. Re-source **`/karpathy-guidelines`**.
 
-When the **`tdd`** flag is set, write the failing test first, run it, watch it fail, then implement. See **[references/modes/tdd.md](references/modes/tdd.md)**; it composes `superpowers:test-driven-development`, and the discipline binds under `automode`.
+When the **`tdd`** flag is set, write the failing test first, run it, watch it fail, then implement. See **[references/modes/tdd.md](references/modes/tdd.md)**; it composes `/tdd`, and the discipline binds under `automode`.
 
 With `docs`, load the plan from `CONTEXT.md` and check its stamp matches this ref; on a mismatch, warn and re-propose rather than implement a stale plan. Implement the approved plan and keep it minimal, surgical, and in scope. Make no edits before the opener is done, and before the observed-red test is done if `tdd` is set.
 

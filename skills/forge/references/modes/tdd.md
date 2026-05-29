@@ -1,6 +1,6 @@
 # Forge — `tdd` flag
 
-Composes the `superpowers:test-driven-development` skill at Step 7. Implementation must follow an observed-red test, not precede it.
+Composes the `/tdd` skill at Step 7. Implementation must follow an observed-red test, not precede it.
 
 ## Manual verification recipe
 
@@ -16,7 +16,7 @@ Step 7, after `/goal` is set and `/karpathy-guidelines` is sourced, before any i
 
 ## What it composes
 
-`superpowers:test-driven-development`. Read that skill's contract before using `tdd` — this flag does not duplicate the discipline, it routes Step 7 through it.
+`/tdd`. Read that skill's contract before using `tdd` — this flag does not duplicate the discipline, it routes Step 7 through it.
 
 ## Behavior change vs default
 
