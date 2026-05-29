@@ -48,26 +48,21 @@ strip_ansi() {
   sed "s/$(printf '\033')\[[0-9;]*[A-Za-z]//g"
 }
 
-# Reads $SKILLS_LIST_RAW (captured `npx skills list` output). Echoes the comma-separated
-# agent list for the given skill, or empty if the skill is absent.
-parse_skill_agents() { # $1=skill name
-  printf '%s\n' "${SKILLS_LIST_RAW:-}" | strip_ansi | awk -v want="$1" '
-    /^  [^ ]/ { found = ($1 == want) }
-    /^    Agents:/ && found {
-      sub(/^    Agents:[ ]*/, "")
-      print
-      found = 0
-    }
-  '
-}
+# Directories where an installed bare skill shows up. `~/.agents/skills` is the canonical
+# global store `npx skills add -g` writes to (other agents symlink into it); `~/.claude/skills`
+# also holds Claude-Code-local skills. Overridable (env or test) for non-default layouts.
+: "${SKILL_DIRS:=$HOME/.claude/skills $HOME/.agents/skills}"
 
-# True if the skill is installed on ANY agent (i.e. it appears in `npx skills list -g`).
-# Detection is intentionally agent-agnostic: present anywhere counts as installed, so a
-# re-run does not reinstall skills you already have. (Trade-off: an absent-everywhere skill
-# is installed onto the host's auto-detected agents; a skill present on one agent is not
-# backfilled onto others.)
+# True if the skill directory exists in any of $SKILL_DIRS — i.e. it is installed somewhere.
+# Detection is agent-agnostic (present anywhere counts as installed), so a re-run does not
+# reinstall skills you already have. A filesystem stat, not an `npx skills list` round-trip.
+# `-e` follows symlinks, so a Claude Code symlink into ~/.agents/skills counts only when its
+# target still exists. (Trade-off: a skill present in one store is not backfilled to others.)
 skill_installed_anywhere() { # $1=skill name
-  [ -n "$(parse_skill_agents "$1")" ]
+  for _d in $SKILL_DIRS; do
+    [ -e "$_d/$1" ] && return 0
+  done
+  return 1
 }
 
 # Reads $PLUGINS_LIST_RAW (captured `claude plugin list`). True if plugin@marketplace present.
@@ -191,9 +186,8 @@ preflight() {
   return 0
 }
 
-# Capture detection output ONCE into the globals the parsers read.
+# Capture plugin state once (skills are detected straight off the filesystem, no capture needed).
 capture_state() {
-  SKILLS_LIST_RAW=$(npx -y skills@latest list -g 2>/dev/null || printf '')
   if have_cmd claude; then
     PLUGINS_LIST_RAW=$(claude plugin list 2>/dev/null || printf '')
   else

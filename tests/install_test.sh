@@ -33,17 +33,19 @@ ESC=$(printf '\033')
 colored="${ESC}[36mtdd${ESC}[0m ${ESC}[38;5;102m~/x${ESC}[0m"
 assert_eq "$(printf '%s' "$colored" | strip_ansi)" "tdd ~/x" "strip_ansi removes color codes"
 
-# --- skill detection parser + present-anywhere check ---
-SKILLS_LIST_RAW=$(cat "$ROOT/tests/fixtures/skills-list.txt")
-
-assert_eq "$(parse_skill_agents tdd)" "Claude Code" "parse_skill_agents: tdd -> Claude Code"
-assert_eq "$(parse_skill_agents grill-with-docs)" "Claude Code, Pi" "parse_skill_agents: multi-agent"
-assert_eq "$(parse_skill_agents not-installed)" "" "parse_skill_agents: absent skill -> empty"
-
-# present-anywhere detection (agent-agnostic): installed on ANY agent counts as installed
-assert_true  skill_installed_anywhere tdd           "skill_installed_anywhere: tdd present (Claude Code)"
-assert_true  skill_installed_anywhere grill-with-docs "skill_installed_anywhere: present (multi-agent)"
+# --- skill present-anywhere detection (filesystem stat over $SKILL_DIRS) ---
+_SKILL_TMP=$(mktemp -d)
+mkdir -p "$_SKILL_TMP/claude/tdd"        # present in the first store (like ~/.claude/skills)
+mkdir -p "$_SKILL_TMP/agents/zoom-out"   # present in the second store (like ~/.agents/skills)
+ln -s "$_SKILL_TMP/agents/zoom-out" "$_SKILL_TMP/claude/linked"  # symlink whose target exists
+ln -s "$_SKILL_TMP/gone"            "$_SKILL_TMP/claude/broken"  # symlink whose target is missing
+SKILL_DIRS="$_SKILL_TMP/claude $_SKILL_TMP/agents"
+assert_true  skill_installed_anywhere tdd           "skill_installed_anywhere: present in first store"
+assert_true  skill_installed_anywhere zoom-out      "skill_installed_anywhere: present in second store"
+assert_true  skill_installed_anywhere linked        "skill_installed_anywhere: resolving symlink counts"
+assert_false skill_installed_anywhere broken        "skill_installed_anywhere: broken symlink does not count"
 assert_false skill_installed_anywhere not-installed "skill_installed_anywhere: absent skill"
+rm -rf "$_SKILL_TMP"
 
 # --- plugin detection ---
 PLUGINS_LIST_RAW=$(cat "$ROOT/tests/fixtures/plugin-list.txt")
@@ -89,17 +91,20 @@ assert_eq "$(deps_table | grep -c '^1|skill|mattpocock/skills|zoom-out$')" "1" \
 assert_eq "$(deps_table | awk -F'|' '$2=="skill"{last=$4} END{print last}')" "forge" \
   "deps_table: forge is the final skill row"
 
-# --- status row rendering (skills: present-anywhere; plugins: present in list) ---
-# Uses the skills/plugins fixtures already loaded above.
+# --- status row rendering (skills: filesystem present-anywhere; plugins: present in list) ---
+# Skills checked against a temp store; plugins against the plugin-list fixture loaded above.
+_SKILL_TMP=$(mktemp -d); mkdir -p "$_SKILL_TMP/s/tdd"
+SKILL_DIRS="$_SKILL_TMP/s"
 OPT_FORCE=""
 assert_eq "$(status_row 1 skill mattpocock/skills tdd)" \
-  "= [skill] tdd (present)" "status_row: skill present (any agent)"
+  "= [skill] tdd (present)" "status_row: skill present"
 assert_eq "$(status_row 1 skill mattpocock/skills not-installed)" \
   "+ [skill] not-installed (will install)" "status_row: skill absent"
 assert_eq "$(status_row 2 plugin anthropics/claude-plugins-official superpowers@claude-plugins-official)" \
   "= [plugin] superpowers@claude-plugins-official (present)" "status_row: plugin present"
 assert_eq "$(status_row 3 plugin openai/codex-plugin-cc codex@openai-codex)" \
   "+ [plugin] codex@openai-codex (will install)" "status_row: plugin absent"
+rm -rf "$_SKILL_TMP"
 
 # --- preflight guards (have_cmd / require_cmd) ---
 assert_true  have_cmd sh   "have_cmd: sh exists"
@@ -116,24 +121,23 @@ RUN_LOG=$(mktemp)
 npx()    { printf 'npx %s\n' "$*" >> "$RUN_LOG"; }
 claude() { printf 'claude %s\n' "$*" >> "$RUN_LOG"; }
 
-# source fully installed (every skill present on SOME agent) -> skip, no npx call.
-# (custom fixture: greploop on Claude Code, check-pr on Pi — different agents, both count)
+# source fully installed (every declared skill present in a store) -> skip, no npx call.
+_SKILL_TMP=$(mktemp -d); mkdir -p "$_SKILL_TMP/s/greploop" "$_SKILL_TMP/s/check-pr"
+SKILL_DIRS="$_SKILL_TMP/s"
 : > "$RUN_LOG"; OPT_AGENTS=""; OPT_FORCE=""
-_SAVED_RAW="$SKILLS_LIST_RAW"
-SKILLS_LIST_RAW="  greploop ~/x
-    Agents: Claude Code
-  check-pr ~/y
-    Agents: Pi"
 install_skill_group greptileai/skills >/dev/null
-assert_eq "$(wc -l < "$RUN_LOG" | tr -d ' ')" "0" "install_skill_group: all present (any agent) -> no-op"
-SKILLS_LIST_RAW="$_SAVED_RAW"
+assert_eq "$(wc -l < "$RUN_LOG" | tr -d ' ')" "0" "install_skill_group: all present -> no-op"
+rm -rf "$_SKILL_TMP"
 
-# only the absent skill is batched; no --agents -> no -a flags (npx auto-detects host agents)
-# (Task-3 fixture: greploop present on Claude Code,Codex; check-pr absent everywhere)
+# only the absent skill is batched; no --agents -> no -a flags (npx auto-detects host agents).
+# (greploop present in the store; check-pr absent)
+_SKILL_TMP=$(mktemp -d); mkdir -p "$_SKILL_TMP/s/greploop"
+SKILL_DIRS="$_SKILL_TMP/s"
 : > "$RUN_LOG"; OPT_AGENTS=""; OPT_FORCE=""
 install_skill_group greptileai/skills >/dev/null
 assert_eq "$(cat "$RUN_LOG")" "npx -y skills@latest add greptileai/skills -s check-pr -g" \
   "install_skill_group: installs only the absent skill, auto-detect agents"
+rm -rf "$_SKILL_TMP"
 
 # plugin present -> no install ; absent -> marketplace add + install
 : > "$RUN_LOG"; OPT_FORCE=""

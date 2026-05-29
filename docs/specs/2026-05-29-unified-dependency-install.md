@@ -69,8 +69,8 @@ Traced from the `skills/forge` tree (grep of every ``/cmd`` and ``plugin:skill``
 ```
 install.sh  (POSIX sh; repo root)
   ├─ 0. Preflight     require node+npx+git (fatal if absent); warn non-fatally on missing gh/glab/ctx7
-  ├─ 1. Detect        npx skills list -g  → set of skills installed on ANY agent (present-anywhere)
-  │                   claude plugin list → set of plugin@marketplace
+  ├─ 1. Detect        skill present iff its dir exists in ~/.claude/skills OR ~/.agents/skills
+  │                   (filesystem stat — no npx skills list call); claude plugin list → plugins
   │                   → print STATUS TABLE (present = / will-install +) before mutating anything
   ├─ 2. npx skills    Tier 1 + Tier 4: batch a source's not-installed skills into one pass;
   │                   no -a flags unless --agents set, so npx auto-detects the host's real agents
@@ -101,7 +101,7 @@ By default the installer passes **no `-a` flags**, letting `npx skills` auto-det
 
 ### 7.1 Detection
 
-- **Bare skills:** parse `npx skills list -g` output (alias `ls`; "like `npm ls`"). Detection is **present-anywhere**: a skill installed on *any* agent counts as installed and is skipped (unless `--force`). This keeps re-runs idempotent — the previous per-agent model treated a skill as "missing" on phantom target agents and reinstalled it every run. Trade-off (accepted): an absent-everywhere skill installs onto the host's auto-detected agents; a skill present on one agent is not backfilled onto others.
+- **Bare skills:** a **filesystem present-anywhere** check — a skill counts as installed if its directory exists in `~/.claude/skills/<name>` OR the global `~/.agents/skills/<name>` (the canonical store `npx skills add -g` writes to; Claude Code symlinks into it). Configurable via `$SKILL_DIRS`. `[ -e ]` follows symlinks, so a Claude Code symlink counts only when its target still exists. This replaced an earlier `npx skills list -g` parse: the filesystem stat is faster (no package download/ANSI parse per run) and removes the per-agent model that reinstalled skills onto phantom agents every run. Trade-off (accepted): an absent skill installs onto the host's auto-detected agents; a skill present in one store is not backfilled to others. `--force` reinstalls regardless.
 - **Plugins:** detect via `claude plugin list` (the CLI's own ledger). Fallback when `claude` is absent: a plugin is present iff `<plugin>@<marketplace>` is a key under `.plugins` in `~/.claude/plugins/installed_plugins.json` (observed format: `superpowers@claude-plugins-official`, `greptile@claude-plugins-official`, …), read with `python3 -c` or grep on the literal key.
 - **Idempotency does not depend on detection.** `npx skills add` is already safe to re-run; detection exists for clean reporting and to avoid redundant work, and to make `--force` meaningful.
 
