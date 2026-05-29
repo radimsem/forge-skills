@@ -63,7 +63,7 @@ Flags that operate **at Step 8 or later** apply in PR-entry mode:
 - `secure` — applies (post-Step-8 security pass)
 - `changelog` — applies (drafts entry for the fixup commits if option 2)
 - `ci-watch` — applies (polls CI after option 2 push)
-- `coderabbit` (Phase 5) — applies
+- `coderabbit` — applies
 
 Flags that operate **before Step 8** are ignored with a one-line warning:
 
@@ -71,8 +71,8 @@ Flags that operate **before Step 8** are ignored with a one-line warning:
 - `tdd` — no implementation step
 - `worktree` — actually composes: use worktree for the PR head checkout. Not ignored — see composition table below.
 - `lookup` — no proposal to ground
-- `backport` (Phase 4 sibling) — applies only if option 2 was picked
-- `stacked` (Phase 4 sibling) — meaningless (the PR already has a base); ignored
+- `backport` — applies only if option 2 was picked
+- `stacked` — meaningless (the PR already has a base); ignored
 
 ## Composition with other flags
 
@@ -84,7 +84,7 @@ Flags that operate **before Step 8** are ignored with a one-line warning:
 | `/forge pr <N>` + `worktree` | The PR head checkout happens in a sibling worktree, not in-place. Useful when the user has uncommitted work in the original tree. |
 | `/forge pr <N>` + `ci-watch` + option 2 | Push fixup commits, poll the PR's CI; on red, re-enter Step 8 against the now-failing state. |
 
-## Anti-pattern (encoded in [anti-patterns.md](../anti-patterns.md) by PR 4e)
+## Anti-pattern (encoded in [anti-patterns.md](../anti-patterns.md))
 
 Using `/forge pr <N>` to "review your own PR" right after `/forge <issue>` finished. The forge run already executed Step 8 against the same diff; rerunning would burn reviewer budget without new signal. PR-entry mode is for PRs you did not produce in this session.
 

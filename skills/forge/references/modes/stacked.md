@@ -49,7 +49,7 @@ For spr: similar; `spr update` handles the multi-PR sync.
 
 ## Rebase discipline
 
-The base PR can move during review. When that happens, the stacked PR is stale until rebased. Forge does NOT auto-rebase mid-Phase-2 work; if the user wants a fresh rebase, surface it at Step 8 entry: "Base PR <N> has moved; rebase now? (y/n)". Under `automode`, auto-rebase only if the rebase is a fast-forward; otherwise surface the conflict and pause (this is one of the rare automode pauses — a conflicting rebase needs human judgment).
+The base PR can move during review. When that happens, the stacked PR is stale until rebased. Forge does NOT auto-rebase mid-implementation work; if the user wants a fresh rebase, surface it at Step 8 entry: "Base PR <N> has moved; rebase now? (y/n)". Under `automode`, auto-rebase only if the rebase is a fast-forward; otherwise surface the conflict and pause (this is one of the rare automode pauses — a conflicting rebase needs human judgment).
 
 ## Composition with other flags
 
@@ -61,7 +61,7 @@ The base PR can move during review. When that happens, the stacked PR is stale u
 | `stacked` + `automode` | Base PR must be specified via flag value or tool detection; abort otherwise. Auto-rebase only on fast-forward conflicts. |
 | `/forge pr <N>` + `stacked` | Ignored. PR-review mode already targets an existing PR; stacking would create a new layer that has no relationship to the review. |
 
-## Anti-pattern (encoded in [anti-patterns.md](../anti-patterns.md) by PR 4e)
+## Anti-pattern (encoded in [anti-patterns.md](../anti-patterns.md))
 
 Rebasing the stack wrong and clobbering the base PR's commits. The base PR may have new commits since you stacked; `git rebase --onto <new-base-pr-head>` is the safe operation, not `git rebase <new-base-pr-head>`. If using Graphite/spr, the tool handles this — do not mix manual rebasing with tool-driven sync.
 

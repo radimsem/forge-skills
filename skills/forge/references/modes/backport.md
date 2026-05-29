@@ -52,7 +52,7 @@ Step 12, after the primary push (option 2 or 3 from the closing menu) completes.
 | `backport` + `stacked` | Compose freely. The primary stack ships first, then backports run against each stacked PR's tip. |
 | `/forge pr <N>` + `backport` | Applies only if PR-mode option 2 (push fixup commits) was picked. Backports the fixup commits, not the original PR diff. |
 
-## Anti-pattern (encoded in [anti-patterns.md](../anti-patterns.md) by PR 4e)
+## Anti-pattern (encoded in [anti-patterns.md](../anti-patterns.md))
 
 Cherry-picking backports before the primary branch lands. If the primary PR gets changes during review, the backports are stale. The flag's "open follow-up PRs immediately" behavior assumes the primary is final at Step 12 — verify the primary review is converged before the user actually merges.
 

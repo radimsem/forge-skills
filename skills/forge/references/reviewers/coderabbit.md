@@ -66,7 +66,7 @@ After delegation returns: re-enter Step 8 with the rework diff as a new pass inp
 | `coderabbit` + `/forge pr <N>` | PR-review mode uses CodeRabbit as the engine for the existing PR's diff. The reviewer's PR-specific features (line comments, summaries) compose naturally. |
 | `coderabbit` + `codex` | **Aborts before Step 1.** Mutually exclusive. |
 
-## Anti-pattern (encoded in [anti-patterns.md](../anti-patterns.md) by PR 5c)
+## Anti-pattern (encoded in [anti-patterns.md](../anti-patterns.md))
 
 Setting both `codex` and `coderabbit` in the same invocation. The check happens at parse time before Step 1 — but if the user is scripting forge invocations, this error catches the mistake early rather than at Step 8 when work has already started.
 

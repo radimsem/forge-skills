@@ -1,6 +1,6 @@
 ---
 name: forge
-description: Use when the user invokes /forge with an issue ref, Jira/Linear ticket, or PR ref, or asks to investigate, fix, resolve, triage, solve, or work on a specific issue, ticket, or pull request in the current repo (any git host — GitHub, GitLab, etc. — or Atlassian Jira or Linear). Triggers on phrases like "forge issue 42", "fix #123", "solve PROJ-123", "forge linear ENG-42", "forge pr 47", or any direct ref paired with intent to make changes — plus optional modifier flags: automode (no user gates), docs (doc-driven via CONTEXT.md), tdd (failing test first), worktree (sibling worktree), lookup (fetch current library docs), secure (post-Step-8 security pass), changelog (draft entry at Step 12), ci-watch (poll CI after push), backport (cherry-pick to additional bases), stacked (branch off another PR), codex / codex challenge / coderabbit (generic-reviewer swap; codex and coderabbit mutually exclusive). Example: "forge issue 47 automode docs tdd codex challenge". The /forge pr <N> entry verb skips Steps 4–7 to enter at Step 8 against an existing PR. Covers the full lifecycle: propose → gated approval → implement → review-loop → refactor → spin-off issues → self-evolve.
+description: Forge an issue, ticket, or PR into a shipped fix — propose → gated approval → implement → review-loop → refactor. Use when the user runs /forge or asks to investigate, fix, resolve, triage, or solve an issue/ticket/PR in the current repo (GitHub, GitLab, Jira, Linear). Triggers on "forge issue 42", "fix #123", "solve PROJ-123", "forge linear ENG-42", "forge pr 47". Optional modifier flags compose freely (automode, docs, tdd, worktree, lookup, secure, changelog, ci-watch, backport, stacked, codex, codex challenge, coderabbit) — see Parameters.
 ---
 
 # Forge
@@ -11,10 +11,17 @@ description: Use when the user invokes /forge with an issue ref, Jira/Linear tic
 
 Turn an issue/ticket ref into a verified, branch-correct, user-approved plan — then, only on confirmation (or immediately under `automode`), run the implementation lifecycle.
 
-Two parts, **one numbered workflow** (Steps 1–12):
+One numbered workflow (Steps 1–12), split by a single gate:
 
-- **Part 1 — The gate (Steps 1–6).** Nothing touches the codebase until the user says "yes, implement". The contract; do not weaken it. `automode` = only sanctioned bypass.
-- **Part 2 — Lifecycle (Steps 7–12).** Gate open → implement → review → refactor → spin-off issues → self-evolve → commit proposal, autonomously, stopping only at substantive gates (§Autonomy).
+```
+Part 1 — Gate (Steps 1–6):   classify → fetch → branch → context → propose → [GATE] approve
+Part 2 — Lifecycle (7–12):   implement → review-loop → refactor → spin-off → self-evolve → close
+
+  gate held: nothing touches the codebase until "yes, implement"  (automode = only sanctioned bypass)
+```
+
+- **Part 1 — The gate.** The contract; do not weaken it.
+- **Part 2 — Lifecycle.** Runs autonomously after approval, stopping only at substantive gates (§Autonomy).
 
 "The agent" = whatever agent runs this skill. Adapt every reference (config dir, agent guide, interview UI) to your runtime; nothing hardcoded to one assistant.
 
@@ -22,7 +29,7 @@ Two parts, **one numbered workflow** (Steps 1–12):
 
 Parse invocation: `/forge <ref> [automode] [docs] [tdd] [worktree] [lookup] [secure] [changelog] [ci-watch] [codex | codex challenge]` or `/forge pr <N> [...]` (words anywhere in request count). `<ref>` → git-host issue **or** Jira ticket per grammar. `pr <N>` → PR-review entry mode. Flags orthogonal, compose freely (with mode-specific allowed/ignored list — see [references/modes/pr-entry.md](references/modes/pr-entry.md) for PR-mode).
 
-Full flag matrix (status, composition rules, conflicts, planned flags): **[references/flags.md](references/flags.md)**.
+Full flag matrix (effects, composition rules, conflicts): **[references/flags.md](references/flags.md)**.
 
 ### Target grammar — `<ref>`
 
@@ -42,24 +49,26 @@ Bare number → tracker only if `ticket` or `linear` precedes; PR mode requires 
 
 ### Modifier flags
 
-| Flag | Effect |
-|---|---|
-| *(none)* | Interview if needed → propose → wait at gate (Step 6). Review = project reviewer agents **+** `superpowers:requesting-code-review`. |
-| `automode` | **No user gates.** Never source `/grill-me` / `/grill-with-docs`. Auto-decide Steps 9 & 11. Skip Step 6 (proposal → Step 7). Never Jira-writes-back / auto-commits / auto-pushes — hard floor, never lifts. |
-| `docs` | `/grill-with-docs` not `/grill-me`. Proposal → `CONTEXT.md` (repo root); Part 2 plan sourced from it. Step 12 proposal → `/tmp/forge-<ref>.md`. |
-| `codex` | **Claude Code only** (codex plugin is CC-exclusive). Step 8 generic reviewer → Codex (`codex-companion.mjs review`) instead of `superpowers:requesting-code-review`. Project reviewer agents still run. Degrades gracefully if Codex absent (§8a). |
-| `codex challenge` | **Implies `codex`.** Codex `review` → `adversarial-review` (challenges approach/design/assumptions, not just defects). |
-| `tdd` | Compose `superpowers:test-driven-development` at Step 7: write the failing test first, observe red, then implement. Discipline binds under `automode` (agent runs the test and confirms red itself). → [references/modes/tdd.md](references/modes/tdd.md). |
-| `worktree` | Compose `superpowers:using-git-worktrees` at Step 3: create a sibling worktree on the chosen branch instead of switching in-place. Step 12 closing appends a cleanup reminder. Cleanup never auto-runs (even under `automode`). → [references/modes/worktree.md](references/modes/worktree.md). |
-| `lookup` | At Step 4, compose `find-docs` (and `context7` MCP if available) for every library/framework/SDK/CLI/cloud service the issue mentions. Step 5 proposal carries `(per <library> docs, fetched <date>)` attribution on library-specific claims. Under `automode`, fetch failures become Risks, not blockers. → [references/modes/lookup.md](references/modes/lookup.md). |
-| `secure` | After Step 8 converges (zero actionable from regular reviewers), compose `security-review`. Must-fix findings reopen Step 8 (one dedicated security pass; further regular passes still bound by the 3-pass cap). Required before Step 9. → [references/modes/secure.md](references/modes/secure.md). |
-| `changelog` | At Step 12 (after `/goal` verifies green), draft a changelog entry per the repo's existing format and include it in the proposed commit list. Skips silently with a one-line note if no changelog file is detected. → [references/modes/changelog.md](references/modes/changelog.md). |
-| `ci-watch` | After Step 12 closing-menu push (options 2 or 3), poll the repo's CI for the pushed HEAD. On red, re-enter Step 8 with the CI failure as a must-fix finding. On green, report and exit. Silently inert when no push happens. → [references/modes/ci-watch.md](references/modes/ci-watch.md). |
-| `backport` (or `backport:<branches>`) | After Step 12 primary push, cherry-pick the merged commits onto additional base branches and open follow-up PRs to each. Targets come from the flag value, `.backport-branches`, `BACKPORT_BRANCHES` env, `CONTRIBUTING.md`, or a Step 12 user prompt. Conflicts pause (or abort that target under `automode`); other targets continue. → [references/modes/backport.md](references/modes/backport.md). |
-| `stacked` (or `stacked:<N>`) | Step 3 branches off PR `<N>`'s head ref instead of the repo base. Step 12 push targets the stacked-PR convention (PR opens against `<N>`'s head ref). Compose freely with `worktree` (recommended). Auto-detects Graphite (`gt`) and spr if present. → [references/modes/stacked.md](references/modes/stacked.md). |
-| `coderabbit` | **Claude Code only.** Step 8 generic reviewer → `coderabbit:code-review`. Project reviewer agents still run. §8b rework delegation uses `coderabbit:autofix`. **Mutually exclusive with `codex` / `codex challenge`** — pick one; combining errors before Step 1. → [references/reviewers/coderabbit.md](references/reviewers/coderabbit.md). |
+Orthogonal; compose in any order. Each line is *what* the flag does and *where* it acts — the linked file owns the *how*, and **[references/flags.md](references/flags.md)** holds the canonical matrix + composition rules.
 
-Compose any order: `forge ticket PROJ-7 automode docs codex challenge`. `automode`+`docs` → write `CONTEXT.md` directly, no interview, → Step 7. **Non-Claude-Code runtime: `codex`/`codex challenge` ignored with a one-line warning; generic reviewer stays `superpowers:requesting-code-review`** (skill itself stays runtime-generic — only the Codex path is CC-bound).
+- *(none)* — interview if needed → propose → wait at the gate. Review = project reviewer agents **+** `superpowers:requesting-code-review`.
+- `automode` — no user gates; auto-decide Steps 6/9/11. Never auto-commits / auto-pushes / Jira-writes-back (hard floor). → [references/autonomy.md](references/autonomy.md)
+- `docs` — doc-driven: proposal → `CONTEXT.md`, plan sourced from it; `/grill-with-docs` over `/grill-me`.
+- `tdd` — Step 7 writes the failing test first, observes red, then implements. → [references/modes/tdd.md](references/modes/tdd.md)
+- `worktree` — Step 3 creates a sibling worktree instead of switching in-place. → [references/modes/worktree.md](references/modes/worktree.md)
+- `lookup` — Step 4 fetches current docs for every library the issue names. → [references/modes/lookup.md](references/modes/lookup.md)
+- `secure` — post-convergence `security-review` pass at Step 8, before Step 9. → [references/modes/secure.md](references/modes/secure.md)
+- `changelog` — Step 12 drafts a changelog entry per repo convention. → [references/modes/changelog.md](references/modes/changelog.md)
+- `ci-watch` — after a Step 12 push, polls CI; red reopens Step 8. → [references/modes/ci-watch.md](references/modes/ci-watch.md)
+- `backport` (`backport:<branches>`) — Step 12 cherry-picks merged commits onto more bases. → [references/modes/backport.md](references/modes/backport.md)
+- `stacked` (`stacked:<N>`) — Step 3 branches off PR `<N>`'s head; Step 12 push targets it. → [references/modes/stacked.md](references/modes/stacked.md)
+- `codex` / `codex challenge` — Step 8 generic reviewer → Codex (`challenge` = adversarial). Claude Code only. → [references/reviewers/codex.md](references/reviewers/codex.md)
+- `coderabbit` — Step 8 generic reviewer → CodeRabbit; rework via `coderabbit:autofix`. Claude Code only. **XOR with `codex`.** → [references/reviewers/coderabbit.md](references/reviewers/coderabbit.md)
+
+Reviewer-swap flags replace **only** the generic-reviewer slot — project reviewer agents always run alongside. Compose example: `forge ticket PROJ-7 automode docs codex challenge`.
+
+- `automode` + `docs` → write `CONTEXT.md` directly, no interview, → Step 7.
+- Non-Claude-Code runtime → `codex` / `codex challenge` / `coderabbit` ignored with a one-line warning; generic reviewer stays `superpowers:requesting-code-review`.
 
 ## When to Use
 
@@ -157,7 +166,11 @@ Required field missing → **interview the user**, never open free-text. Per gap
 
 → **[references/proposal-template.md](references/proposal-template.md)** §Step 4 for the literal Q-block format. Never invent the chosen answer — propose, user selects. Never continue past this step on unanswered required gaps.
 
-`docs` → interview run by `/grill-with-docs` (challenges plan vs repo domain model/docs). `automode` → skip interview; proceed on the issue as written, picking the `(Recommended)` answer per gap, noting the assumption in the proposal. `automode`+`docs` → no interview; → Step 5 CONTEXT.md write.
+Flag branches:
+
+- `docs` → interview run by `/grill-with-docs` (challenges plan vs repo domain model/docs).
+- `automode` → skip interview; proceed on the issue as written, picking the `(Recommended)` answer per gap, noting the assumption in the proposal.
+- `automode` + `docs` → no interview; → Step 5 CONTEXT.md write.
 
 **`lookup`** flag set → for every library/framework/SDK/CLI/cloud service the issue mentions, fetch current docs via `find-docs` (+ `context7` MCP if connected) before writing the proposal. See **[references/modes/lookup.md](references/modes/lookup.md)** (attribution format, when to skip, `automode` behavior).
 
@@ -285,9 +298,19 @@ Act only on the selected option. Option 2 follows the repo guide for base branch
 
 ### Autonomy
 
-Default: after "yes, implement", run autonomously, stopping **only** at the substantive gates — Step 6 entry · Step 9 refactor · Step 10 spinoff-issue post · Step 11 self-evolution · Step 12 commit proposal. No "may I continue?" between steps.
+Default: after "yes, implement", run autonomously with no "may I continue?" between steps — stopping **only** at the substantive gates:
 
-`automode` lifts those gates but never the hard floors: no auto-commit / auto-push / Jira write-back; Step 12 `/goal` verify still runs; Step 2 Jira-absent fallback still triggers.
+- Step 6 — gate entry
+- Step 9 — refactor approval
+- Step 10 — spinoff-issue post
+- Step 11 — self-evolution
+- Step 12 — commit proposal
+
+`automode` lifts those gates but never the hard floors:
+
+- no auto-commit / auto-push / Jira write-back;
+- Step 12 `/goal` verify still runs;
+- Step 2 Jira-absent fallback still triggers.
 
 → **[references/autonomy.md](references/autonomy.md)** for the full per-step matrix, the rationale behind each hard floor, and `automode` composability with other flags.
 

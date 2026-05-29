@@ -34,7 +34,7 @@ Step 3, after the branch name is resolved (per repo guide or the default `<prefi
 | `worktree` + `automode` | Worktree is created without prompting. Cleanup at Step 12 stays opt-in even under `automode` — the worktree lives until the user removes it (`automode` never deletes user state). |
 | `worktree` + `tdd` | Compose freely. Tests run inside the worktree; the original tree is unaffected by red/green output. |
 | `worktree` + `docs` | `CONTEXT.md` is written inside the worktree, not the original tree. |
-| `worktree` + `stacked` (Phase 4) | Recommended pairing. Stacked-PR workflows use multiple worktrees naturally. |
+| `worktree` + `stacked` | Recommended pairing. Stacked-PR workflows use multiple worktrees naturally. |
 
 ## Step 12 closing addendum
 
@@ -44,7 +44,7 @@ When `worktree` was set, the Step 12 closing message appends one line:
 
 This addendum is informational. It does NOT auto-remove the worktree, even under `automode` — losing in-progress state because a flag inferred you were "done" is the wrong default.
 
-## Anti-pattern (encoded in [anti-patterns.md](../anti-patterns.md) by PR 2d)
+## Anti-pattern (encoded in [anti-patterns.md](../anti-patterns.md))
 
 Leaving the worktree behind after Step 12 closes. Disk fills with stale worktrees; `git worktree list` becomes noise. Read the closing addendum; remove the worktree once changes are merged or discarded.
 

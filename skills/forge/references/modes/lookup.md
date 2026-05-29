@@ -46,7 +46,7 @@ Per `find-docs` skill: not for refactoring, writing scripts from scratch, debugg
 
 Doc fetches consume tokens. Use `lookup` when the proposal accuracy depends on library-version-specific behavior. Skip when the issue is about your own code. Per-fetch token cost is small; the value compounds when the lookup catches an API change that would otherwise produce a broken proposal.
 
-## Anti-pattern (encoded in [anti-patterns.md](../anti-patterns.md) by PR 2d)
+## Anti-pattern (encoded in [anti-patterns.md](../anti-patterns.md))
 
 Relying on training data for library-specific API details when the flag is available. Training data ages; library APIs do not stand still. If the issue mentions a library and the proposal makes specific API claims, the `lookup` flag should be the default — opt out only when the issue is pure business logic.
 

@@ -34,10 +34,10 @@ Step 7, after `/goal` is set and `/karpathy-guidelines` is sourced, before any i
 | `tdd` + `automode` | Discipline still binds. The agent writes the test, runs it, and confirms red itself before writing implementation. No user prompt; the failing-test observation is the agent's own. |
 | `tdd` + `docs` | TDD discipline applies to the `CONTEXT.md`-sourced plan. Tests for each plan section are written first. |
 | `tdd` + `codex` / `codex challenge` | Step 8 reviewer engines unchanged. Codex reviews the implementation diff plus the test diff; adversarial review may challenge the test design as well as the implementation. |
-| `tdd` + `worktree` (Phase 2 sibling) | Compose freely. Tests run inside the worktree. |
-| `tdd` + `lookup` (Phase 2 sibling) | Compose freely. Library lookups inform the test, not just the implementation. |
+| `tdd` + `worktree` | Compose freely. Tests run inside the worktree. |
+| `tdd` + `lookup` | Compose freely. Library lookups inform the test, not just the implementation. |
 
-## Anti-pattern (encoded in [anti-patterns.md](../anti-patterns.md) by PR 2d)
+## Anti-pattern (encoded in [anti-patterns.md](../anti-patterns.md))
 
 Writing implementation code before observing the failing test. `tdd` exists to enforce the red-green-refactor cycle; skipping the red observation defeats the flag.
 
