@@ -95,6 +95,13 @@ agents_missing_skill() { # $1=skill $2=csv-of-slugs
   printf '%s' "${_miss# }"
 }
 
+# Reads $PLUGINS_LIST_RAW (captured `claude plugin list`). True if plugin@marketplace present.
+# Anchored so "super@m" does not match "superpowers@m".
+plugin_installed() { # $1=plugin@marketplace
+  printf '%s\n' "${PLUGINS_LIST_RAW:-}" | strip_ansi \
+    | grep -qE "(^|[[:space:]])$(printf '%s' "$1" | sed 's/[.[\*^$/]/\\&/g')([[:space:]]|$)"
+}
+
 main() {
   parse_args "$@" || return $?
   printf 'install.sh scaffold OK (agents: %s)\n' "$OPT_AGENTS"

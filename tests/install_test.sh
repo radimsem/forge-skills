@@ -57,5 +57,12 @@ assert_eq "$(agents_missing_skill grill-with-docs 'claude-code')" "" \
 assert_eq "$(agents_missing_skill not-installed 'claude-code,codex')" "claude-code codex" \
   "agents_missing_skill: absent skill -> all targeted"
 
+# --- plugin detection ---
+PLUGINS_LIST_RAW=$(cat "$ROOT/tests/fixtures/plugin-list.txt")
+assert_true  plugin_installed "superpowers@claude-plugins-official" "plugin_installed: superpowers"
+assert_true  plugin_installed "coderabbit@claude-plugins-official"  "plugin_installed: coderabbit"
+assert_false plugin_installed "codex@openai-codex"                   "plugin_installed: codex absent"
+assert_false plugin_installed "super@claude-plugins-official"        "plugin_installed: no prefix match"
+
 printf '\n%s\n' "FAILS=$FAILS"
 [ "$FAILS" -eq 0 ]

@@ -1,0 +1,11 @@
+Installed plugins:
+
+  ❯ superpowers@claude-plugins-official
+    Version: 5.1.0
+    Scope: user
+    Status: ✔ enabled
+
+  ❯ coderabbit@claude-plugins-official
+    Version: 1.1.1
+    Scope: user
+    Status: ✔ enabled
