@@ -103,14 +103,32 @@ plugin_installed() { # $1=plugin@marketplace
 }
 
 # Build (do not run) the npx skills add command for a skill onto specific agents.
-build_skill_add_cmd() { # $1=source $2=skill $3=csv-of-agent-slugs
-  _cmd="npx -y skills@latest add $1 -s $2"
+# Build ONE batched `npx skills add` command: all given skills from one source, onto every
+# targeted agent, in a single pass (one clone). $2 is a space-separated skill list.
+build_skill_group_cmd() { # $1=source $2=space-separated skills ; uses OPT_AGENTS, OPT_YES
+  _cmd="npx -y skills@latest add $1"
+  for _sk in $2; do _cmd="$_cmd -s $_sk"; done
   _oldifs=$IFS; IFS=','
-  for _a in $3; do _cmd="$_cmd -a $_a"; done
+  for _a in $OPT_AGENTS; do _cmd="$_cmd -a $_a"; done
   IFS=$_oldifs
   _cmd="$_cmd -g"   # global scope: matches `npx skills list -g` detection; avoids the Project-scope prompt
-  [ -n "$OPT_YES" ] && _cmd="$_cmd -y"
+  [ -n "$OPT_YES" ] && _cmd="$_cmd -y"   # with -g, suppresses the scope + "Proceed?" prompts
   printf '%s' "$_cmd"
+}
+
+# Unique skill sources in table order, EXCLUDING "." (this repo) which is deferred to last.
+skill_sources_no_dot() {
+  deps_table | awk -F'|' '$2=="skill" && $3!="." && !seen[$3]++ {print $3}'
+}
+
+# All skills declared for a given source, in table order (space-separated when captured).
+skills_for_source() { # $1=source
+  deps_table | awk -F'|' -v s="$1" '$2=="skill" && $3==s {print $4}'
+}
+
+# True if any skill row uses "." as its source (find-docs + forge live in this repo).
+has_dot_skill() {
+  deps_table | awk -F'|' '$2=="skill" && $3=="."{f=1} END{exit !f}'
 }
 
 build_plugin_marketplace_cmd() { # $1=marketplace source (owner/repo)
@@ -209,18 +227,30 @@ capture_state() {
   fi
 }
 
-install_skill() { # $1=tier $2=source $3=name
-  _missing=$(agents_missing_skill "$3" "$OPT_AGENTS")
-  if [ -n "$OPT_FORCE" ]; then _missing=$(printf '%s' "$OPT_AGENTS" | tr ',' ' '); fi
-  if [ -z "$_missing" ]; then
-    printf '  = %s already present on all targeted agents\n' "$3"
+# Of a source's declared skills, the ones missing on >=1 targeted agent (space-separated).
+# Under --force, every declared skill is "needed".
+needed_skills_for_source() { # $1=source ; uses OPT_AGENTS, OPT_FORCE
+  _need=""
+  for _sk in $(skills_for_source "$1"); do
+    if [ -n "$OPT_FORCE" ] || [ -n "$(agents_missing_skill "$_sk" "$OPT_AGENTS")" ]; then
+      _need="$_need $_sk"
+    fi
+  done
+  printf '%s' "${_need# }"
+}
+
+# Install all needed skills from one source in a SINGLE npx pass (one clone). Skips the
+# source entirely when every declared skill is already present on every targeted agent.
+install_skill_group() { # $1=source
+  _need=$(needed_skills_for_source "$1")
+  if [ -z "$_need" ]; then
+    printf '  = all skills from %s already present on targeted agents\n' "$1"
     return 0
   fi
-  _agents_csv=$(printf '%s' "$_missing" | tr ' ' ',')
-  _cmd=$(build_skill_add_cmd "$2" "$3" "$_agents_csv")
-  printf '  + installing %s -> %s\n' "$3" "$_missing"
+  _cmd=$(build_skill_group_cmd "$1" "$_need")
+  printf '  + installing from %s: %s -> %s\n' "$1" "$_need" "$OPT_AGENTS"
   # shellcheck disable=SC2086
-  $_cmd || { printf '  ! failed to install %s (continuing)\n' "$3" >&2; return 1; }
+  $_cmd || { printf '  ! failed to install from %s (continuing)\n' "$1" >&2; return 1; }
 }
 
 install_plugin() { # $1=marketplace-source $2=plugin@marketplace
@@ -238,25 +268,30 @@ install_plugin() { # $1=marketplace-source $2=plugin@marketplace
   fi
 }
 
-# Walk the inventory in table order; forge (tier 6) is last by construction.
-# Continues past individual failures but returns nonzero if any install failed.
+# Install order: bare-skill sources (each batched into one npx pass) → plugins → the "."
+# source (this repo: find-docs + forge) LAST, so forge is the final thing installed and never
+# resolves before its dependencies. Continues past failures but returns nonzero if any failed.
 run_installs() {
   _rc=0
-  # Read the inventory on FD 3, NOT stdin. The install commands (npx skills / claude plugin)
-  # are interactive and read stdin; if the loop fed them the here-doc on FD 0 they would
-  # swallow the remaining rows. FD 3 keeps the real terminal on stdin for those prompts.
-  while IFS='|' read -r _tier _kind _src _name <&3; do
-    [ -n "$_tier" ] || continue
-    case "$_kind" in
-      skill) install_skill "$_tier" "$_src" "$_name" || _rc=1 ;;
-      plugin)
-        [ -n "$OPT_SKILLS_ONLY" ] && continue
-        install_plugin "$_src" "$_name" || _rc=1
-        ;;
-    esac
-  done 3<<EOF
-$(deps_table)
+  # 1) Bare-skill sources other than "." — one batched npx pass per source.
+  #    Sources have no spaces, so word-splitting the command substitution is safe.
+  for _src in $(skill_sources_no_dot); do
+    install_skill_group "$_src" || _rc=1
+  done
+  # 2) Plugins (unless --skills-only). Read on FD 3 so an interactive `claude plugin`
+  #    keeps the real terminal on stdin instead of consuming this here-doc.
+  if [ -z "$OPT_SKILLS_ONLY" ]; then
+    while IFS='|' read -r _psrc _pname <&3; do
+      [ -n "$_psrc" ] || continue
+      install_plugin "$_psrc" "$_pname" || _rc=1
+    done 3<<EOF
+$(deps_table | awk -F'|' '$2=="plugin"{print $3"|"$4}')
 EOF
+  fi
+  # 3) The "." source LAST (find-docs + forge) — forge installed last.
+  if has_dot_skill; then
+    install_skill_group "." || _rc=1
+  fi
   return $_rc
 }
 

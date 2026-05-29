@@ -64,16 +64,16 @@ assert_true  plugin_installed "coderabbit@claude-plugins-official"  "plugin_inst
 assert_false plugin_installed "codex@openai-codex"                   "plugin_installed: codex absent"
 assert_false plugin_installed "super@claude-plugins-official"        "plugin_installed: no prefix match"
 
-# --- command builders ---
-OPT_YES=""
-assert_eq "$(build_skill_add_cmd mattpocock/skills tdd 'claude-code,codex')" \
-  "npx -y skills@latest add mattpocock/skills -s tdd -a claude-code -a codex -g" \
-  "build_skill_add_cmd: basic (global scope)"
+# --- command builders (batched: many -s skills + many -a agents in one pass) ---
+OPT_YES=""; OPT_AGENTS="claude-code,codex"
+assert_eq "$(build_skill_group_cmd mattpocock/skills 'tdd grill-me')" \
+  "npx -y skills@latest add mattpocock/skills -s tdd -s grill-me -a claude-code -a codex -g" \
+  "build_skill_group_cmd: batched skills + agents (global)"
 
 OPT_YES="1"
-assert_eq "$(build_skill_add_cmd greptileai/skills greploop 'claude-code')" \
-  "npx -y skills@latest add greptileai/skills -s greploop -a claude-code -g -y" \
-  "build_skill_add_cmd: --yes appends -y after -g"
+assert_eq "$(build_skill_group_cmd . forge)" \
+  "npx -y skills@latest add . -s forge -a claude-code -a codex -g -y" \
+  "build_skill_group_cmd: --yes appends -y after -g"
 OPT_YES=""
 
 assert_eq "$(build_plugin_marketplace_cmd anthropics/claude-plugins-official)" \
@@ -119,16 +119,24 @@ RUN_LOG=$(mktemp)
 npx()    { printf 'npx %s\n' "$*" >> "$RUN_LOG"; }
 claude() { printf 'claude %s\n' "$*" >> "$RUN_LOG"; }
 
-# skill present on all targeted agents -> no install
+# source fully present on the targeted agent -> skip (no npx call)
+# (custom fixture: both greptile skills already on Claude Code)
 : > "$RUN_LOG"; OPT_AGENTS="claude-code"; OPT_FORCE=""
-install_skill 1 mattpocock/skills tdd
-assert_eq "$(wc -l < "$RUN_LOG" | tr -d ' ')" "0" "install_skill: present -> no-op"
+_SAVED_RAW="$SKILLS_LIST_RAW"
+SKILLS_LIST_RAW="  greploop ~/x
+    Agents: Claude Code
+  check-pr ~/y
+    Agents: Claude Code"
+install_skill_group greptileai/skills >/dev/null
+assert_eq "$(wc -l < "$RUN_LOG" | tr -d ' ')" "0" "install_skill_group: fully present -> no-op"
+SKILLS_LIST_RAW="$_SAVED_RAW"
 
-# skill missing on codex -> installs onto codex only
-: > "$RUN_LOG"; OPT_AGENTS="claude-code,codex"; OPT_FORCE=""
-install_skill 1 mattpocock/skills tdd
-assert_eq "$(cat "$RUN_LOG")" "npx -y skills@latest add mattpocock/skills -s tdd -a codex -g" \
-  "install_skill: installs only the missing agent (global)"
+# only the needed skills are batched into ONE npx pass onto the targeted agents
+# (Task-3 fixture: greploop is on Claude Code,Codex; check-pr is absent)
+: > "$RUN_LOG"; OPT_AGENTS="claude-code"; OPT_FORCE=""
+install_skill_group greptileai/skills >/dev/null
+assert_eq "$(cat "$RUN_LOG")" "npx -y skills@latest add greptileai/skills -s check-pr -a claude-code -g" \
+  "install_skill_group: batches only the needed skill, one pass"
 
 # plugin present -> no install ; absent -> marketplace add + install
 : > "$RUN_LOG"; OPT_FORCE=""
@@ -144,20 +152,23 @@ claude plugin install codex@openai-codex -s user" \
 rm -f "$RUN_LOG"
 unset -f npx claude
 
-# --- main orchestration order (forge installed last) ---
+# --- main orchestration order (batched per source; "." with forge installed last) ---
 ORDER_LOG=$(mktemp)
-# Stub the per-row actions to just record name+tier in order.
-install_skill()  { printf 'skill:%s\n' "$3" >> "$ORDER_LOG"; }
-install_plugin() { printf 'plugin:%s\n' "$2" >> "$ORDER_LOG"; }
-capture_state()  { :; }   # no network in test
-preflight()      { return 0; }
-print_status_table() { :; }
+# Stub the batched actions to record what gets installed, in order.
+install_skill_group() { printf 'skillsrc:%s\n' "$1" >> "$ORDER_LOG"; }
+install_plugin()      { printf 'plugin:%s\n' "$2" >> "$ORDER_LOG"; }
+capture_state()       { :; }   # no network in test
+preflight()           { return 0; }
+print_status_table()  { :; }
 
 OPT_SKILLS_ONLY=""
 run_installs   # the orchestration core called by main()
-# forge must be the final line
-assert_eq "$(tail -n1 "$ORDER_LOG")" "skill:forge" "run_installs: forge installed last"
-# plugins must appear (not skipped) when --skills-only is off
+# "." source (find-docs + forge) must be the final install
+assert_eq "$(tail -n1 "$ORDER_LOG")" "skillsrc:." "run_installs: '.' source (forge) installed last"
+assert_eq "$(head -n1 "$ORDER_LOG")" "skillsrc:mattpocock/skills" "run_installs: first source is mattpocock"
+# each source is installed in exactly ONE batched pass (not once per skill)
+assert_eq "$(grep -c '^skillsrc:mattpocock/skills$' "$ORDER_LOG")" "1" \
+  "run_installs: mattpocock batched into ONE pass"
 assert_true grep -q '^plugin:superpowers@claude-plugins-official$' "$ORDER_LOG" \
   "run_installs: superpowers plugin installed"
 
@@ -165,15 +176,15 @@ assert_true grep -q '^plugin:superpowers@claude-plugins-official$' "$ORDER_LOG" 
 : > "$ORDER_LOG"; OPT_SKILLS_ONLY="1"
 run_installs
 assert_false grep -q '^plugin:' "$ORDER_LOG" "run_installs: --skills-only skips plugins"
-assert_eq "$(tail -n1 "$ORDER_LOG")" "skill:forge" "run_installs: forge still last under --skills-only"
+assert_eq "$(tail -n1 "$ORDER_LOG")" "skillsrc:." "run_installs: '.' still last under --skills-only"
 
-# run_installs propagates a nonzero exit when an install fails (continues, but returns 1)
-install_skill()  { [ "$3" = "tdd" ] && return 1; return 0; }
-install_plugin() { return 0; }
+# run_installs propagates a nonzero exit when a source fails (continues, but returns 1)
+install_skill_group() { [ "$1" = "mattpocock/skills" ] && return 1; return 0; }
+install_plugin()      { return 0; }
 OPT_SKILLS_ONLY=""
 run_installs >/dev/null 2>&1
-assert_eq "$?" "1" "run_installs: returns 1 when a skill install fails"
-install_skill()  { return 0; }
+assert_eq "$?" "1" "run_installs: returns 1 when a source fails"
+install_skill_group() { return 0; }
 run_installs >/dev/null 2>&1
 assert_eq "$?" "0" "run_installs: returns 0 when all installs succeed"
 rm -f "$ORDER_LOG"
