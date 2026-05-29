@@ -41,6 +41,23 @@ parse_args() {
   return 0
 }
 
+# Strip ANSI SGR/escape sequences. ESC built via printf for GNU/BSD sed portability.
+strip_ansi() {
+  sed "s/$(printf '\033')\[[0-9;]*[A-Za-z]//g"
+}
+
+# Map an `npx skills` agent slug to the display name `npx skills list` prints.
+agent_slug_to_name() {
+  case "$1" in
+    claude-code) printf 'Claude Code' ;;
+    codex) printf 'Codex' ;;
+    cursor) printf 'Cursor' ;;
+    opencode) printf 'OpenCode' ;;
+    pi) printf 'Pi' ;;
+    *) printf '%s' "$1" ;;
+  esac
+}
+
 main() {
   parse_args "$@" || return $?
   printf 'install.sh scaffold OK (agents: %s)\n' "$OPT_AGENTS"

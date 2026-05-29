@@ -28,5 +28,16 @@ parse_args
 assert_eq "$OPT_YES" "" "parse_args: defaults OPT_YES empty"
 assert_eq "$OPT_AGENTS" "claude-code,codex,cursor,opencode" "parse_args: default agents"
 
+# --- strip_ansi ---
+ESC=$(printf '\033')
+colored="${ESC}[36mtdd${ESC}[0m ${ESC}[38;5;102m~/x${ESC}[0m"
+assert_eq "$(printf '%s' "$colored" | strip_ansi)" "tdd ~/x" "strip_ansi removes color codes"
+
+# --- agent_slug_to_name ---
+assert_eq "$(agent_slug_to_name claude-code)" "Claude Code" "slug claude-code -> Claude Code"
+assert_eq "$(agent_slug_to_name codex)" "Codex" "slug codex -> Codex"
+assert_eq "$(agent_slug_to_name opencode)" "OpenCode" "slug opencode -> OpenCode"
+assert_eq "$(agent_slug_to_name cursor)" "Cursor" "slug cursor -> Cursor"
+
 printf '\n%s\n' "FAILS=$FAILS"
 [ "$FAILS" -eq 0 ]
