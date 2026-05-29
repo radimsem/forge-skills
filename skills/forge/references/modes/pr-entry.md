@@ -71,8 +71,6 @@ Flags that operate **before Step 8** are ignored with a one-line warning:
 - `tdd` — no implementation step
 - `worktree` — actually composes: use worktree for the PR head checkout. Not ignored — see composition table below.
 - `lookup` — no proposal to ground
-- `backport` — applies only if option 2 was picked
-- `stacked` — meaningless (the PR already has a base); ignored
 
 ## Composition with other flags
 

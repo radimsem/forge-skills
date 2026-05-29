@@ -46,8 +46,6 @@ Initial wait: 30 seconds (give CI time to start). Then poll every 60 seconds. Ca
 | `ci-watch` + `automode` | At Step 12, `automode` skips the closing menu and emits a plan only (no push). With no push, `ci-watch` has nothing to poll — silently skips. Combination is valid but functionally inert under `automode`. |
 | `ci-watch` + `secure` | If CI fails on a security check, the failure re-enters Step 8 as a regular must-fix; `secure`'s dedicated post-pass runs again after the regular loop reconverges. |
 | `ci-watch` + `changelog` | Changelog entry was drafted before the push; if CI fails, the entry is already in the pushed commits. After re-fix, decide whether to update the entry — usually yes if the fix is non-trivial. |
-| `ci-watch` + `backport` | `ci-watch` polls the base-branch CI; `backport` runs only after base-branch CI is green. |
-| `ci-watch` + `stacked` | Poll the stacked PR's own CI, not the base PR's. |
 
 ## Anti-pattern (encoded in [anti-patterns.md](../anti-patterns.md))
 

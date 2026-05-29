@@ -34,7 +34,6 @@ Step 3, after the branch name is resolved (per repo guide or the default `<prefi
 | `worktree` + `automode` | Worktree is created without prompting. Cleanup at Step 12 stays opt-in even under `automode` — the worktree lives until the user removes it (`automode` never deletes user state). |
 | `worktree` + `tdd` | Compose freely. Tests run inside the worktree; the original tree is unaffected by red/green output. |
 | `worktree` + `docs` | `CONTEXT.md` is written inside the worktree, not the original tree. |
-| `worktree` + `stacked` | Recommended pairing. Stacked-PR workflows use multiple worktrees naturally. |
 
 ## Step 12 closing addendum
 

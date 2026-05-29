@@ -60,8 +60,6 @@ Flags are orthogonal and compose in any order. Each line says what the flag does
 - `secure` — adds a `security-review` pass at Step 8 once the regular review converges, before Step 9. See [references/modes/secure.md](references/modes/secure.md).
 - `changelog` — Step 12 drafts a changelog entry in the repo's existing format. See [references/modes/changelog.md](references/modes/changelog.md).
 - `ci-watch` — after a Step 12 push, polls CI; a red result reopens Step 8. See [references/modes/ci-watch.md](references/modes/ci-watch.md).
-- `backport` (`backport:<branches>`) — Step 12 cherry-picks the merged commits onto additional base branches. See [references/modes/backport.md](references/modes/backport.md).
-- `stacked` (`stacked:<N>`) — Step 3 branches off PR `<N>`'s head, and the Step 12 push targets it. See [references/modes/stacked.md](references/modes/stacked.md).
 - `codex` / `codex challenge` — switches the Step 8 generic reviewer to Codex; `challenge` runs an adversarial review instead. Claude Code only. See [references/reviewers/codex.md](references/reviewers/codex.md).
 - `coderabbit` — switches the Step 8 generic reviewer to CodeRabbit, with rework handled by `coderabbit:autofix`. Claude Code only, and mutually exclusive with `codex`. See [references/reviewers/coderabbit.md](references/reviewers/coderabbit.md).
 
@@ -139,8 +137,6 @@ Compare the chosen branch name to the current branch:
 - On `y`, confirm the tree is clean with `git status --short`. If it is dirty, surface the files and ask before any switch, then run `git switch -c <prefix>/<slug> <base>`.
 
 When the **`worktree`** flag is set, create a sibling worktree on the chosen branch instead of switching in place. See **[references/modes/worktree.md](references/modes/worktree.md)**; it composes `superpowers:using-git-worktrees`, and the Step 12 closing appends a cleanup reminder.
-
-When the **`stacked`** flag is set, branch off the specified PR's head ref instead of the repo base, and target the Step 12 push at the stacked-PR convention. See **[references/modes/stacked.md](references/modes/stacked.md)** for base-PR specification, Graphite and spr auto-detection, and rebase discipline.
 
 ## Step 4 — Check context sufficiency
 
@@ -289,8 +285,6 @@ For the Jira write-back in the third option, follow **[references/trackers/jira.
 **Never auto-commit, auto-push, or write back to Jira** outside an explicit selection.
 
 When the **`ci-watch`** flag is set and a push option (2 or 3) was chosen, poll CI for the pushed HEAD once the push completes. On a red result, re-enter Step 8 with the CI failure as a must-fix finding. See **[references/modes/ci-watch.md](references/modes/ci-watch.md)** for polling cadence and host CLI selection. The flag is inert if no push option was chosen.
-
-When the **`backport`** flag is set and a push option was chosen, cherry-pick the merged commits onto additional base branches after the primary push, then open follow-up PRs. The targets come from the flag value, `.backport-branches`, an environment variable, `CONTRIBUTING.md`, or a user prompt. See **[references/modes/backport.md](references/modes/backport.md)** for the target-detection order and conflict handling.
 
 - With `docs`, still ask, but pre-mark the `/tmp/<name>.md` option `(Recommended)` over option 1.
 - With `automode`, skip the question. Emit the proposed small-commit history as a plan only, written to `/tmp/forge-<ref>.md` under `docs` or inline otherwise, then stop. `automode` never executes commits, pushes, or Jira write-backs.

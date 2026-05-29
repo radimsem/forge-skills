@@ -16,8 +16,6 @@ The full set of flags the forge skill understands, with composition rules and co
 | `secure` | Compose `security-review` after Step 8 convergence; findings re-enter Step 8 as must-fix | [modes/secure.md](modes/secure.md) |
 | `changelog` | At Step 12, draft a changelog entry per repo convention | [modes/changelog.md](modes/changelog.md) |
 | `ci-watch` | After Step 12 push, poll CI; on red, re-enter Step 8 with the failure as a finding | [modes/ci-watch.md](modes/ci-watch.md) |
-| `backport` | At Step 12, cherry-pick merged commits onto additional base branches | [modes/backport.md](modes/backport.md) |
-| `stacked` | Step 3 branches off another in-flight PR's HEAD; Step 12 push targets the stacked-PR convention | [modes/stacked.md](modes/stacked.md) |
 | `coderabbit` | Generic reviewer → CodeRabbit. §8b rework path uses `coderabbit:autofix`. Claude Code only. **XOR with `codex`** | [reviewers/coderabbit.md](reviewers/coderabbit.md) |
 
 ## Entry verbs
@@ -35,8 +33,6 @@ In addition to the flags above, the skill supports an entry-mode verb:
 | `codex` and `coderabbit` are mutually exclusive | Both replace the generic reviewer slot. Ambiguous in combination; abort before Step 1 with a one-line error. |
 | `codex challenge` implies `codex` | Challenge mode is a variant of the Codex reviewer pass. |
 | `ci-watch` requires the Step 12 push option | Polling without a published target is pointless. Silently skip if user picked a non-push Step 12 option. |
-| `backport` requires the Step 12 push option | Same reasoning. |
-| `stacked` + `worktree` compose freely | Worktree is the recommended scaffold for stacked PR work. |
 | `tdd` discipline binds under `automode` | The "observe failing test before implementing" rule is the point of the flag; under `automode` the agent runs the test itself and confirms red. |
 | `/forge pr <N>` ignores all lifecycle flags except `automode` and reviewer flags | PR-review mode skips Step 7 implementation; only Step 8 reviewer engines and the `automode` no-gates property apply. |
 
