@@ -32,7 +32,7 @@ Traced from the `skills/forge` tree (grep of every ``/cmd`` and ``plugin:skill``
 
 | Forge reference | Provider (repo / marketplace) | Mechanism | Tier |
 |---|---|---|---|
-| `/tdd` `/grill-me` `/grill-with-docs` `/to-issues` `/diagnose` `/write-a-skill` `/improve-codebase-architecture` | `mattpocock/skills` | `npx skills add` | 1 |
+| `/tdd` `/grill-me` `/grill-with-docs` `/to-issues` `/diagnose` `/write-a-skill` `/improve-codebase-architecture` `/zoom-out` | `mattpocock/skills` | `npx skills add` | 1 |
 | `setup-matt-pocock-skills` (per-repo bootstrap the above consume) | `mattpocock/skills` | `npx skills add` + **run once per repo** | 1 |
 | `/karpathy-guidelines` | `forrestchang/andrej-karpathy-skills` | `npx skills add` | 1 |
 | `superpowers:requesting-code-review` (default reviewer — always runs) | superpowers plugin (`anthropics/claude-plugins-official`) | `/plugin` | 2 |
@@ -69,10 +69,11 @@ Traced from the `skills/forge` tree (grep of every ``/cmd`` and ``plugin:skill``
 ```
 install.sh  (POSIX sh; repo root)
   ├─ 0. Preflight     require node+npx+git (fatal if absent); warn non-fatally on missing gh/glab/ctx7
-  ├─ 1. Detect        npx skills list -g  → set of {skill × agent} already present
-  │                   parse ~/.claude/plugins/installed_plugins.json .plugins → set of plugin@marketplace
-  │                   → print STATUS TABLE (present ✓ / will-install +) before mutating anything
-  ├─ 2. npx skills    Tier 1 + Tier 4: per skill, install only onto the targeted agents missing it
+  ├─ 1. Detect        npx skills list -g  → set of skills installed on ANY agent (present-anywhere)
+  │                   claude plugin list → set of plugin@marketplace
+  │                   → print STATUS TABLE (present = / will-install +) before mutating anything
+  ├─ 2. npx skills    Tier 1 + Tier 4: batch a source's not-installed skills into one pass;
+  │                   no -a flags unless --agents set, so npx auto-detects the host's real agents
   ├─ 3. plugins       Tier 2 + Tier 3: skip if present (claude plugin list); else
   │                     - if `claude` CLI present → `claude plugin marketplace add` + `claude plugin install <p>@<m> -s user`
   │                     - else PRINT the equivalent `/plugin …` paste-in lines (degraded fallback only)
@@ -88,19 +89,19 @@ install.sh  (POSIX sh; repo root)
 |---|---|
 | `--yes` / `-y` | Non-interactive; pass `-y` to every `npx skills add`; assume "print" for `/plugin` if no CLI |
 | `--force` | Reinstall even when detection says present (re-link / repair) |
-| `--agents "a,b,…"` | Override the multi-agent target set (default: `claude-code,codex,cursor,opencode`) |
+| `--agents "a,b,…"` | Install onto specific agents. Default empty → `npx skills` auto-detects the host's installed agents (no `-a` flags emitted) |
 | `--skills-only` | Run Tiers 1/4/6 only; skip the `/plugin` block (for non-CC hosts) |
 | `--help` | Usage |
 
 ### Default agent target
 
-Tiers 1/4/6 install onto **`claude-code,codex,cursor,opencode`** (the user's choice — forge's "runtime-generic" design). Tiers 2/3 are **Claude Code only** because codex/coderabbit are CC-exclusive and superpowers is a CC plugin; the script notes this asymmetry rather than failing on non-CC agents.
+By default the installer passes **no `-a` flags**, letting `npx skills` auto-detect the agents actually installed on the host. A hardcoded multi-agent list was tried and reverted: it targeted agents the host may not have (e.g. `cursor`/`opencode`), which are then "missing" on every run → endless reinstalls, while omitting agents the host does have (e.g. `gemini-cli`/`pi`). `--agents "a,b"` overrides when the user wants explicit targets. Tiers 2/3 are **Claude Code only** because codex/coderabbit are CC-exclusive and superpowers is a CC plugin.
 
 ## 7. Detailed decisions
 
 ### 7.1 Detection
 
-- **Bare skills:** parse `npx skills list -g` output (alias `ls`; "like `npm ls`"). "Installed" is per-agent, not binary — for each skill, install only onto the agents where it is missing (`npx skills add <src> -s <name> -a <missing-agent>… -y`). Without `--force`, a skill present on all targeted agents is skipped.
+- **Bare skills:** parse `npx skills list -g` output (alias `ls`; "like `npm ls`"). Detection is **present-anywhere**: a skill installed on *any* agent counts as installed and is skipped (unless `--force`). This keeps re-runs idempotent — the previous per-agent model treated a skill as "missing" on phantom target agents and reinstalled it every run. Trade-off (accepted): an absent-everywhere skill installs onto the host's auto-detected agents; a skill present on one agent is not backfilled onto others.
 - **Plugins:** detect via `claude plugin list` (the CLI's own ledger). Fallback when `claude` is absent: a plugin is present iff `<plugin>@<marketplace>` is a key under `.plugins` in `~/.claude/plugins/installed_plugins.json` (observed format: `superpowers@claude-plugins-official`, `greptile@claude-plugins-official`, …), read with `python3 -c` or grep on the literal key.
 - **Idempotency does not depend on detection.** `npx skills add` is already safe to re-run; detection exists for clean reporting and to avoid redundant work, and to make `--force` meaningful.
 

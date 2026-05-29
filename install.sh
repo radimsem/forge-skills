@@ -3,7 +3,9 @@
 # Installs forge's external skills (npx skills) and plugins (claude plugin), then forge itself last.
 set -u
 
-DEFAULT_AGENTS="claude-code,codex,cursor,opencode"
+# Empty by default: let `npx skills` auto-detect the host's installed agents
+# (passing a hardcoded list installs onto agents you may not have). --agents overrides.
+DEFAULT_AGENTS=""
 
 OPT_YES=""
 OPT_FORCE=""
@@ -19,7 +21,7 @@ Installs every skill and plugin the forge skill composes, then forge itself last
 Options:
   -y, --yes            Non-interactive (pass -y to npx skills; auto-accept plugin installs)
       --force          Reinstall even when detection reports a dependency present
-      --agents "a,b"   Override the multi-agent target (default: claude-code,codex,cursor,opencode)
+      --agents "a,b"   Install onto specific agents (default: npx skills auto-detects your installed agents)
       --skills-only    Install bare skills only; skip the claude plugin block (non-Claude-Code hosts)
   -h, --help           Show this help
 EOF
@@ -46,20 +48,8 @@ strip_ansi() {
   sed "s/$(printf '\033')\[[0-9;]*[A-Za-z]//g"
 }
 
-# Map an `npx skills` agent slug to the display name `npx skills list` prints.
-agent_slug_to_name() {
-  case "$1" in
-    claude-code) printf 'Claude Code' ;;
-    codex) printf 'Codex' ;;
-    cursor) printf 'Cursor' ;;
-    opencode) printf 'OpenCode' ;;
-    pi) printf 'Pi' ;;
-    *) printf '%s' "$1" ;;
-  esac
-}
-
 # Reads $SKILLS_LIST_RAW (captured `npx skills list` output). Echoes the comma-separated
-# display-name list for the given skill, or empty if the skill is absent.
+# agent list for the given skill, or empty if the skill is absent.
 parse_skill_agents() { # $1=skill name
   printf '%s\n' "${SKILLS_LIST_RAW:-}" | strip_ansi | awk -v want="$1" '
     /^  [^ ]/ { found = ($1 == want) }
@@ -71,28 +61,13 @@ parse_skill_agents() { # $1=skill name
   '
 }
 
-# True if the skill is installed on the given agent slug.
-agent_has_skill() { # $1=skill $2=agent-slug
-  _display=$(agent_slug_to_name "$2")
-  _agents=$(parse_skill_agents "$1")
-  [ -n "$_agents" ] || return 1
-  case ",$(printf '%s' "$_agents" | sed 's/, /,/g')," in
-    *",$_display,"*) return 0 ;;
-  esac
-  return 1
-}
-
-# Echoes the space-separated subset of targeted slugs missing the skill.
-agents_missing_skill() { # $1=skill $2=csv-of-slugs
-  _miss=""
-  _oldifs=$IFS; IFS=','
-  for _a in $2; do
-    IFS=$_oldifs
-    agent_has_skill "$1" "$_a" || _miss="$_miss $_a"
-    IFS=','
-  done
-  IFS=$_oldifs
-  printf '%s' "${_miss# }"
+# True if the skill is installed on ANY agent (i.e. it appears in `npx skills list -g`).
+# Detection is intentionally agent-agnostic: present anywhere counts as installed, so a
+# re-run does not reinstall skills you already have. (Trade-off: an absent-everywhere skill
+# is installed onto the host's auto-detected agents; a skill present on one agent is not
+# backfilled onto others.)
+skill_installed_anywhere() { # $1=skill name
+  [ -n "$(parse_skill_agents "$1")" ]
 }
 
 # Reads $PLUGINS_LIST_RAW (captured `claude plugin list`). True if plugin@marketplace present.
@@ -102,15 +77,17 @@ plugin_installed() { # $1=plugin@marketplace
     | grep -qE "(^|[[:space:]])$(printf '%s' "$1" | sed 's/[.[\*^$/]/\\&/g')([[:space:]]|$)"
 }
 
-# Build (do not run) the npx skills add command for a skill onto specific agents.
-# Build ONE batched `npx skills add` command: all given skills from one source, onto every
-# targeted agent, in a single pass (one clone). $2 is a space-separated skill list.
+# Build ONE batched `npx skills add` command: all given skills from one source in a single
+# pass (one clone). $2 is a space-separated skill list. `-a` is added only when --agents is
+# set; otherwise npx skills auto-detects the host's installed agents (no phantom targets).
 build_skill_group_cmd() { # $1=source $2=space-separated skills ; uses OPT_AGENTS, OPT_YES
   _cmd="npx -y skills@latest add $1"
   for _sk in $2; do _cmd="$_cmd -s $_sk"; done
-  _oldifs=$IFS; IFS=','
-  for _a in $OPT_AGENTS; do _cmd="$_cmd -a $_a"; done
-  IFS=$_oldifs
+  if [ -n "$OPT_AGENTS" ]; then
+    _oldifs=$IFS; IFS=','
+    for _a in $OPT_AGENTS; do _cmd="$_cmd -a $_a"; done
+    IFS=$_oldifs
+  fi
   _cmd="$_cmd -g"   # global scope: matches `npx skills list -g` detection; avoids the Project-scope prompt
   [ -n "$OPT_YES" ] && _cmd="$_cmd -y"   # with -g, suppresses the scope + "Proceed?" prompts
   printf '%s' "$_cmd"
@@ -152,6 +129,7 @@ deps_table() {
 1|skill|mattpocock/skills|diagnose
 1|skill|mattpocock/skills|write-a-skill
 1|skill|mattpocock/skills|improve-codebase-architecture
+1|skill|mattpocock/skills|zoom-out
 1|skill|mattpocock/skills|setup-matt-pocock-skills
 1|skill|forrestchang/andrej-karpathy-skills|karpathy-guidelines
 2|plugin|anthropics/claude-plugins-official|superpowers@claude-plugins-official
@@ -167,12 +145,10 @@ EOF
 status_row() { # $1=tier $2=kind $3=source $4=name
   case "$2" in
     skill)
-      _missing=$(agents_missing_skill "$4" "$OPT_AGENTS")
-      if [ -z "$_missing" ] && [ -z "$OPT_FORCE" ]; then
+      if skill_installed_anywhere "$4" && [ -z "$OPT_FORCE" ]; then
         printf '= [skill] %s (present)' "$4"
       else
-        [ -n "$OPT_FORCE" ] && _missing="$(printf '%s' "$OPT_AGENTS" | tr ',' ' ') (forced)"
-        printf '+ [skill] %s (missing: %s)' "$4" "$_missing"
+        printf '+ [skill] %s (will install)' "$4"
       fi
       ;;
     plugin)
@@ -187,7 +163,7 @@ status_row() { # $1=tier $2=kind $3=source $4=name
 
 # Print the full status table by walking the inventory.
 print_status_table() {
-  printf '\nDependency status (target agents: %s):\n' "$OPT_AGENTS"
+  printf '\nDependency status (agents: %s):\n' "${OPT_AGENTS:-auto-detected}"
   deps_table | while IFS='|' read -r _tier _kind _src _name; do
     [ -n "$_tier" ] || continue
     printf '  %s\n' "$(status_row "$_tier" "$_kind" "$_src" "$_name")"
@@ -225,12 +201,12 @@ capture_state() {
   fi
 }
 
-# Of a source's declared skills, the ones missing on >=1 targeted agent (space-separated).
+# Of a source's declared skills, the ones not installed on any agent (space-separated).
 # Under --force, every declared skill is "needed".
-needed_skills_for_source() { # $1=source ; uses OPT_AGENTS, OPT_FORCE
+needed_skills_for_source() { # $1=source ; uses OPT_FORCE
   _need=""
   for _sk in $(skills_for_source "$1"); do
-    if [ -n "$OPT_FORCE" ] || [ -n "$(agents_missing_skill "$_sk" "$OPT_AGENTS")" ]; then
+    if [ -n "$OPT_FORCE" ] || ! skill_installed_anywhere "$_sk"; then
       _need="$_need $_sk"
     fi
   done
@@ -238,15 +214,15 @@ needed_skills_for_source() { # $1=source ; uses OPT_AGENTS, OPT_FORCE
 }
 
 # Install all needed skills from one source in a SINGLE npx pass (one clone). Skips the
-# source entirely when every declared skill is already present on every targeted agent.
+# source entirely when every declared skill is already installed (on any agent).
 install_skill_group() { # $1=source
   _need=$(needed_skills_for_source "$1")
   if [ -z "$_need" ]; then
-    printf '  = all skills from %s already present on targeted agents\n' "$1"
+    printf '  = all skills from %s already installed\n' "$1"
     return 0
   fi
   _cmd=$(build_skill_group_cmd "$1" "$_need")
-  printf '  + installing from %s: %s -> %s\n' "$1" "$_need" "$OPT_AGENTS"
+  printf '  + installing from %s: %s\n' "$1" "$_need"
   # shellcheck disable=SC2086
   $_cmd || { printf '  ! failed to install from %s (continuing)\n' "$1" >&2; return 1; }
 }

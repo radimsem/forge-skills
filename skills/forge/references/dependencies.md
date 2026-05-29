@@ -15,7 +15,7 @@ the reviewer engines need, which is why the plugins go through `claude plugin`.
 
 | Dependency | Provider | Mechanism | Needed for |
 |---|---|---|---|
-| `tdd` `grill-me` `grill-with-docs` `to-issues` `diagnose` `write-a-skill` `improve-codebase-architecture` | `mattpocock/skills` | `npx skills` | Steps 7/9/10, `tdd` flag, grilling |
+| `tdd` `grill-me` `grill-with-docs` `to-issues` `diagnose` `write-a-skill` `improve-codebase-architecture` `zoom-out` | `mattpocock/skills` | `npx skills` | Steps 7/9/10, `tdd` flag, grilling, high-level walkthrough |
 | `setup-matt-pocock-skills` | `mattpocock/skills` | `npx skills` + run once per repo | bootstraps the above |
 | `karpathy-guidelines` | `forrestchang/andrej-karpathy-skills` | `npx skills` | Step 7 clean-code re-source |
 | `superpowers:requesting-code-review` `superpowers:using-git-worktrees` | superpowers (`anthropics/claude-plugins-official`) | `claude plugin` | default reviewer; `worktree` flag |

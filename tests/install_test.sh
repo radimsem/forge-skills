@@ -26,36 +26,24 @@ assert_eq "$OPT_AGENTS" "claude-code,codex" "parse_args: --agents override"
 
 parse_args
 assert_eq "$OPT_YES" "" "parse_args: defaults OPT_YES empty"
-assert_eq "$OPT_AGENTS" "claude-code,codex,cursor,opencode" "parse_args: default agents"
+assert_eq "$OPT_AGENTS" "" "parse_args: default agents empty (npx auto-detects host agents)"
 
 # --- strip_ansi ---
 ESC=$(printf '\033')
 colored="${ESC}[36mtdd${ESC}[0m ${ESC}[38;5;102m~/x${ESC}[0m"
 assert_eq "$(printf '%s' "$colored" | strip_ansi)" "tdd ~/x" "strip_ansi removes color codes"
 
-# --- agent_slug_to_name ---
-assert_eq "$(agent_slug_to_name claude-code)" "Claude Code" "slug claude-code -> Claude Code"
-assert_eq "$(agent_slug_to_name codex)" "Codex" "slug codex -> Codex"
-assert_eq "$(agent_slug_to_name opencode)" "OpenCode" "slug opencode -> OpenCode"
-assert_eq "$(agent_slug_to_name cursor)" "Cursor" "slug cursor -> Cursor"
-
-# --- skill detection parser ---
+# --- skill detection parser + present-anywhere check ---
 SKILLS_LIST_RAW=$(cat "$ROOT/tests/fixtures/skills-list.txt")
 
 assert_eq "$(parse_skill_agents tdd)" "Claude Code" "parse_skill_agents: tdd -> Claude Code"
 assert_eq "$(parse_skill_agents grill-with-docs)" "Claude Code, Pi" "parse_skill_agents: multi-agent"
 assert_eq "$(parse_skill_agents not-installed)" "" "parse_skill_agents: absent skill -> empty"
 
-assert_true  agent_has_skill greploop codex   "agent_has_skill: greploop on codex"
-assert_false agent_has_skill tdd codex         "agent_has_skill: tdd NOT on codex"
-assert_false agent_has_skill not-installed claude-code "agent_has_skill: absent skill"
-
-assert_eq "$(agents_missing_skill tdd 'claude-code,codex,cursor')" "codex cursor" \
-  "agents_missing_skill: tdd missing on codex,cursor"
-assert_eq "$(agents_missing_skill grill-with-docs 'claude-code')" "" \
-  "agents_missing_skill: nothing missing"
-assert_eq "$(agents_missing_skill not-installed 'claude-code,codex')" "claude-code codex" \
-  "agents_missing_skill: absent skill -> all targeted"
+# present-anywhere detection (agent-agnostic): installed on ANY agent counts as installed
+assert_true  skill_installed_anywhere tdd           "skill_installed_anywhere: tdd present (Claude Code)"
+assert_true  skill_installed_anywhere grill-with-docs "skill_installed_anywhere: present (multi-agent)"
+assert_false skill_installed_anywhere not-installed "skill_installed_anywhere: absent skill"
 
 # --- plugin detection ---
 PLUGINS_LIST_RAW=$(cat "$ROOT/tests/fixtures/plugin-list.txt")
@@ -64,16 +52,23 @@ assert_true  plugin_installed "coderabbit@claude-plugins-official"  "plugin_inst
 assert_false plugin_installed "codex@openai-codex"                   "plugin_installed: codex absent"
 assert_false plugin_installed "super@claude-plugins-official"        "plugin_installed: no prefix match"
 
-# --- command builders (batched: many -s skills + many -a agents in one pass) ---
+# --- command builders (batched: many -s skills in one pass) ---
+# With --agents set: emit -a flags for each.
 OPT_YES=""; OPT_AGENTS="claude-code,codex"
 assert_eq "$(build_skill_group_cmd mattpocock/skills 'tdd grill-me')" \
   "npx -y skills@latest add mattpocock/skills -s tdd -s grill-me -a claude-code -a codex -g" \
-  "build_skill_group_cmd: batched skills + agents (global)"
+  "build_skill_group_cmd: --agents set -> -a flags"
+
+# Default (no --agents): NO -a flags, so npx skills auto-detects the host's agents.
+OPT_AGENTS=""
+assert_eq "$(build_skill_group_cmd mattpocock/skills 'tdd grill-me')" \
+  "npx -y skills@latest add mattpocock/skills -s tdd -s grill-me -g" \
+  "build_skill_group_cmd: no --agents -> no -a (auto-detect)"
 
 OPT_YES="1"
 assert_eq "$(build_skill_group_cmd . forge)" \
-  "npx -y skills@latest add . -s forge -a claude-code -a codex -g -y" \
-  "build_skill_group_cmd: --yes appends -y after -g"
+  "npx -y skills@latest add . -s forge -g -y" \
+  "build_skill_group_cmd: --yes appends -y after -g (no -a)"
 OPT_YES=""
 
 assert_eq "$(build_plugin_marketplace_cmd anthropics/claude-plugins-official)" \
@@ -83,22 +78,24 @@ assert_eq "$(build_plugin_install_cmd superpowers@claude-plugins-official)" \
   "claude plugin install superpowers@claude-plugins-official -s user" \
   "build_plugin_install_cmd"
 
-# --- inventory data (table has exactly 15 rows: 9 tier-1, 1 tier-2, 2 tier-3, 2 tier-4, 1 tier-6) ---
-assert_eq "$(deps_table | grep -c '^[1-6]|')" "15" "deps_table: 15 dependency rows"
+# --- inventory data (table has exactly 16 rows: 10 tier-1, 1 tier-2, 2 tier-3, 2 tier-4, 1 tier-6) ---
+assert_eq "$(deps_table | grep -c '^[1-6]|')" "16" "deps_table: 16 dependency rows"
 assert_eq "$(deps_table | awk -F'|' '$1==6{print $4}')" "forge" "deps_table: tier 6 is forge"
-assert_eq "$(deps_table | awk -F'|' '$1==1 && $2=="skill"{c++} END{print c}')" "9" \
-  "deps_table: 9 tier-1 skills (7 mattpocock + bootstrap + karpathy)"
+assert_eq "$(deps_table | awk -F'|' '$1==1 && $2=="skill"{c++} END{print c}')" "10" \
+  "deps_table: 10 tier-1 skills (8 mattpocock incl. zoom-out + bootstrap + karpathy)"
+assert_eq "$(deps_table | grep -c '^1|skill|mattpocock/skills|zoom-out$')" "1" \
+  "deps_table: zoom-out present in mattpocock group"
 # forge must be the last skill row encountered (installed last)
 assert_eq "$(deps_table | awk -F'|' '$2=="skill"{last=$4} END{print last}')" "forge" \
   "deps_table: forge is the final skill row"
 
-# --- status row rendering ---
+# --- status row rendering (skills: present-anywhere; plugins: present in list) ---
 # Uses the skills/plugins fixtures already loaded above.
-OPT_AGENTS="claude-code,codex"
+OPT_FORCE=""
 assert_eq "$(status_row 1 skill mattpocock/skills tdd)" \
-  "+ [skill] tdd (missing: codex)" "status_row: skill partially present"
+  "= [skill] tdd (present)" "status_row: skill present (any agent)"
 assert_eq "$(status_row 1 skill mattpocock/skills not-installed)" \
-  "+ [skill] not-installed (missing: claude-code codex)" "status_row: skill fully absent"
+  "+ [skill] not-installed (will install)" "status_row: skill absent"
 assert_eq "$(status_row 2 plugin anthropics/claude-plugins-official superpowers@claude-plugins-official)" \
   "= [plugin] superpowers@claude-plugins-official (present)" "status_row: plugin present"
 assert_eq "$(status_row 3 plugin openai/codex-plugin-cc codex@openai-codex)" \
@@ -119,24 +116,24 @@ RUN_LOG=$(mktemp)
 npx()    { printf 'npx %s\n' "$*" >> "$RUN_LOG"; }
 claude() { printf 'claude %s\n' "$*" >> "$RUN_LOG"; }
 
-# source fully present on the targeted agent -> skip (no npx call)
-# (custom fixture: both greptile skills already on Claude Code)
-: > "$RUN_LOG"; OPT_AGENTS="claude-code"; OPT_FORCE=""
+# source fully installed (every skill present on SOME agent) -> skip, no npx call.
+# (custom fixture: greploop on Claude Code, check-pr on Pi — different agents, both count)
+: > "$RUN_LOG"; OPT_AGENTS=""; OPT_FORCE=""
 _SAVED_RAW="$SKILLS_LIST_RAW"
 SKILLS_LIST_RAW="  greploop ~/x
     Agents: Claude Code
   check-pr ~/y
-    Agents: Claude Code"
+    Agents: Pi"
 install_skill_group greptileai/skills >/dev/null
-assert_eq "$(wc -l < "$RUN_LOG" | tr -d ' ')" "0" "install_skill_group: fully present -> no-op"
+assert_eq "$(wc -l < "$RUN_LOG" | tr -d ' ')" "0" "install_skill_group: all present (any agent) -> no-op"
 SKILLS_LIST_RAW="$_SAVED_RAW"
 
-# only the needed skills are batched into ONE npx pass onto the targeted agents
-# (Task-3 fixture: greploop is on Claude Code,Codex; check-pr is absent)
-: > "$RUN_LOG"; OPT_AGENTS="claude-code"; OPT_FORCE=""
+# only the absent skill is batched; no --agents -> no -a flags (npx auto-detects host agents)
+# (Task-3 fixture: greploop present on Claude Code,Codex; check-pr absent everywhere)
+: > "$RUN_LOG"; OPT_AGENTS=""; OPT_FORCE=""
 install_skill_group greptileai/skills >/dev/null
-assert_eq "$(cat "$RUN_LOG")" "npx -y skills@latest add greptileai/skills -s check-pr -a claude-code -g" \
-  "install_skill_group: batches only the needed skill, one pass"
+assert_eq "$(cat "$RUN_LOG")" "npx -y skills@latest add greptileai/skills -s check-pr -g" \
+  "install_skill_group: installs only the absent skill, auto-detect agents"
 
 # plugin present -> no install ; absent -> marketplace add + install
 : > "$RUN_LOG"; OPT_FORCE=""
