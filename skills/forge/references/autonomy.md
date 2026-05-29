@@ -44,6 +44,6 @@
 | `automode` + `ci-watch` | Functionally inert. `automode` skips the closing menu and emits a plan only — no push, so nothing to poll. Combination is valid but no work happens. See [modes/ci-watch.md](modes/ci-watch.md). |
 | `automode` + `/forge pr <N>` | Skip the PR-review closing menu; emit the review summary as a plan to `/tmp/forge-pr-<N>.md` and stop. No auto-push of fixup commits, no auto-approve, no auto-request-changes. See [modes/pr-entry.md](modes/pr-entry.md). |
 | `automode` + Linear (or Jira/Linear ambiguity) | Cannot interview to disambiguate; attempt Linear first if both trackers connected, record assumption, abort if Linear lookup 404s. See [trackers/linear.md](trackers/linear.md). |
-| `automode` + `coderabbit` | Reviewer runs unprompted; Step 8b rework delegation to `coderabbit:autofix` auto-decides. The XOR rule against `codex` binds even under `automode` — combination still errors before Step 1. See [reviewers/coderabbit.md](reviewers/coderabbit.md). |
+| `automode` + `coderabbit` | Reviewer runs unprompted; Step 8b rework delegation to `coderabbit:autofix` auto-decides. Composes with `codex` — both engines run, rework routes per finding. See [reviewers/coderabbit.md](reviewers/coderabbit.md). |
 
 (This table grows as new flags land. Each flag's reference file states its `automode` behavior in a single row and links here.)

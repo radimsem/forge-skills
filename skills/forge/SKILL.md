@@ -60,10 +60,10 @@ Flags are orthogonal and compose in any order. Each line says what the flag does
 - `secure` — adds a `security-review` pass at Step 8 once the regular review converges, before Step 9. See [references/modes/secure.md](references/modes/secure.md).
 - `changelog` — Step 12 drafts a changelog entry in the repo's existing format. See [references/modes/changelog.md](references/modes/changelog.md).
 - `ci-watch` — after a Step 12 push, polls CI; a red result reopens Step 8. See [references/modes/ci-watch.md](references/modes/ci-watch.md).
-- `codex` / `codex challenge` — switches the Step 8 generic reviewer to Codex; `challenge` runs an adversarial review instead. Claude Code only. See [references/reviewers/codex.md](references/reviewers/codex.md).
-- `coderabbit` — switches the Step 8 generic reviewer to CodeRabbit, with rework handled by `coderabbit:autofix`. Claude Code only, and mutually exclusive with `codex`. See [references/reviewers/coderabbit.md](references/reviewers/coderabbit.md).
+- `codex` / `codex challenge` — adds Codex as a Step 8 generic reviewer; `challenge` runs an adversarial review instead. Claude Code only. See [references/reviewers/codex.md](references/reviewers/codex.md).
+- `coderabbit` — adds CodeRabbit as a Step 8 generic reviewer, with rework handled by `coderabbit:autofix`. Claude Code only; composes with `codex` (both run, rework routes per finding). See [references/reviewers/coderabbit.md](references/reviewers/coderabbit.md).
 
-The reviewer-swap flags replace only the generic-reviewer slot; the project reviewer agents always run alongside. For example, `forge ticket PROJ-7 automode docs codex challenge` is a valid invocation.
+The reviewer flags add to the generic-reviewer set; the project reviewer agents always run alongside, and `codex` and `coderabbit` can both be set in one run. For example, `forge ticket PROJ-7 automode docs codex challenge coderabbit` is a valid invocation.
 
 - `automode` with `docs` writes `CONTEXT.md` directly with no interview, then goes straight to Step 7.
 - On a non-Claude-Code runtime, `codex`, `codex challenge`, and `coderabbit` are ignored with a one-line warning, and the generic reviewer stays `superpowers:requesting-code-review`.
@@ -239,7 +239,7 @@ When the **`secure`** flag is set, run a `security-review` pass once there are z
 
 ### Step 8a/8b — Generic reviewer swaps
 
-A flag can swap the default generic reviewer (`superpowers:requesting-code-review`) at Step 8. Each swap brings its own Step 8a, the reviewer engine, and Step 8b, the rework-delegation path mirrored to the reviewer's companion skill. The project subagents always run alongside, and the flags swap only the generic-reviewer slot. The two reviewer flags are mutually exclusive, so pick exactly one, or neither for the default.
+A flag adds an engine to the Step 8 generic-reviewer set, replacing the default `superpowers:requesting-code-review` when at least one is set. Each engine brings its own Step 8a reviewer pass and Step 8b rework path mirrored to its companion skill. The project subagents always run alongside. The reviewer flags compose: set both and both engines run in the same pass; each finding's rework routes to the engine that raised it.
 
 | Flag | Step 8a engine | Step 8b rework path |
 |---|---|---|

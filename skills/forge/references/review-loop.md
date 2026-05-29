@@ -12,7 +12,7 @@ Disciplined critique cycle. Runs after each implementation pass. Terminates when
 | Fallback (no project reviewer agents, PR exists) | `/greploop` against the pushed PR | When no project reviewers configured AND a PR exists. Never auto-push to create one. |
 | Sub-pass (suspected bug or perf regression) | `/diagnose` | Surface findings, return to the main loop |
 
-**Project subagents always run.** Reviewer flags (`codex`, `coderabbit`) swap only the generic reviewer slot; they never replace project agents. **`codex` and `coderabbit` are mutually exclusive** — combining errors before Step 1.
+**Project subagents always run.** Reviewer flags (`codex`, `coderabbit`) add to the generic-reviewer set; they never replace project agents. `codex` and `coderabbit` compose — set both and both engines run in the same pass.
 
 ## Rework delegation (Step 8b paths)
 
@@ -25,6 +25,8 @@ Findings that exceed a single in-pass fix can be delegated to a companion rework
 | `coderabbit` | `coderabbit:autofix` | Same discipline as codex-rescue |
 
 After the rework returns, re-enter Step 8 with the rework diff as a new pass input. The 3-pass cap applies to subsequent passes.
+
+With both reviewer flags set, route each finding's rework to the engine that raised it — codex findings to `codex:codex-rescue`, coderabbit findings to `coderabbit:autofix`. Inline or ambiguous fixes stay agent-discretion.
 
 ## Termination
 
@@ -52,4 +54,4 @@ After a clean substantive pass (project reviewers + generic reviewer return 0 mu
 ## Reviewer specifics
 
 - [reviewers/codex.md](reviewers/codex.md) — Step 8a Codex reviewer resolution + graceful degrade; Step 8b rework delegation to `codex:codex-rescue`.
-- [reviewers/coderabbit.md](reviewers/coderabbit.md) — Step 8a CodeRabbit reviewer; Step 8b rework delegation to `coderabbit:autofix`; XOR rule against `codex`.
+- [reviewers/coderabbit.md](reviewers/coderabbit.md) — Step 8a CodeRabbit reviewer; Step 8b rework delegation to `coderabbit:autofix`; composes with `codex` (per-finding rework routing).

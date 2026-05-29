@@ -21,7 +21,7 @@ Loaded on demand by SKILL.md Step 8 **only when the `codex` or `codex challenge`
 
 ## Step 8b — Optional: delegate rework to Codex (agent discretion)
 
-Codex-suited findings (mechanical refactors, a self-contained fix Codex itself proposed) → forge **may** hand rework to the `codex:codex-rescue` subagent instead of fixing inline. Judgment call; small fixes stay inline. `automode`: auto-decide — delegate only if net-positive + clearly Codex-suited.
+Codex-suited findings (mechanical refactors, a self-contained fix Codex itself proposed) → forge **may** hand rework to the `codex:codex-rescue` subagent instead of fixing inline. Judgment call; small fixes stay inline. `automode`: auto-decide — delegate only if net-positive + clearly Codex-suited. If `coderabbit` is also set, this path handles only codex-raised findings; coderabbit findings route to `coderabbit:autofix`.
 
 Delegation **follows the re-hydration**:
 
