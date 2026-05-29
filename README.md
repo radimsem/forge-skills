@@ -2,7 +2,9 @@
   <img src="assets/logo.png" alt="forge-skills logo: Claude Code as a blacksmith at an anvil" width="400">
 </p>
 
-<h1 align="center">Forge — a blacksmith for agentic workflows</h1>
+<h1 align="center">Forge</h1>
+
+<p align="center">a blacksmith for agentic workflows</p>
 
 <p align="center"><em>Forge an issue into a shipped fix: heat it (implement), hammer it (review), then temper it (refactor).</em></p>
 
