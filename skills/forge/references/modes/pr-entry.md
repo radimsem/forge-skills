@@ -81,11 +81,3 @@ Flags that operate **before Step 8** are ignored with a one-line warning:
 | `/forge pr <N>` + `secure` | Security pass runs after the regular reviewer loop converges. Must-fix → can be addressed via option 2 fixup commits. |
 | `/forge pr <N>` + `worktree` | The PR head checkout happens in a sibling worktree, not in-place. Useful when the user has uncommitted work in the original tree. |
 | `/forge pr <N>` + `ci-watch` + option 2 | Push fixup commits, poll the PR's CI; on red, re-enter Step 8 against the now-failing state. |
-
-## Anti-pattern (encoded in [anti-patterns.md](../anti-patterns.md))
-
-Using `/forge pr <N>` to "review your own PR" right after `/forge <issue>` finished. The forge run already executed Step 8 against the same diff; rerunning would burn reviewer budget without new signal. PR-entry mode is for PRs you did not produce in this session.
-
-## `automode` behavior
-
-See [autonomy.md](../autonomy.md). PR-entry mode under `automode` skips the closing menu and emits the review summary as a plan only.

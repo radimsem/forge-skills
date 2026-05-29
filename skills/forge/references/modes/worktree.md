@@ -42,11 +42,3 @@ When `worktree` was set, the Step 12 closing message appends one line:
 > Worktree at `<path>` — run `git worktree remove <path>` (or `git worktree prune` if the branch was deleted) when you're done.
 
 This addendum is informational. It does NOT auto-remove the worktree, even under `automode` — losing in-progress state because a flag inferred you were "done" is the wrong default.
-
-## Anti-pattern (encoded in [anti-patterns.md](../anti-patterns.md))
-
-Leaving the worktree behind after Step 12 closes. Disk fills with stale worktrees; `git worktree list` becomes noise. Read the closing addendum; remove the worktree once changes are merged or discarded.
-
-## `automode` behavior
-
-See [autonomy.md](../autonomy.md) — `worktree` composability row says creation is automatic, cleanup is not. Cleanup never runs under `automode`.

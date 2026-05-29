@@ -36,11 +36,3 @@ Step 7, after `/goal` is set and `/karpathy-guidelines` is sourced, before any i
 | `tdd` + `codex` / `codex challenge` | Step 8 reviewer engines unchanged. Codex reviews the implementation diff plus the test diff; adversarial review may challenge the test design as well as the implementation. |
 | `tdd` + `worktree` | Compose freely. Tests run inside the worktree. |
 | `tdd` + `lookup` | Compose freely. Library lookups inform the test, not just the implementation. |
-
-## Anti-pattern (encoded in [anti-patterns.md](../anti-patterns.md))
-
-Writing implementation code before observing the failing test. `tdd` exists to enforce the red-green-refactor cycle; skipping the red observation defeats the flag.
-
-## `automode` behavior
-
-See [autonomy.md](../autonomy.md) — `tdd` adds a row stating the discipline binds even under `automode`. The agent runs the test, confirms red, and proceeds without prompting.

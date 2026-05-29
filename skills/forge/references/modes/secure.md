@@ -39,11 +39,3 @@ The Step 8 3-pass cap (see [review-loop.md](../review-loop.md)) covers regular r
 | `secure` + `codex` / `codex challenge` | Codex runs in the regular Step 8 passes; `security-review` runs after Codex converges. The two reviewers have different angles (Codex: correctness/design; security-review: vulnerability classes). Both must converge before Step 9. |
 | `secure` + `tdd` | Compose freely. Security findings may require new tests; if so, those tests follow TDD discipline (red first). |
 | `secure` + `coderabbit` | Same composition pattern as with `codex`. CodeRabbit handles regular Step 8; security-review handles the security pass. |
-
-## Anti-pattern (encoded in [anti-patterns.md](../anti-patterns.md))
-
-Running `security-review` only as the last check rather than as a Step 8 gate. The post-Step-8 placement is deliberate — security findings must be addressed before Step 9 (refactor) or Step 12 (close), not surfaced after the fact when they're harder to act on without re-opening the diff.
-
-## `automode` behavior
-
-See [autonomy.md](../autonomy.md) — `secure` adds a row: security pass runs unprompted; must-fix findings get the pick-safest-and-continue treatment from regular Step 8. The pass-budget rule binds.

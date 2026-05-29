@@ -49,11 +49,3 @@ Repo guide (`CONTRIBUTING.md` / agent guide / etc.) wins over this list.
 | `changelog` + `docs` | Entry is included in the `/tmp/forge-<ref>.md` Step 12 plan output. |
 | `changelog` + `secure` | Security-fix entries should follow the repo's security-disclosure convention if one exists (look for SECURITY.md). If unclear, surface the security finding's nature in the entry and let the user adjust. |
 | `changelog` + `ci-watch` | Entry lands in the proposed commits regardless of CI outcome. If CI goes red post-push, the user can pull the entry from the commit. |
-
-## Anti-pattern (encoded in [anti-patterns.md](../anti-patterns.md))
-
-Drafting the changelog entry before `/goal` verifies green. The entry must reflect what actually shipped. If the verify gate fails and Step 8 reopens, the previous draft entry is stale; redraft after re-convergence. Never include a changelog entry in a commit list whose verify failed.
-
-## `automode` behavior
-
-See [autonomy.md](../autonomy.md). `changelog` runs unprompted at Step 12; the entry rides along in the emitted plan.

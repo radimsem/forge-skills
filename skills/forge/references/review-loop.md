@@ -49,10 +49,6 @@ The re-hydrate block exists to shed stale reviewer-transcript tokens and reload 
 
 After a clean substantive pass (project reviewers + generic reviewer return 0 must-fix / 0 should-fix on correctness / architecture), if the only remaining should-fixes are pure trims — doc-comment edits, blank-line grouping, naming touch-ups, no logic touched — apply them inline, run the repo verify command, and move to Step 9. Do not consume a pass on nit verification. The matching anti-pattern is in [anti-patterns.md](anti-patterns.md).
 
-## `automode` behavior
-
-See [autonomy.md](autonomy.md) Step 8 row. Same engines, same cap; non-convergence picks safest and continues instead of asking the user. The Jira-absent fallback still binds even under `automode`.
-
 ## Reviewer specifics
 
 - [reviewers/codex.md](reviewers/codex.md) — Step 8a Codex reviewer resolution + graceful degrade; Step 8b rework delegation to `codex:codex-rescue`.

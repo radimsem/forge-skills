@@ -50,11 +50,3 @@ Confirm a run exists for the pushed SHA before reading status; "no run found" is
 | `ci-watch` + `automode` | At Step 12, `automode` skips the closing menu and emits a plan only (no push). With no push, `ci-watch` has nothing to poll — silently skips. Combination is valid but functionally inert under `automode`. |
 | `ci-watch` + `secure` | If CI fails on a security check, the failure re-enters Step 8 as a regular must-fix; `secure`'s dedicated post-pass runs again after the regular loop reconverges. |
 | `ci-watch` + `changelog` | Changelog entry was drafted before the push; if CI fails, the entry is already in the pushed commits. After re-fix, decide whether to update the entry — usually yes if the fix is non-trivial. |
-
-## Anti-pattern (encoded in [anti-patterns.md](../anti-patterns.md))
-
-Setting `ci-watch` without choosing a push option at Step 12 closing. Polling has no target; the flag becomes a no-op. The combination is allowed (no error) but worth surfacing in advance so the user picks option 2 or 3 deliberately.
-
-## `automode` behavior
-
-See [autonomy.md](../autonomy.md). Under `automode`, `ci-watch` is functionally inert because `automode` skips the closing menu and emits the small-commit plan only — there is no push to poll.
