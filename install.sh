@@ -108,6 +108,7 @@ build_skill_add_cmd() { # $1=source $2=skill $3=csv-of-agent-slugs
   _oldifs=$IFS; IFS=','
   for _a in $3; do _cmd="$_cmd -a $_a"; done
   IFS=$_oldifs
+  _cmd="$_cmd -g"   # global scope: matches `npx skills list -g` detection; avoids the Project-scope prompt
   [ -n "$OPT_YES" ] && _cmd="$_cmd -y"
   printf '%s' "$_cmd"
 }
@@ -241,7 +242,10 @@ install_plugin() { # $1=marketplace-source $2=plugin@marketplace
 # Continues past individual failures but returns nonzero if any install failed.
 run_installs() {
   _rc=0
-  while IFS='|' read -r _tier _kind _src _name; do
+  # Read the inventory on FD 3, NOT stdin. The install commands (npx skills / claude plugin)
+  # are interactive and read stdin; if the loop fed them the here-doc on FD 0 they would
+  # swallow the remaining rows. FD 3 keeps the real terminal on stdin for those prompts.
+  while IFS='|' read -r _tier _kind _src _name <&3; do
     [ -n "$_tier" ] || continue
     case "$_kind" in
       skill) install_skill "$_tier" "$_src" "$_name" || _rc=1 ;;
@@ -250,7 +254,7 @@ run_installs() {
         install_plugin "$_src" "$_name" || _rc=1
         ;;
     esac
-  done <<EOF
+  done 3<<EOF
 $(deps_table)
 EOF
   return $_rc

@@ -67,13 +67,13 @@ assert_false plugin_installed "super@claude-plugins-official"        "plugin_ins
 # --- command builders ---
 OPT_YES=""
 assert_eq "$(build_skill_add_cmd mattpocock/skills tdd 'claude-code,codex')" \
-  "npx -y skills@latest add mattpocock/skills -s tdd -a claude-code -a codex" \
-  "build_skill_add_cmd: basic"
+  "npx -y skills@latest add mattpocock/skills -s tdd -a claude-code -a codex -g" \
+  "build_skill_add_cmd: basic (global scope)"
 
 OPT_YES="1"
 assert_eq "$(build_skill_add_cmd greptileai/skills greploop 'claude-code')" \
-  "npx -y skills@latest add greptileai/skills -s greploop -a claude-code -y" \
-  "build_skill_add_cmd: --yes appends -y"
+  "npx -y skills@latest add greptileai/skills -s greploop -a claude-code -g -y" \
+  "build_skill_add_cmd: --yes appends -y after -g"
 OPT_YES=""
 
 assert_eq "$(build_plugin_marketplace_cmd anthropics/claude-plugins-official)" \
@@ -127,8 +127,8 @@ assert_eq "$(wc -l < "$RUN_LOG" | tr -d ' ')" "0" "install_skill: present -> no-
 # skill missing on codex -> installs onto codex only
 : > "$RUN_LOG"; OPT_AGENTS="claude-code,codex"; OPT_FORCE=""
 install_skill 1 mattpocock/skills tdd
-assert_eq "$(cat "$RUN_LOG")" "npx -y skills@latest add mattpocock/skills -s tdd -a codex" \
-  "install_skill: installs only the missing agent"
+assert_eq "$(cat "$RUN_LOG")" "npx -y skills@latest add mattpocock/skills -s tdd -a codex -g" \
+  "install_skill: installs only the missing agent (global)"
 
 # plugin present -> no install ; absent -> marketplace add + install
 : > "$RUN_LOG"; OPT_FORCE=""
