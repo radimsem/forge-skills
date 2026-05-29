@@ -168,7 +168,7 @@ The flags change how the interview runs:
 - `automode` skips the interview and proceeds on the issue as written, picking the `(Recommended)` answer for each gap and noting the assumption in the proposal.
 - `automode` with `docs` runs no interview and goes to the Step 5 `CONTEXT.md` write.
 
-When the **`lookup`** flag is set, fetch current docs for every library, framework, SDK, CLI, or cloud service the issue mentions, using `find-docs` (and the `context7` MCP if connected) before writing the proposal. See **[references/modes/lookup.md](references/modes/lookup.md)** for the attribution format, when to skip, and `automode` behavior.
+When the **`lookup`** flag is set, fetch current docs for every library, framework, SDK, CLI, or cloud service the issue mentions, querying the `context7` MCP (or context7 resources if the MCP is not connected) before writing the proposal. See **[references/modes/lookup.md](references/modes/lookup.md)** for the attribution format, when to skip, and `automode` behavior.
 
 ### Step 4a — Optional grilling for risky design forks
 

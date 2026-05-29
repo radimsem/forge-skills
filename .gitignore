@@ -1,0 +1,5 @@
+# Claude Code / harness session state
+.claude/
+
+# Node / npx skills scratch
+node_modules/

@@ -126,7 +126,7 @@ skills_for_source() { # $1=source
   deps_table | awk -F'|' -v s="$1" '$2=="skill" && $3==s {print $4}'
 }
 
-# True if any skill row uses "." as its source (find-docs + forge live in this repo).
+# True if any skill row uses "." as its source (forge lives in this repo).
 has_dot_skill() {
   deps_table | awk -F'|' '$2=="skill" && $3=="."{f=1} END{exit !f}'
 }
@@ -159,7 +159,6 @@ deps_table() {
 3|plugin|anthropics/claude-plugins-official|coderabbit@claude-plugins-official
 4|skill|greptileai/skills|greploop
 4|skill|greptileai/skills|check-pr
-4|skill|.|find-docs
 6|skill|.|forge
 EOF
 }
@@ -213,7 +212,6 @@ preflight() {
   have_cmd claude || printf 'warn: `claude` CLI not on PATH — plugin steps will print paste-in commands instead of running.\n' >&2
   have_cmd gh   || printf 'warn: `gh` (GitHub CLI) not found — needed for GitHub trackers / greploop on GitHub.\n' >&2
   have_cmd glab || printf 'warn: `glab` (GitLab CLI) not found — needed for GitLab trackers.\n' >&2
-  have_cmd ctx7 || printf 'warn: `ctx7` not found — the find-docs (lookup) skill needs it: npm i -g ctx7@latest\n' >&2
   return 0
 }
 
@@ -269,7 +267,7 @@ install_plugin() { # $1=marketplace-source $2=plugin@marketplace
 }
 
 # Install order: bare-skill sources (each batched into one npx pass) → plugins → the "."
-# source (this repo: find-docs + forge) LAST, so forge is the final thing installed and never
+# source (this repo: forge) LAST, so forge is the final thing installed and never
 # resolves before its dependencies. Continues past failures but returns nonzero if any failed.
 run_installs() {
   _rc=0
@@ -288,7 +286,7 @@ run_installs() {
 $(deps_table | awk -F'|' '$2=="plugin"{print $3"|"$4}')
 EOF
   fi
-  # 3) The "." source LAST (find-docs + forge) — forge installed last.
+  # 3) The "." source LAST (forge) — forge installed last.
   if has_dot_skill; then
     install_skill_group "." || _rc=1
   fi
@@ -303,9 +301,8 @@ Done. Next steps / runtime notes:
     (bootstraps tracker + triage labels consumed by tdd/to-issues/diagnose/improve-codebase-architecture).
   - Built-in, no install needed: /goal, /compact, and security-review (Claude Code built-ins).
   - Optional, set up if you use the matching flag/tracker:
-      * context7 MCP (lookup), Atlassian MCP (Jira), Linear MCP (Linear)
+      * context7 MCP — the `lookup` flag's doc source; Atlassian MCP (Jira); Linear MCP (Linear)
       * gh / glab CLIs for GitHub / GitLab trackers
-  - find-docs (lookup flag) needs the Context7 CLI: npm i -g ctx7@latest
 EOF
 }
 

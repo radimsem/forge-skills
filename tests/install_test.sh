@@ -83,8 +83,8 @@ assert_eq "$(build_plugin_install_cmd superpowers@claude-plugins-official)" \
   "claude plugin install superpowers@claude-plugins-official -s user" \
   "build_plugin_install_cmd"
 
-# --- inventory data (table has exactly 16 rows: 9 tier-1, 1 tier-2, 2 tier-3, 3 tier-4, 1 tier-6) ---
-assert_eq "$(deps_table | grep -c '^[1-6]|')" "16" "deps_table: 16 dependency rows"
+# --- inventory data (table has exactly 15 rows: 9 tier-1, 1 tier-2, 2 tier-3, 2 tier-4, 1 tier-6) ---
+assert_eq "$(deps_table | grep -c '^[1-6]|')" "15" "deps_table: 15 dependency rows"
 assert_eq "$(deps_table | awk -F'|' '$1==6{print $4}')" "forge" "deps_table: tier 6 is forge"
 assert_eq "$(deps_table | awk -F'|' '$1==1 && $2=="skill"{c++} END{print c}')" "9" \
   "deps_table: 9 tier-1 skills (7 mattpocock + bootstrap + karpathy)"
@@ -163,7 +163,7 @@ print_status_table()  { :; }
 
 OPT_SKILLS_ONLY=""
 run_installs   # the orchestration core called by main()
-# "." source (find-docs + forge) must be the final install
+# "." source (forge) must be the final install
 assert_eq "$(tail -n1 "$ORDER_LOG")" "skillsrc:." "run_installs: '.' source (forge) installed last"
 assert_eq "$(head -n1 "$ORDER_LOG")" "skillsrc:mattpocock/skills" "run_installs: first source is mattpocock"
 # each source is installed in exactly ONE batched pass (not once per skill)

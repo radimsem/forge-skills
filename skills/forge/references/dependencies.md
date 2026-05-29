@@ -22,10 +22,10 @@ the reviewer engines need, which is why the plugins go through `claude plugin`.
 | `codex` plugin | `openai/codex-plugin-cc` | `claude plugin` (CC-only) | `codex` flag |
 | `coderabbit` plugin | `claude-plugins-official` | `claude plugin` (CC-only) | `coderabbit` flag |
 | `greploop` `check-pr` | `greptileai/skills` | `npx skills` | Step 8 PR-review fallback |
-| `find-docs` | vendored (`skills/find-docs`); needs `ctx7` CLI | `npx skills` | `lookup` flag |
 
 ## No install needed (host/runtime built-ins)
 
 - `/goal`, `/compact` — built-in agent commands.
 - `security-review` — Claude Code built-in (`secure` flag).
-- context7 / Atlassian / Linear MCP, `gh`, `glab` — optional, set up per tracker/flag you use.
+- **context7 MCP** — the `lookup` flag's documentation source. Optional; set it up (MCP, or the `ctx7` resources your runtime exposes) only if you use `lookup`. The installer does not provision it — MCP setup/auth is per-user.
+- Atlassian / Linear MCP, `gh`, `glab` — optional, set up per tracker you use.

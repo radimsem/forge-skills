@@ -40,10 +40,10 @@ Traced from the `skills/forge` tree (grep of every ``/cmd`` and ``plugin:skill``
 | `codex:codex-rescue` `codex review` `codex adversarial-review` (`codex` flag) | codex plugin (`openai/codex-plugin-cc`) | `/plugin` (CC-only) | 3 |
 | `coderabbit:code-review` `coderabbit:autofix` (`coderabbit` flag) | coderabbit plugin (`claude-plugins-official`) | `/plugin` (CC-only) | 3 |
 | `/greploop` `/check-pr` (Step 8 PR-review fallback) | `greptileai/skills` | `npx skills add` | 4 |
-| `find-docs` (`lookup` flag) | bundled into this repo (§7.2); Context7-CLI-backed | `npx skills add` (local) + `npm i -g ctx7` | 4 |
 | `/goal` `/compact` | **built-in agent commands** (Claude Code / Codex / others) | none | 5 |
 | `security-review` (`secure` flag) | `builtin:security-review` (Claude Code) | none | 5 |
-| context7 MCP, Atlassian MCP, Linear MCP | various | MCP (interactive auth) | 5 |
+| **context7 MCP** (`lookup` flag's doc source) | context7 MCP / resources | MCP (interactive auth) — not installer-provisioned | 5 |
+| Atlassian MCP, Linear MCP | various | MCP (interactive auth) | 5 |
 | `gh` / `glab` (tracker CLIs) | GitHub CLI / GitLab CLI | OS package manager | 5 |
 | **forge** | this repo (`radimsem/forge-skills`, skill at `skills/forge`) | `npx skills add` — **installed last** | 6 |
 
@@ -51,7 +51,7 @@ Traced from the `skills/forge` tree (grep of every ``/cmd`` and ``plugin:skill``
 
 - **`/goal` is not a skill.** It is a built-in agent command (confirmed by the user; absent from every marketplace, mattpocock's set, and all local skill dirs). Forge's Step 7 "set `/goal`" and Step 12 "`/goal` verifies green" rely on the host agent, not on an installable artifact. → Tier 5, no install.
 - **`/notes` is a false positive.** It is a GitLab REST path fragment (`GET /projects/:id/issues/:iid` + `/notes`) in `references/trackers/gitlab.md`, not a skill.
-- **`find-docs` is not shipped by the context7 plugin.** The installed context7 plugin cache contains no `find-docs` skill. The host's `~/.claude/skills/find-docs` is a standalone skill that wraps the **Context7 CLI** (`ctx7`). It has no public source repo we could pin, so we bundle it (§7.2).
+- **`find-docs` is dropped entirely (decision revised post-implementation).** It was briefly vendored, but the `lookup` flag does not warrant a bundled skill. `lookup` now relies on the **context7 MCP/resources** directly (§7.2). No `find-docs` skill ships in this repo, and the installer no longer installs one.
 - **`/caveman` is not a forge dependency.** It appears in this repo's tooling/process but is never referenced by the `skills/forge` tree. Excluded from the installer.
 
 ## 5. Why two mechanisms (the core constraint)
@@ -104,9 +104,9 @@ Tiers 1/4/6 install onto **`claude-code,codex,cursor,opencode`** (the user's cho
 - **Plugins:** detect via `claude plugin list` (the CLI's own ledger). Fallback when `claude` is absent: a plugin is present iff `<plugin>@<marketplace>` is a key under `.plugins` in `~/.claude/plugins/installed_plugins.json` (observed format: `superpowers@claude-plugins-official`, `greptile@claude-plugins-official`, …), read with `python3 -c` or grep on the literal key.
 - **Idempotency does not depend on detection.** `npx skills add` is already safe to re-run; detection exists for clean reporting and to avoid redundant work, and to make `--force` meaningful.
 
-### 7.2 `find-docs` — vendored (decided)
+### 7.2 `find-docs` — dropped; `lookup` uses context7 directly (decided, revised)
 
-Bundle a copy at `skills/find-docs/SKILL.md` (+ any resources) sourced from the host's working copy, so the installer is self-contained — no dangling reference to an unsourceable skill. The skill wraps the Context7 CLI, so the script's preflight warns (non-fatal) if `ctx7` is absent and prints `npm i -g ctx7@latest`. Because `find-docs` is only reached behind the `lookup` flag, its absence never blocks core forge.
+Originally the plan vendored a `find-docs` skill for the `lookup` flag. That was reversed: no `find-docs` skill ships in this repo. The `lookup` flag instead queries the **context7 MCP** (resolve library id → fetch docs), falling back to whatever context7 resources the runtime exposes (e.g. the `ctx7` CLI) and recording a Risk when none is available. context7 is an optional, user-provisioned MCP (Tier 5) — the installer does not install it, because MCP setup/auth is per-user. `lookup` is flag-gated, so context7's absence never blocks core forge. See `skills/forge/references/modes/lookup.md`.
 
 ### 7.3 Plugin install — run headlessly (decided)
 
@@ -131,11 +131,11 @@ Strict tier order 1 → 6, forge last, because forge is the consumer: installing
 | File | Change |
 |---|---|
 | `install.sh` (repo root) | **New.** The orchestrator described above. Executable, POSIX `sh`. |
-| `skills/find-docs/SKILL.md` (+ any resources) | **New (vendored).** Copied from the host working copy (§7.2). |
 | `README.md` (root) | **Edit.** Replace the stale `/plugin install …/1.0.0` block with `./install.sh` + a one-line description of the two mechanisms. Fix the `1.0.0/` → `skills/` path drift while here. |
 | `skills/forge/references/dependencies.md` | **New.** A concise Dependencies section: the §4 inventory + a pointer to `install.sh`. SKILL.md gains one short line linking to it (keeps the always-loaded spine light). |
+| `skills/forge/references/modes/lookup.md`, `flags.md`, `SKILL.md` | **Edit.** Re-point the `lookup` flag from a `find-docs` skill to the context7 MCP/resources (find-docs dropped, §7.2). |
 
-No change to forge's workflow, flags, or any existing reference file's behavior.
+No change to forge's workflow or flag set — only the `lookup` flag's documentation source changes (find-docs → context7).
 
 ## 9. Verification
 
@@ -148,7 +148,7 @@ No change to forge's workflow, flags, or any existing reference file's behavior.
 
 ## 10. Open questions — all resolved
 
-1. **`find-docs` provenance (§7.2)** — ✅ vendor the local skill into `skills/find-docs/`.
+1. **`find-docs` provenance (§7.2)** — ✅ resolved by dropping it: no `find-docs` skill ships; the `lookup` flag uses the context7 MCP/resources directly.
 2. **Dependencies doc placement (§8)** — ✅ new `skills/forge/references/dependencies.md`, linked from SKILL.md.
 3. **`claude plugin` CLI (§7.3)** — ✅ confirmed headless (`marketplace add` / `install -s user` / `list`). Script runs it directly; printing is the no-`claude`-on-PATH fallback only.
 

@@ -12,7 +12,6 @@ skills/
     SKILL.md           ← the skill entry point
     references/        ← progressive-disclosure detail files
     scripts/           ← helper scripts called by the skill
-  find-docs/           ← companion skill used by forge
 docs/
   specs/               ← design docs for upcoming changes
   adr/                 ← architecture decision records

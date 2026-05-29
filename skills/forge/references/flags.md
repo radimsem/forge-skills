@@ -12,7 +12,7 @@ The full set of flags the forge skill understands, with composition rules and co
 | `codex challenge` | Codex `review` → `adversarial-review`. Implies `codex` | [reviewers/codex.md](reviewers/codex.md) |
 | `tdd` | Compose `/tdd` at Step 7; observe failing test before implementation | [modes/tdd.md](modes/tdd.md) |
 | `worktree` | Compose `superpowers:using-git-worktrees` at Step 3 instead of in-place branch switch | [modes/worktree.md](modes/worktree.md) |
-| `lookup` | Compose `find-docs` (+ `context7` MCP if available) at Step 4 for library-specific facts | [modes/lookup.md](modes/lookup.md) |
+| `lookup` | Query the `context7` MCP/resources at Step 4 for library-specific facts | [modes/lookup.md](modes/lookup.md) |
 | `secure` | Compose `security-review` after Step 8 convergence; findings re-enter Step 8 as must-fix | [modes/secure.md](modes/secure.md) |
 | `changelog` | At Step 12, draft a changelog entry per repo convention | [modes/changelog.md](modes/changelog.md) |
 | `ci-watch` | After Step 12 push, poll CI; on red, re-enter Step 8 with the failure as a finding | [modes/ci-watch.md](modes/ci-watch.md) |
