@@ -120,6 +120,31 @@ build_plugin_install_cmd() { # $1=plugin@marketplace
   printf 'claude plugin install %s -s user' "$1"
 }
 
+# Single source of truth for forge's external dependencies.
+# Columns: tier|kind|source|name
+#   kind=skill  -> source is an npx skills add source (owner/repo or "." for this repo); name = -s skill
+#   kind=plugin -> source is the marketplace owner/repo; name = plugin@marketplace
+deps_table() {
+  cat <<'EOF'
+1|skill|mattpocock/skills|tdd
+1|skill|mattpocock/skills|grill-me
+1|skill|mattpocock/skills|grill-with-docs
+1|skill|mattpocock/skills|to-issues
+1|skill|mattpocock/skills|diagnose
+1|skill|mattpocock/skills|write-a-skill
+1|skill|mattpocock/skills|improve-codebase-architecture
+1|skill|mattpocock/skills|setup-matt-pocock-skills
+1|skill|forrestchang/andrej-karpathy-skills|karpathy-guidelines
+2|plugin|anthropics/claude-plugins-official|superpowers@claude-plugins-official
+3|plugin|openai/codex-plugin-cc|codex@openai-codex
+3|plugin|anthropics/claude-plugins-official|coderabbit@claude-plugins-official
+4|skill|greptileai/skills|greploop
+4|skill|greptileai/skills|check-pr
+4|skill|.|find-docs
+6|skill|.|forge
+EOF
+}
+
 main() {
   parse_args "$@" || return $?
   printf 'install.sh scaffold OK (agents: %s)\n' "$OPT_AGENTS"

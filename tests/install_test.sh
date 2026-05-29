@@ -83,5 +83,14 @@ assert_eq "$(build_plugin_install_cmd superpowers@claude-plugins-official)" \
   "claude plugin install superpowers@claude-plugins-official -s user" \
   "build_plugin_install_cmd"
 
+# --- inventory data (table has exactly 16 rows: 9 tier-1, 1 tier-2, 2 tier-3, 3 tier-4, 1 tier-6) ---
+assert_eq "$(deps_table | grep -c '^[1-6]|')" "16" "deps_table: 16 dependency rows"
+assert_eq "$(deps_table | awk -F'|' '$1==6{print $4}')" "forge" "deps_table: tier 6 is forge"
+assert_eq "$(deps_table | awk -F'|' '$1==1 && $2=="skill"{c++} END{print c}')" "9" \
+  "deps_table: 9 tier-1 skills (7 mattpocock + bootstrap + karpathy)"
+# forge must be the last skill row encountered (installed last)
+assert_eq "$(deps_table | awk -F'|' '$2=="skill"{last=$4} END{print last}')" "forge" \
+  "deps_table: forge is the final skill row"
+
 printf '\n%s\n' "FAILS=$FAILS"
 [ "$FAILS" -eq 0 ]
