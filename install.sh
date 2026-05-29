@@ -58,6 +58,43 @@ agent_slug_to_name() {
   esac
 }
 
+# Reads $SKILLS_LIST_RAW (captured `npx skills list` output). Echoes the comma-separated
+# display-name list for the given skill, or empty if the skill is absent.
+parse_skill_agents() { # $1=skill name
+  printf '%s\n' "${SKILLS_LIST_RAW:-}" | strip_ansi | awk -v want="$1" '
+    /^  [^ ]/ { found = ($1 == want) }
+    /^    Agents:/ && found {
+      sub(/^    Agents:[ ]*/, "")
+      print
+      found = 0
+    }
+  '
+}
+
+# True if the skill is installed on the given agent slug.
+agent_has_skill() { # $1=skill $2=agent-slug
+  _display=$(agent_slug_to_name "$2")
+  _agents=$(parse_skill_agents "$1")
+  [ -n "$_agents" ] || return 1
+  case ",$(printf '%s' "$_agents" | sed 's/, /,/g')," in
+    *",$_display,"*) return 0 ;;
+  esac
+  return 1
+}
+
+# Echoes the space-separated subset of targeted slugs missing the skill.
+agents_missing_skill() { # $1=skill $2=csv-of-slugs
+  _miss=""
+  _oldifs=$IFS; IFS=','
+  for _a in $2; do
+    IFS=$_oldifs
+    agent_has_skill "$1" "$_a" || _miss="$_miss $_a"
+    IFS=','
+  done
+  IFS=$_oldifs
+  printf '%s' "${_miss# }"
+}
+
 main() {
   parse_args "$@" || return $?
   printf 'install.sh scaffold OK (agents: %s)\n' "$OPT_AGENTS"

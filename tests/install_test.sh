@@ -39,5 +39,23 @@ assert_eq "$(agent_slug_to_name codex)" "Codex" "slug codex -> Codex"
 assert_eq "$(agent_slug_to_name opencode)" "OpenCode" "slug opencode -> OpenCode"
 assert_eq "$(agent_slug_to_name cursor)" "Cursor" "slug cursor -> Cursor"
 
+# --- skill detection parser ---
+SKILLS_LIST_RAW=$(cat "$ROOT/tests/fixtures/skills-list.txt")
+
+assert_eq "$(parse_skill_agents tdd)" "Claude Code" "parse_skill_agents: tdd -> Claude Code"
+assert_eq "$(parse_skill_agents grill-with-docs)" "Claude Code, Pi" "parse_skill_agents: multi-agent"
+assert_eq "$(parse_skill_agents not-installed)" "" "parse_skill_agents: absent skill -> empty"
+
+assert_true  agent_has_skill greploop codex   "agent_has_skill: greploop on codex"
+assert_false agent_has_skill tdd codex         "agent_has_skill: tdd NOT on codex"
+assert_false agent_has_skill not-installed claude-code "agent_has_skill: absent skill"
+
+assert_eq "$(agents_missing_skill tdd 'claude-code,codex,cursor')" "codex cursor" \
+  "agents_missing_skill: tdd missing on codex,cursor"
+assert_eq "$(agents_missing_skill grill-with-docs 'claude-code')" "" \
+  "agents_missing_skill: nothing missing"
+assert_eq "$(agents_missing_skill not-installed 'claude-code,codex')" "claude-code codex" \
+  "agents_missing_skill: absent skill -> all targeted"
+
 printf '\n%s\n' "FAILS=$FAILS"
 [ "$FAILS" -eq 0 ]

@@ -1,0 +1,13 @@
+Global Skills
+
+Mattpocock Skills
+  diagnose ~/.agents/skills/diagnose
+    Agents: Claude Code
+  grill-with-docs ~/.agents/skills/grill-with-docs
+    Agents: Claude Code, Pi
+  tdd ~/.agents/skills/tdd
+    Agents: Claude Code
+
+General
+  greploop ~/.agents/skills/greploop
+    Agents: Claude Code, Codex
