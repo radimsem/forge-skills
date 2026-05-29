@@ -114,5 +114,35 @@ assert_eq "$?" "1" "require_cmd: missing command returns 1"
 ( require_cmd sh "test hint" ) 2>/dev/null
 assert_eq "$?" "0" "require_cmd: present command returns 0"
 
+# --- install actions (with stubbed npx/claude that log their args) ---
+RUN_LOG=$(mktemp)
+npx()    { printf 'npx %s\n' "$*" >> "$RUN_LOG"; }
+claude() { printf 'claude %s\n' "$*" >> "$RUN_LOG"; }
+
+# skill present on all targeted agents -> no install
+: > "$RUN_LOG"; OPT_AGENTS="claude-code"; OPT_FORCE=""
+install_skill 1 mattpocock/skills tdd
+assert_eq "$(wc -l < "$RUN_LOG" | tr -d ' ')" "0" "install_skill: present -> no-op"
+
+# skill missing on codex -> installs onto codex only
+: > "$RUN_LOG"; OPT_AGENTS="claude-code,codex"; OPT_FORCE=""
+install_skill 1 mattpocock/skills tdd
+assert_eq "$(cat "$RUN_LOG")" "npx -y skills@latest add mattpocock/skills -s tdd -a codex" \
+  "install_skill: installs only the missing agent"
+
+# plugin present -> no install ; absent -> marketplace add + install
+: > "$RUN_LOG"; OPT_FORCE=""
+install_plugin anthropics/claude-plugins-official superpowers@claude-plugins-official
+assert_eq "$(wc -l < "$RUN_LOG" | tr -d ' ')" "0" "install_plugin: present -> no-op"
+
+: > "$RUN_LOG"
+install_plugin openai/codex-plugin-cc codex@openai-codex
+assert_eq "$(cat "$RUN_LOG")" \
+"claude plugin marketplace add openai/codex-plugin-cc
+claude plugin install codex@openai-codex -s user" \
+  "install_plugin: absent -> marketplace add + install"
+rm -f "$RUN_LOG"
+unset -f npx claude
+
 printf '\n%s\n' "FAILS=$FAILS"
 [ "$FAILS" -eq 0 ]

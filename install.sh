@@ -208,6 +208,35 @@ capture_state() {
   fi
 }
 
+install_skill() { # $1=tier $2=source $3=name
+  _missing=$(agents_missing_skill "$3" "$OPT_AGENTS")
+  if [ -n "$OPT_FORCE" ]; then _missing=$(printf '%s' "$OPT_AGENTS" | tr ',' ' '); fi
+  if [ -z "$_missing" ]; then
+    printf '  = %s already present on all targeted agents\n' "$3"
+    return 0
+  fi
+  _agents_csv=$(printf '%s' "$_missing" | tr ' ' ',')
+  _cmd=$(build_skill_add_cmd "$2" "$3" "$_agents_csv")
+  printf '  + installing %s -> %s\n' "$3" "$_missing"
+  # shellcheck disable=SC2086
+  $_cmd || { printf '  ! failed to install %s (continuing)\n' "$3" >&2; return 1; }
+}
+
+install_plugin() { # $1=marketplace-source $2=plugin@marketplace
+  if plugin_installed "$2" && [ -z "$OPT_FORCE" ]; then
+    printf '  = %s already installed\n' "$2"
+    return 0
+  fi
+  if have_cmd claude; then
+    printf '  + installing plugin %s\n' "$2"
+    claude plugin marketplace add "$1"
+    claude plugin install "$2" -s user \
+      || { printf '  ! failed to install %s (continuing)\n' "$2" >&2; return 1; }
+  else
+    printf '  ! claude CLI absent — run these inside Claude Code:\n    /plugin marketplace add %s\n    /plugin install %s\n' "$1" "$2"
+  fi
+}
+
 main() {
   parse_args "$@" || return $?
   printf 'install.sh scaffold OK (agents: %s)\n' "$OPT_AGENTS"
