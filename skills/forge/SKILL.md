@@ -110,7 +110,7 @@ Read **[references/trackers/jira.md](references/trackers/jira.md)**, which cover
 
 ### git-host issue
 
-Use the loaded tracker ref for the fetch command and the REST fallback: [references/trackers/github.md](references/trackers/github.md) Step 2 or [references/trackers/gitlab.md](references/trackers/gitlab.md) Step 2. For a host without a dedicated ref, run its CLI's issue-view JSON command if one exists, otherwise curl the host's REST API. Either way, read the body and every comment.
+Use the loaded tracker ref for the fetch command and the REST fallback: [references/trackers/github.md](references/trackers/github.md) Step 2 or [references/trackers/gitlab.md](references/trackers/gitlab.md) Step 2. For a host without a dedicated ref, run its CLI's issue-view JSON command if one exists, otherwise curl the host's REST API. Either way, read the body and every comment. If the number is a pull request, not an issue, stop and ask whether they meant `/forge pr <N>`.
 
 ### Jira ticket
 
@@ -134,7 +134,7 @@ For Jira, see **[references/trackers/jira.md](references/trackers/jira.md)** Ste
 Compare the chosen branch name to the current branch:
 - If they match, continue.
 - If they differ, show both and ask: **"Switch to a new branch `<prefix>/<slug>` forked off `<base>`? (y/n)"**. Pick `<base>` per the repo guide, otherwise probe `dev`, then `develop`, then `main`, then `master`.
-- On `y`, confirm the tree is clean with `git status --short`. If it is dirty, surface the files and ask before any switch, then run `git switch -c <prefix>/<slug> <base>`.
+- On `y`, confirm the tree is clean with `git status --short`. If it is dirty, surface the files and ask before any switch, then run `git switch -c <prefix>/<slug> <base>`. If the switch fails (branch exists, base missing), surface the git error and ask. Never invent a name or base.
 
 When the **`worktree`** flag is set, create a sibling worktree on the chosen branch instead of switching in place. See **[references/modes/worktree.md](references/modes/worktree.md)**; it composes `superpowers:using-git-worktrees`, and the Step 12 closing appends a cleanup reminder.
 
@@ -184,7 +184,7 @@ Do this only when getting the approach wrong is costly. For a clear, low-risk fi
 
 Emit exactly one proposal. The block format is in **[references/proposal-template.md](references/proposal-template.md)** Step 5 and covers the issue line, the restated problem, the root cause or design, the files to touch, the plan, the pass criteria, the tests, and the risks. Verify that file paths exist with Read or Grep before listing them, and drop the `:line` suffix if you have not opened the file.
 
-With **`docs`**, write the proposal to `CONTEXT.md` in the repo root, instead of or in addition to chat, since Part 2 sources the plan from `CONTEXT.md` rather than the chat scrollback.
+With **`docs`**, write the proposal to `CONTEXT.md` in the repo root, instead of or in addition to chat, since Part 2 sources the plan from `CONTEXT.md` rather than the chat scrollback. Stamp it with the ref it was written for, so a later run can tell it apart from a stale plan.
 
 End the proposal by stating the user's next-turn choices, using the options in the template Step 5. Saying `yes, implement` opens the gate and moves to Step 7. Saying `interview me on risky questions` runs the Step 4a grilling and re-proposes, and is offered only when a risky design fork is still unanswered. Any other adjustment means revise and re-propose.
 
@@ -214,7 +214,7 @@ Steps 8 and 9 reference this block. It is two actions, in order:
 /compact  →  re-source /karpathy-guidelines
 ```
 
-Run it before touching code on every non-converged review pass and before approved refactor work. The point is to shed stale reviewer-transcript tokens and reload clean-code discipline. Do not restate `/goal` here; it is set once, in Step 7.
+Run it before touching code on every non-converged review pass and before approved refactor work. The point is to shed stale reviewer-transcript tokens and reload clean-code discipline. On a review pass, capture the must-fix and should-fix findings before `/compact` so they survive it, then fix from that list. Do not restate `/goal` here; it is set once, in Step 7.
 
 ## Step 7 — Implement
 
@@ -225,7 +225,7 @@ Open the step with two actions, in order:
 
 When the **`tdd`** flag is set, write the failing test first, run it, watch it fail, then implement. See **[references/modes/tdd.md](references/modes/tdd.md)**; it composes `superpowers:test-driven-development`, and the discipline binds under `automode`.
 
-With `docs`, load the plan from `CONTEXT.md`. Implement the approved plan and keep it minimal, surgical, and in scope. Make no edits before the opener is done, and before the observed-red test is done if `tdd` is set.
+With `docs`, load the plan from `CONTEXT.md` and check its stamp matches this ref; on a mismatch, warn and re-propose rather than implement a stale plan. Implement the approved plan and keep it minimal, surgical, and in scope. Make no edits before the opener is done, and before the observed-red test is done if `tdd` is set.
 
 ## Step 8 — Review loop
 
@@ -270,7 +270,7 @@ If you hit a caveat that could be automated for future agentic sessions, propose
 
 ## Step 12 — Closing
 
-Verify `/goal` before anything else. Before assembling the proposal, run the Step 7 `/goal` pass criteria and the repo's standard pre-commit checks (build, test, and lint per the repo guide). Show the exact commands and their output. If anything fails, or you cannot run the checks, you are not done: return to Step 8 with the failure as a finding. Never assemble a commit proposal on an unverified `/goal`, because an unproven "done" is the one failure mode forge must not ship. `automode` does not lift this gate; it runs the checks itself and proceeds only on green.
+Verify `/goal` before anything else. Before assembling the proposal, run the Step 7 `/goal` pass criteria and the repo's standard pre-commit checks (build, test, and lint per the repo guide). Show the exact commands and their output. A command that exits 0 without running tests, such as "no tests collected" or empty output, does not prove `/goal`; treat it as not done. If anything fails, or you cannot run the checks, you are not done: return to Step 8 with the failure as a finding. Never assemble a commit proposal on an unverified `/goal`, because an unproven "done" is the one failure mode forge must not ship. `automode` does not lift this gate; it runs the checks itself and proceeds only on green.
 
 Then assemble the commit or PR proposal. The default is small atomic commits that match the branch's existing granularity and message style, which you can inspect with `git log --oneline <base>..HEAD`, rather than one squashed mega-commit. The repo's git or contribution guide from Step 3 still wins: if it mandates another shape, such as squash-on-merge, follow it and say why.
 

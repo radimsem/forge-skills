@@ -14,6 +14,8 @@ glab issue view <N> -F json   # confirm flag via `glab issue view --help`
 
 Read **body + every comment** — latest comments often carry the missing repro / decision.
 
+If `<N>` is a merge request, not an issue, stop and ask whether they meant `/forge pr <N>`.
+
 ### GitLab-absent fallback
 
 `glab` missing or unauthenticated → host REST API: `GET /projects/:id/issues/:iid` + `/notes`, token in `PRIVATE-TOKEN`. Unauth REST is rate-limited — say so if you fall back.

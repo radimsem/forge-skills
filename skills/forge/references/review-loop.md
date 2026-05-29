@@ -30,6 +30,8 @@ After the rework returns, re-enter Step 8 with the rework diff as a new pass inp
 
 Terminate at **zero actionable findings**. Actionable = must-fix **or** should-fix. Nits do not block. Stop the loop and proceed to Step 9.
 
+A reviewer that errored or returned nothing did not converge — re-dispatch that engine once before counting the pass clean.
+
 ## Pass cap
 
 Cap **3 passes**. On each non-converged pass, run the re-hydrate block (defined in SKILL.md), fix the findings, then re-review. If pass 3 still has actionable findings, do not start pass 4 — summarize the remainder and ask the user. Under `automode`, pick the safest finding to act on and continue.

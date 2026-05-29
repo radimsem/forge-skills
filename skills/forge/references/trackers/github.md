@@ -14,6 +14,8 @@ gh issue view <N> --json number,title,body,state,labels,comments,author,url
 
 Read **body + every comment** — latest comments often carry the missing repro / decision.
 
+If `<N>` is a pull request, `gh issue view` says so — stop and ask whether they meant `/forge pr <N>`.
+
 ### GitHub-absent fallback
 
 `gh` missing or unauthenticated → host REST API:

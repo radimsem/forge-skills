@@ -15,6 +15,8 @@ Expected: after the push completes, forge polls the CI status for the pushed HEA
 
 After Step 12 closing-menu actions complete the push. The polling only happens for menu options that actually push (2 and 3). Options 1, 4, 5, 6 silently skip `ci-watch` — polling without a published target is pointless.
 
+If the push is rejected (non-fast-forward, auth), surface the error and stop. Do not force-push, and do not poll a HEAD that never landed.
+
 ## What it composes
 
 No external skill. Uses the repo's host CLI for status checks:
@@ -30,6 +32,8 @@ If no CLI matches and no API path works, surface "ci-watch: no compatible CI sur
 ## Polling cadence
 
 Initial wait: 30 seconds (give CI time to start). Then poll every 60 seconds. Cap at 30 minutes total wall-clock; past that, surface "ci-watch: timed out at <duration>, status still <pending|in_progress>" and exit. The user can re-check manually.
+
+Confirm a run exists for the pushed SHA before reading status; "no run found" is not green. If none appears, keep polling to the cap, then surface that no run showed up for `<sha>`.
 
 ## Behavior change vs default
 
