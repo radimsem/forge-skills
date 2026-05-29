@@ -31,7 +31,7 @@ Useful flags:
 ./install.sh --help          # full option list
 ```
 
-The installer pulls in everything forge composes (see [What forge uses](#what-forge-uses)) and installs forge last. It uses two mechanisms under the hood: Vercel's `npx skills` for the bare skills, and `claude plugin` for the reviewer plugins that ship agents and hooks. On a non-Claude-Code host, pass `--skills-only` and the plugin step is skipped.
+The installer pulls in everything forge composes (see [What forge uses](#what-forge-uses)) and installs forge last, using `npx skills` for the bare skills and `claude plugin` for the reviewer plugins. On a non-Claude-Code host, pass `--skills-only` to skip the plugin step.
 
 Once it's installed, forge wakes up on `/forge <ref>` or any phrasing that matches the trigger in [`SKILL.md`](skills/forge/SKILL.md).
 
@@ -102,39 +102,8 @@ Forge leans on a handful of other skills and plugins, all installed for you by `
 | `coderabbit` plugin | claude-plugins-official | the `coderabbit` flag (Claude Code only) |
 | `greploop`, `check-pr` | `greptileai/skills` | the review-loop fallback |
 
-A few things are not installed because your host already provides them: `/goal` and `/compact`, the built-in `security-review`, and the context7 MCP that the `lookup` flag reads from. Set up context7 and your tracker's MCP (Atlassian, Linear) only if you use the flags that need them. Full detail in [`DEPENDENCIES.md`](DEPENDENCIES.md).
-
-## Roadmap
-
-Forge shipped through a five-phase redesign. The plan is in [`docs/specs/2026-05-28-forge-redesign.md`](docs/specs/2026-05-28-forge-redesign.md).
-
-| Phase | Theme | Version |
-|---|---|---|
-| 1 | Structural split, no behavior change | 0.2.0 ✓ |
-| 2 | Pre-implementation safety (`tdd`, `worktree`, `lookup`) | 0.3.0 ✓ |
-| 3 | Post-implementation gates (`secure`, `changelog`, `ci-watch`) | 0.4.0 ✓ |
-| 4 | Entry variants (`pr`, Linear, backport, stacked) | 0.5.0 ✓ |
-| 5 | Reviewer ecosystem (`codex`, `coderabbit`) | 0.6.0 ✓ |
-
-1.0.0 shipped after Phase 5 and a polish pass.
-
-## Layout
-
-```
-skills/forge/
-  SKILL.md          the skill contract (Steps 1–12)
-  references/       the detail files each step defers to
-  scripts/          helpers the skill calls
-docs/
-  specs/            design docs
-  adr/              decision records
-install.sh          the installer
-```
-
-## Contributing
-
-One atomic PR per roadmap unit. No edits to `SKILL.md` without an ADR or a spec excerpt to back them. Current design docs are in [`docs/specs/`](docs/specs/).
+A few things are not installed because your host already provides them: `/goal` and `/compact`, the built-in `security-review`, and the context7 MCP that the `lookup` flag reads from. Set up context7 and your tracker's MCP (Atlassian, Linear) only if you use the flags that need them.
 
 ## License
 
-[MIT](LICENSE) © radimsem
+[MIT](LICENSE)
