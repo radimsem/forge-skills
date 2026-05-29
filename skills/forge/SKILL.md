@@ -1,6 +1,6 @@
 ---
 name: forge
-description: Forge an issue, ticket, or PR into a shipped fix — propose → gated approval → implement → review-loop → refactor. Use when the user runs /forge or asks to investigate, fix, resolve, triage, or solve an issue/ticket/PR in the current repo (GitHub, GitLab, Jira, Linear). Triggers on "forge issue 42", "fix #123", "solve PROJ-123", "forge linear ENG-42", "forge pr 47". Optional modifier flags compose freely (automode, docs, tdd, worktree, lookup, secure, changelog, ci-watch, backport, stacked, codex, codex challenge, coderabbit) — see Parameters.
+description: Forge an issue/ticket/PR into a shipped fix — propose → approve → implement → review → refactor. Use when user runs /forge or asks to investigate, fix, resolve, triage, or solve one. Flags — see Parameters.
 ---
 
 # Forge
