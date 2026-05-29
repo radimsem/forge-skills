@@ -2,29 +2,22 @@
 
 Packaged Claude Code plugin holding the **forge** skill and its planned evolution.
 
-Forge turns an issue or Jira/Linear ticket reference into a verified, gated proposal and then runs the full implement → review → refactor → close lifecycle, autonomously between substantive gates. See [`1.0.0/skills/forge/SKILL.md`](1.0.0/skills/forge/SKILL.md) for the current skill contract.
+Forge turns an issue or Jira/Linear ticket reference into a verified, gated proposal and then runs the full implement → review → refactor → close lifecycle, autonomously between substantive gates. See [`skills/forge/SKILL.md`](skills/forge/SKILL.md) for the current skill contract.
 
 ## Layout
 
-Mirrors the [`andrej-karpathy-skills`](https://github.com/multica-ai/andrej-karpathy-skills) packaging pattern: each release lives in its own version directory so multiple versions can coexist in a marketplace cache and old versions remain rollback-able as directory renames.
-
 ```
-1.0.0/
-  .claude-plugin/
-    plugin.json          ← marketplace manifest
-  skills/
-    forge/
-      SKILL.md           ← the skill entry point
-      references/        ← progressive-disclosure detail files
-      scripts/           ← helper scripts called by the skill
-  README.md              ← per-version notes
-  CLAUDE.md              ← contributor guidance for agents in this version
+skills/
+  forge/
+    SKILL.md           ← the skill entry point
+    references/        ← progressive-disclosure detail files
+    scripts/           ← helper scripts called by the skill
+  find-docs/           ← companion skill used by forge
 docs/
-  specs/                 ← design docs for upcoming changes
-  adr/                   ← architecture decision records
+  specs/               ← design docs for upcoming changes
+  adr/                 ← architecture decision records
+install.sh             ← unified installer
 ```
-
-The version in the directory name (`1.0.0/`) MUST match the `version` field in `1.0.0/.claude-plugin/plugin.json`. Bumping the version is a directory rename plus a manifest edit — kept atomic in a single PR.
 
 ## Roadmap
 
@@ -38,20 +31,30 @@ The forge skill is undergoing a five-phase redesign. The full plan is in [`docs/
 | 4 | Lifecycle entry variants (`/forge pr <N>`, Linear, `backport`, `stacked`) | 0.5.0 ✓ | 5 |
 | 5 | Reviewer ecosystem (`coderabbit`, `coderabbit:autofix`) | 0.6.0 ✓ | 3 |
 
-**1.0.0 shipped** after Phase 5 + a polish PR. See [`1.0.0/README.md`](1.0.0/README.md) for the full stable surface and the post-1.0 versioning promise.
+**1.0.0 shipped** after Phase 5 + a polish PR.
 
 ## Install
 
+Install forge and every skill/plugin it composes with the unified installer:
+
 ```sh
-# from a local clone
-/plugin install /path/to/forge-skills/1.0.0
+git clone https://github.com/radimsem/forge-skills.git
+cd forge-skills
+./install.sh            # detect-first & idempotent; -y non-interactive, --skills-only for non-Claude-Code hosts
 ```
 
-Or via a marketplace once published. Once installed the skill activates on `/forge <ref>` or any phrasing that matches the trigger described in [`1.0.0/skills/forge/SKILL.md`](1.0.0/skills/forge/SKILL.md).
+The installer uses two mechanisms: Vercel's `npx skills` for bare skills and `claude plugin` for
+the Claude Code reviewer plugins (superpowers/codex/coderabbit). It installs forge **last**. See
+[`skills/forge/references/dependencies.md`](skills/forge/references/dependencies.md) for the full
+dependency list and [`docs/specs/2026-05-29-unified-dependency-install.md`](docs/specs/2026-05-29-unified-dependency-install.md)
+for the design.
+
+Once installed, the skill activates on `/forge <ref>` or any phrasing matching the trigger in
+[`skills/forge/SKILL.md`](skills/forge/SKILL.md).
 
 ## Contributing
 
-Read [`1.0.0/CLAUDE.md`](1.0.0/CLAUDE.md) first — it codifies the contributor rules an agent working in this repo must follow (one atomic PR per roadmap unit, no SKILL.md edits without an ADR or spec excerpt, etc.).
+One atomic PR per roadmap unit; no SKILL.md edits without an ADR or spec excerpt. See [`docs/specs/`](docs/specs/) for current design docs.
 
 ## License
 
