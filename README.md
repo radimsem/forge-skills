@@ -1,8 +1,10 @@
-# forge-skills
+<p align="center">
+  <img src="assets/logo.png" alt="forge-skills logo: Claude Code as a blacksmith at an anvil" width="400">
+</p>
 
-> Forge an issue into a shipped fix: heat it (implement), hammer it (review), then temper it (refactor).
+<h1 align="center">Forge — a blacksmith for agentic workflows</h1>
 
-One skill, [`forge`](skills/forge/SKILL.md), that takes an issue, a Jira/Linear ticket, or a pull request and walks it all the way to a committed fix.
+<p align="center"><em>Forge an issue into a shipped fix: heat it (implement), hammer it (review), then temper it (refactor).</em></p>
 
 ## Why this exists
 
