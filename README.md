@@ -29,22 +29,19 @@ If you want it to run unattended, `automode` drops the gates. Even then it will 
 
 ## Install
 
-Clone the repo and run the installer. It is detect-first and idempotent, so running it twice is safe.
+Run the installer straight from `curl`. It checks what you already have and skips it, so a second run is safe.
 
 ```sh
-git clone https://github.com/radimsem/forge-skills.git
-cd forge-skills
-./install.sh
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/radimsem/forge-skills/main/install.sh)"
 ```
 
-Useful flags:
+Pass flags after a `--`. A fully non-interactive run, for example:
 
 ```sh
-./install.sh -y              # non-interactive (auto-accept everything)
-./install.sh --skills-only   # bare skills only, skip the Claude Code plugins
-./install.sh --force         # reinstall even when a dependency looks present
-./install.sh --help          # full option list
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/radimsem/forge-skills/main/install.sh)" -- -y
 ```
+
+The rest work the same way: `--skills-only` installs the bare skills and skips the Claude Code plugins, `--force` reinstalls even when a dependency looks present, and `--help` prints the full option list.
 
 The installer pulls in everything forge composes (see [What forge uses](#what-forge-uses)) and installs forge last, using `npx skills` for the bare skills and `claude plugin` for the reviewer plugins. On a non-Claude-Code host, pass `--skills-only` to skip the plugin step.
 

@@ -7,6 +7,10 @@ set -u
 # (passing a hardcoded list installs onto agents you may not have). --agents overrides.
 DEFAULT_AGENTS=""
 
+# forge ships from its own public repo and is always installed LAST, after the skills
+# and plugins it composes. This is the source `npx skills add` clones forge from.
+FORGE_SOURCE="radimsem/forge-skills"
+
 OPT_YES=""
 OPT_FORCE=""
 OPT_SKILLS_ONLY=""
@@ -88,9 +92,9 @@ build_skill_group_cmd() { # $1=source $2=space-separated skills ; uses OPT_AGENT
   printf '%s' "$_cmd"
 }
 
-# Unique skill sources in table order, EXCLUDING "." (this repo) which is deferred to last.
-skill_sources_no_dot() {
-  deps_table | awk -F'|' '$2=="skill" && $3!="." && !seen[$3]++ {print $3}'
+# Unique skill sources in table order, EXCLUDING forge's own repo, which is deferred to last.
+skill_sources_before_forge() {
+  deps_table | awk -F'|' -v forge="$FORGE_SOURCE" '$2=="skill" && $3!=forge && !seen[$3]++ {print $3}'
 }
 
 # All skills declared for a given source, in table order (space-separated when captured).
@@ -98,9 +102,9 @@ skills_for_source() { # $1=source
   deps_table | awk -F'|' -v s="$1" '$2=="skill" && $3==s {print $4}'
 }
 
-# True if any skill row uses "." as its source (forge lives in this repo).
-has_dot_skill() {
-  deps_table | awk -F'|' '$2=="skill" && $3=="."{f=1} END{exit !f}'
+# True if forge's repo appears as a skill source (it should — forge installs last).
+has_forge_skill() {
+  deps_table | awk -F'|' -v forge="$FORGE_SOURCE" '$2=="skill" && $3==forge{f=1} END{exit !f}'
 }
 
 build_plugin_marketplace_cmd() { # $1=marketplace source (owner/repo)
@@ -113,7 +117,7 @@ build_plugin_install_cmd() { # $1=plugin@marketplace
 
 # Single source of truth for forge's external dependencies.
 # Columns: tier|kind|source|name
-#   kind=skill  -> source is an npx skills add source (owner/repo or "." for this repo); name = -s skill
+#   kind=skill  -> source is an npx skills add source (owner/repo, e.g. forge's own repo); name = -s skill
 #   kind=plugin -> source is the marketplace owner/repo; name = plugin@marketplace
 deps_table() {
   cat <<'EOF'
@@ -132,7 +136,7 @@ deps_table() {
 3|plugin|anthropics/claude-plugins-official|coderabbit@claude-plugins-official
 4|skill|greptileai/skills|greploop
 4|skill|greptileai/skills|check-pr
-6|skill|.|forge
+6|skill|radimsem/forge-skills|forge
 EOF
 }
 
@@ -236,14 +240,14 @@ install_plugin() { # $1=marketplace-source $2=plugin@marketplace
   fi
 }
 
-# Install order: bare-skill sources (each batched into one npx pass) → plugins → the "."
-# source (this repo: forge) LAST, so forge is the final thing installed and never
-# resolves before its dependencies. Continues past failures but returns nonzero if any failed.
+# Install order: bare-skill sources (each batched into one npx pass) → plugins → forge's
+# own repo LAST, so forge is the final thing installed and never resolves before its
+# dependencies. Continues past failures but returns nonzero if any failed.
 run_installs() {
   _rc=0
-  # 1) Bare-skill sources other than "." — one batched npx pass per source.
+  # 1) Bare-skill sources other than forge's — one batched npx pass per source.
   #    Sources have no spaces, so word-splitting the command substitution is safe.
-  for _src in $(skill_sources_no_dot); do
+  for _src in $(skill_sources_before_forge); do
     install_skill_group "$_src" || _rc=1
   done
   # 2) Plugins (unless --skills-only). Read on FD 3 so an interactive `claude plugin`
@@ -256,9 +260,9 @@ run_installs() {
 $(deps_table | awk -F'|' '$2=="plugin"{print $3"|"$4}')
 EOF
   fi
-  # 3) The "." source LAST (forge) — forge installed last.
-  if has_dot_skill; then
-    install_skill_group "." || _rc=1
+  # 3) forge's own repo LAST — forge installed after everything it depends on.
+  if has_forge_skill; then
+    install_skill_group "$FORGE_SOURCE" || _rc=1
   fi
   return $_rc
 }
