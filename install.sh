@@ -237,9 +237,41 @@ install_plugin() { # $1=marketplace-source $2=plugin@marketplace
   fi
 }
 
+# Walk the inventory in table order; forge (tier 6) is last by construction.
+run_installs() {
+  deps_table | while IFS='|' read -r _tier _kind _src _name; do
+    [ -n "$_tier" ] || continue
+    case "$_kind" in
+      skill) install_skill "$_tier" "$_src" "$_name" ;;
+      plugin)
+        [ -n "$OPT_SKILLS_ONLY" ] && continue
+        install_plugin "$_src" "$_name"
+        ;;
+    esac
+  done
+}
+
+post_install_notes() {
+  cat <<'EOF'
+
+Done. Next steps / runtime notes:
+  - Run `/setup-matt-pocock-skills` once in each repo where you use forge
+    (bootstraps tracker + triage labels consumed by tdd/to-issues/diagnose/improve-codebase-architecture).
+  - Built-in, no install needed: /goal, /compact, and security-review (Claude Code built-ins).
+  - Optional, set up if you use the matching flag/tracker:
+      * context7 MCP (lookup), Atlassian MCP (Jira), Linear MCP (Linear)
+      * gh / glab CLIs for GitHub / GitLab trackers
+  - find-docs (lookup flag) needs the Context7 CLI: npm i -g ctx7@latest
+EOF
+}
+
 main() {
   parse_args "$@" || return $?
-  printf 'install.sh scaffold OK (agents: %s)\n' "$OPT_AGENTS"
+  preflight || { printf 'install.sh: preflight failed; resolve the above and re-run.\n' >&2; return 1; }
+  capture_state
+  print_status_table
+  run_installs
+  post_install_notes
 }
 
 # --- entrypoint guard: skip main() when sourced by tests ---

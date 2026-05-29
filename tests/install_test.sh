@@ -144,5 +144,29 @@ claude plugin install codex@openai-codex -s user" \
 rm -f "$RUN_LOG"
 unset -f npx claude
 
+# --- main orchestration order (forge installed last) ---
+ORDER_LOG=$(mktemp)
+# Stub the per-row actions to just record name+tier in order.
+install_skill()  { printf 'skill:%s\n' "$3" >> "$ORDER_LOG"; }
+install_plugin() { printf 'plugin:%s\n' "$2" >> "$ORDER_LOG"; }
+capture_state()  { :; }   # no network in test
+preflight()      { return 0; }
+print_status_table() { :; }
+
+OPT_SKILLS_ONLY=""
+run_installs   # the orchestration core called by main()
+# forge must be the final line
+assert_eq "$(tail -n1 "$ORDER_LOG")" "skill:forge" "run_installs: forge installed last"
+# plugins must appear (not skipped) when --skills-only is off
+assert_true grep -q '^plugin:superpowers@claude-plugins-official$' "$ORDER_LOG" \
+  "run_installs: superpowers plugin installed"
+
+# --skills-only skips plugins
+: > "$ORDER_LOG"; OPT_SKILLS_ONLY="1"
+run_installs
+assert_false grep -q '^plugin:' "$ORDER_LOG" "run_installs: --skills-only skips plugins"
+assert_eq "$(tail -n1 "$ORDER_LOG")" "skill:forge" "run_installs: forge still last under --skills-only"
+rm -f "$ORDER_LOG"
+
 printf '\n%s\n' "FAILS=$FAILS"
 [ "$FAILS" -eq 0 ]
