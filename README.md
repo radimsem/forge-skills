@@ -102,7 +102,7 @@ Forge leans on a handful of other skills and plugins, all installed for you by `
 | `coderabbit` plugin | claude-plugins-official | the `coderabbit` flag (Claude Code only) |
 | `greploop`, `check-pr` | `greptileai/skills` | the review-loop fallback |
 
-A few things are not installed because your host already provides them: `/goal` and `/compact`, the built-in `security-review`, and the context7 MCP that the `lookup` flag reads from. Set up context7 and your tracker's MCP (Atlassian, Linear) only if you use the flags that need them. Full detail in [`references/dependencies.md`](skills/forge/references/dependencies.md).
+A few things are not installed because your host already provides them: `/goal` and `/compact`, the built-in `security-review`, and the context7 MCP that the `lookup` flag reads from. Set up context7 and your tracker's MCP (Atlassian, Linear) only if you use the flags that need them. Full detail in [`DEPENDENCIES.md`](DEPENDENCIES.md).
 
 ## Roadmap
 
