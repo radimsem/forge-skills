@@ -12,6 +12,16 @@ Forge splits the work in half with a single gate in the middle. The first half r
 
 If you want it to run unattended, `automode` drops the gates. Even then it will never commit, push, or write back to your tracker on its own. That floor doesn't move.
 
+## Features
+
+- **A plan you sign off on first.** Part 1 ends with one proposal and waits. Nothing gets edited until you say "yes, implement", so a wrong assumption costs a sentence instead of a rewrite. `automode` lifts the wait, never the no-commit-without-asking floor.
+- **Re-hydration that keeps discipline fresh.** Before each implement and refactor turn, forge compacts the conversation to drop stale reviewer transcript, then re-sources the Karpathy guidelines. The clean-code rules stay loaded on every pass instead of fading as the window fills, and the compaction keeps the token bill down.
+- **Self-evolution at the end of a run.** When forge hits a caveat it could have sidestepped, it offers to write the lesson back: a new skill, a rule in your agent guide, or a note in project memory. The next session starts ahead of this one. The idea comes from the Hermes agent's self-improving workflow, pointed here at whatever agent runs the skill rather than at one framework.
+- **A close it can prove.** Step 12 refuses to assemble a commit until the goal you set actually runs green. A command that exits 0 without running any tests counts as not done, not as success.
+- **Flags that stack.** Test-first, a security pass, library-doc lookup, CI watching, extra reviewers. Turn on what a job needs, in any combination, in a single invocation.
+- **Trackers and hosts it already speaks.** GitHub, GitLab, Jira, and Linear, plus a mode that enters straight into reviewing an existing PR. Forge follows your repo's own branch and commit conventions instead of imposing its own.
+- **Not wired to one assistant.** "The agent" is whatever runtime runs the skill. The config paths, the review engine, and the interview UI all adapt to the host.
+
 ## Install
 
 Clone the repo and run the installer. It is detect-first and idempotent, so running it twice is safe.
@@ -95,14 +105,14 @@ Forge leans on a handful of other skills and plugins, all installed for you by `
 
 | Dependency | From | Used for |
 |---|---|---|
-| `tdd`, `grill-me`, `grill-with-docs`, `to-issues`, `diagnose`, `write-a-skill`, `improve-codebase-architecture`, `zoom-out` | `mattpocock/skills` | the lifecycle steps and the `tdd`/grilling flags |
-| `karpathy-guidelines` | `andrej-karpathy-skills` | re-loading clean-code discipline before each implement/refactor pass |
-| `superpowers:requesting-code-review`, `superpowers:using-git-worktrees` | superpowers | the default reviewer and the `worktree` flag |
-| `codex` plugin | `openai/codex-plugin-cc` | the `codex` flag (Claude Code only) |
-| `coderabbit` plugin | claude-plugins-official | the `coderabbit` flag (Claude Code only) |
-| `greploop`, `check-pr` | `greptileai/skills` | the review-loop fallback |
+| `tdd`, `grill-me`, `grill-with-docs`, `to-issues`, `diagnose`, `write-a-skill`, `improve-codebase-architecture`, `zoom-out` | [`mattpocock/skills`](https://github.com/mattpocock/skills) | the lifecycle steps and the `tdd`/grilling flags |
+| `karpathy-guidelines` | [`forrestchang/andrej-karpathy-skills`](https://github.com/forrestchang/andrej-karpathy-skills) | re-loading clean-code discipline before each implement/refactor pass |
+| `superpowers:requesting-code-review`, `superpowers:using-git-worktrees` | [`obra/superpowers`](https://github.com/obra/superpowers) | the default reviewer and the `worktree` flag |
+| `codex` plugin | [`openai/codex-plugin-cc`](https://github.com/openai/codex-plugin-cc) | the `codex` flag (Claude Code only) |
+| `coderabbit` plugin | [`coderabbitai/skills`](https://github.com/coderabbitai/skills) | the `coderabbit` flag (Claude Code only) |
+| `greploop`, `check-pr` | [`greptileai/skills`](https://github.com/greptileai/skills) | the review-loop fallback |
 
-A few things are not installed because your host already provides them: `/goal` and `/compact`, the built-in `security-review`, and the context7 MCP that the `lookup` flag reads from. Set up context7 and your tracker's MCP (Atlassian, Linear) only if you use the flags that need them.
+The installer leaves a few things alone, because they belong to your environment rather than to forge. They only need to be present when you reach for the feature that depends on them. `/goal` and `/compact` come from the agent runtime. `security-review` is a Claude Code built-in that the `secure` flag calls. The context7 MCP backs the `lookup` flag, and a tracker MCP backs ticket routing: the Atlassian MCP for Jira, the Linear MCP for Linear issues. Set each up yourself, and only if you use the flag or tracker that asks for it.
 
 ## License
 
