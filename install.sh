@@ -153,7 +153,7 @@ status_row() { # $1=tier $2=kind $3=source $4=name
       if [ -z "$_missing" ] && [ -z "$OPT_FORCE" ]; then
         printf '= [skill] %s (present)' "$4"
       else
-        [ -n "$OPT_FORCE" ] && _missing="$OPT_AGENTS (forced)" && _missing=$(printf '%s' "$_missing" | tr ',' ' ')
+        [ -n "$OPT_FORCE" ] && _missing="$(printf '%s' "$OPT_AGENTS" | tr ',' ' ') (forced)"
         printf '+ [skill] %s (missing: %s)' "$4" "$_missing"
       fi
       ;;
@@ -238,17 +238,22 @@ install_plugin() { # $1=marketplace-source $2=plugin@marketplace
 }
 
 # Walk the inventory in table order; forge (tier 6) is last by construction.
+# Continues past individual failures but returns nonzero if any install failed.
 run_installs() {
-  deps_table | while IFS='|' read -r _tier _kind _src _name; do
+  _rc=0
+  while IFS='|' read -r _tier _kind _src _name; do
     [ -n "$_tier" ] || continue
     case "$_kind" in
-      skill) install_skill "$_tier" "$_src" "$_name" ;;
+      skill) install_skill "$_tier" "$_src" "$_name" || _rc=1 ;;
       plugin)
         [ -n "$OPT_SKILLS_ONLY" ] && continue
-        install_plugin "$_src" "$_name"
+        install_plugin "$_src" "$_name" || _rc=1
         ;;
     esac
-  done
+  done <<EOF
+$(deps_table)
+EOF
+  return $_rc
 }
 
 post_install_notes() {
@@ -270,8 +275,9 @@ main() {
   preflight || { printf 'install.sh: preflight failed; resolve the above and re-run.\n' >&2; return 1; }
   capture_state
   print_status_table
-  run_installs
+  run_installs; _rc=$?
   post_install_notes
+  return $_rc
 }
 
 # --- entrypoint guard: skip main() when sourced by tests ---

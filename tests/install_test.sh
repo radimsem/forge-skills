@@ -166,6 +166,16 @@ assert_true grep -q '^plugin:superpowers@claude-plugins-official$' "$ORDER_LOG" 
 run_installs
 assert_false grep -q '^plugin:' "$ORDER_LOG" "run_installs: --skills-only skips plugins"
 assert_eq "$(tail -n1 "$ORDER_LOG")" "skill:forge" "run_installs: forge still last under --skills-only"
+
+# run_installs propagates a nonzero exit when an install fails (continues, but returns 1)
+install_skill()  { [ "$3" = "tdd" ] && return 1; return 0; }
+install_plugin() { return 0; }
+OPT_SKILLS_ONLY=""
+run_installs >/dev/null 2>&1
+assert_eq "$?" "1" "run_installs: returns 1 when a skill install fails"
+install_skill()  { return 0; }
+run_installs >/dev/null 2>&1
+assert_eq "$?" "0" "run_installs: returns 0 when all installs succeed"
 rm -f "$ORDER_LOG"
 
 printf '\n%s\n' "FAILS=$FAILS"
