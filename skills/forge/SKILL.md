@@ -158,7 +158,7 @@ Before proposing, the issue must answer:
 
 The acceptance criteria and the expected-versus-actual behavior are the `/goal` pass-conditions used in Step 7, so capture them precisely. For Jira, mine them from the description, the acceptance-criteria field, and the comments. A missing field is a Step 4 interview gap exactly as it is for a git issue, and the pasted-text fallback from Step 2 is treated the same way.
 
-When a required field is missing, interview the user rather than opening a free-text question. For each gap, offer two to four proposed answers, mark the most likely one `(Recommended)`, and let the user pick. On a runtime with a selection UI, such as Claude Code's interview TUI, the user highlights an option and presses Enter, and an "Other" free-text choice is always implicitly available.
+When a required field is missing, interview the user rather than opening a free-text question. For each gap, offer a small set of proposed answers, mark the most likely one `(Recommended)`, and let the user pick. On a runtime with a selection UI, such as Claude Code's interview TUI, the user highlights an option and presses Enter, and an "Other" free-text choice is always implicitly available.
 
 See **[references/proposal-template.md](references/proposal-template.md)** Step 4 for the literal question-block format. Never invent the chosen answer: propose the options and let the user select. Never continue past this step while a required gap is unanswered.
 
@@ -231,7 +231,7 @@ With `docs`, load the plan from `CONTEXT.md` and check its stamp matches this re
 
 Run the project reviewer subagents (from `.agents/agents/` or the runtime equivalent) together with the generic reviewer. The generic reviewer is `superpowers:requesting-code-review` by default, or Codex under `codex` or `codex challenge`. The project subagents always run.
 
-Terminate the loop at zero actionable findings; nits do not block. Cap the loop at three passes. On each non-converged pass, run the re-hydrate block, fix the findings, then re-review.
+Terminate the loop at zero actionable findings; nits do not block. Cap the loop at a fixed number of passes. On each non-converged pass, run the re-hydrate block, fix the findings, then re-review.
 
 See **[references/review-loop.md](references/review-loop.md)** for engine-selection details, the `/greploop` fallback and `/diagnose` sub-pass, pass discipline, the trim-only-cleanup skip rule, and `automode` behavior.
 
@@ -276,7 +276,7 @@ Then assemble the commit or PR proposal. The default is small atomic commits tha
 
 When the **`changelog`** flag is set, draft a changelog entry in the repo's existing format after `/goal` verifies green and before assembling the commit list, and include it in the proposed history. See **[references/modes/changelog.md](references/modes/changelog.md)** for the file-detection order and entry conventions.
 
-Then ask one closing question, using the six-option menu in **[references/proposal-template.md](references/proposal-template.md)** Step 12. It follows the Step 4 proposed-answer format: the user selects, the recommended option is marked, and "Other" is implicit. Show the third line only when the target was a Jira ticket.
+Then ask one closing question, using the closing menu in **[references/proposal-template.md](references/proposal-template.md)** Step 12. It follows the Step 4 proposed-answer format: the user selects, the recommended option is marked, and "Other" is implicit. Show the third line only when the target was a Jira ticket.
 
 Act only on the selected option. Option 2 follows the repo guide for the base branch and PR target.
 

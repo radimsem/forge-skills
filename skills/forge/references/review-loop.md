@@ -24,7 +24,7 @@ Findings that exceed a single in-pass fix can be delegated to a companion rework
 | `codex` / `codex challenge` | `codex:codex-rescue` | re-hydrate first, inline karpathy constraints, foreground `--wait` |
 | `coderabbit` | `coderabbit:autofix` | Same discipline as codex-rescue |
 
-After the rework returns, re-enter Step 8 with the rework diff as a new pass input. The 3-pass cap applies to subsequent passes.
+After the rework returns, re-enter Step 8 with the rework diff as a new pass input. The pass cap applies to subsequent passes.
 
 With both reviewer flags set, route each finding's rework to the engine that raised it — codex findings to `codex:codex-rescue`, coderabbit findings to `coderabbit:autofix`. Inline or ambiguous fixes stay agent-discretion.
 

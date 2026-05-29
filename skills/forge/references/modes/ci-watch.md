@@ -41,7 +41,7 @@ Confirm a run exists for the pushed SHA before reading status; "no run found" is
 |---|---|---|
 | Step 12 menu option 1, 4, 5, 6 | Execute as chosen | Same; `ci-watch` silently skips (no push to poll) |
 | Step 12 menu option 2 or 3 | Push, open PR, exit | Push, open PR, poll CI; on green report and exit; on red re-enter Step 8 |
-| Step 8 re-entry from CI red | (n/a) | Treat CI failure as a single must-fix finding; the regular 3-pass cap applies to the re-loop |
+| Step 8 re-entry from CI red | (n/a) | Treat CI failure as a single must-fix finding; the regular pass cap applies to the re-loop |
 
 ## Composition with other flags
 

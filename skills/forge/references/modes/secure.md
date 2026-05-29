@@ -29,7 +29,7 @@ Step 8, after the standard reviewer loop terminates at zero actionable findings,
 
 ## Where the pass-budget comes from
 
-The Step 8 3-pass cap (see [review-loop.md](../review-loop.md)) covers regular reviewers. `secure` adds **one dedicated security pass** on top — security findings do not exhaust the regular cap, but a single security pass also does not become a free re-litigation budget. If the security pass surfaces must-fix and the fix in turn triggers regular reviewer findings, those count against the regular cap.
+The Step 8 pass cap (see [review-loop.md](../review-loop.md)) covers regular reviewers. `secure` adds **one dedicated security pass** on top — security findings do not exhaust the regular cap, but a single security pass also does not become a free re-litigation budget. If the security pass surfaces must-fix and the fix in turn triggers regular reviewer findings, those count against the regular cap.
 
 ## Composition with other flags
 

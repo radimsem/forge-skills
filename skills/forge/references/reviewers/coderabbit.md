@@ -31,7 +31,7 @@ Engine selection at Step 8 (when `coderabbit` is set):
 | Sub-pass (suspected bug / perf regression) | `/diagnose` (unchanged) |
 | Fallback (no project reviewers, PR exists) | `/greploop` (unchanged) |
 
-Dispatch the CodeRabbit reviewer in parallel with the project subagents where possible. Collect findings; apply Step 8 termination (zero actionable) and 3-pass cap rules unchanged.
+Dispatch the CodeRabbit reviewer in parallel with the project subagents where possible. Collect findings; apply Step 8 termination (zero actionable) and pass-cap rules unchanged.
 
 ## Step 8b — Rework delegation (`coderabbit:autofix`)
 
@@ -39,7 +39,7 @@ When Step 8 surfaces findings that require non-trivial implementation work — m
 
 Before delegating, run the re-hydrate block (per the standard pass discipline) and inline the karpathy constraints in the rework prompt. `coderabbit:autofix` runs as a foreground subagent dispatch with `--wait` semantics so the next Step 8 re-review has the rework diff available.
 
-After delegation returns: re-enter Step 8 with the rework diff as a new pass input. Apply the 3-pass cap to subsequent passes. If `coderabbit:autofix` itself fails or returns no usable diff, surface the failure and pause (or pick safest finding under `automode`).
+After delegation returns: re-enter Step 8 with the rework diff as a new pass input. Apply the pass cap to subsequent passes. If `coderabbit:autofix` itself fails or returns no usable diff, surface the failure and pause (or pick safest finding under `automode`).
 
 ## Behavior change vs default
 

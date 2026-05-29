@@ -39,7 +39,7 @@ Repo guide (`CONTRIBUTING.md` / agent guide / etc.) wins over this list.
 | Step 12 commit-list assembly | Code changes only | Code changes **+** one new changelog entry matching repo format |
 | Entry placement | (n/a) | Top of the changelog file (Keep-a-Changelog convention) OR a new file in the changesets directory if applicable |
 | Entry wording | (n/a) | Imperative summary of what the diff did, not what the issue asked. Length matches the file's existing entries. |
-| Closing menu | Six options as usual | Same six options; option 2 (push + PR) includes the changelog entry in the PR body summary |
+| Closing menu | Closing menu as usual | Same menu; option 2 (push + PR) includes the changelog entry in the PR body summary |
 
 ## Composition with other flags
 
