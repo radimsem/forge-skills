@@ -153,7 +153,7 @@ claude plugin install codex@openai-codex -s user" \
 rm -f "$RUN_LOG"
 unset -f npx claude
 
-# --- main orchestration order (batched per source; "." with forge installed last) ---
+# --- main orchestration order (batched per source; forge's own repo installed last) ---
 ORDER_LOG=$(mktemp)
 # Stub the batched actions to record what gets installed, in order.
 install_skill_group() { printf 'skillsrc:%s\n' "$1" >> "$ORDER_LOG"; }
@@ -164,8 +164,8 @@ print_status_table()  { :; }
 
 OPT_SKILLS_ONLY=""
 run_installs   # the orchestration core called by main()
-# "." source (forge) must be the final install
-assert_eq "$(tail -n1 "$ORDER_LOG")" "skillsrc:." "run_installs: '.' source (forge) installed last"
+# forge's own repo ($FORGE_SOURCE) must be the final install
+assert_eq "$(tail -n1 "$ORDER_LOG")" "skillsrc:$FORGE_SOURCE" "run_installs: forge source installed last"
 assert_eq "$(head -n1 "$ORDER_LOG")" "skillsrc:mattpocock/skills" "run_installs: first source is mattpocock"
 # each source is installed in exactly ONE batched pass (not once per skill)
 assert_eq "$(grep -c '^skillsrc:mattpocock/skills$' "$ORDER_LOG")" "1" \
@@ -177,7 +177,7 @@ assert_true grep -q '^plugin:superpowers@claude-plugins-official$' "$ORDER_LOG" 
 : > "$ORDER_LOG"; OPT_SKILLS_ONLY="1"
 run_installs
 assert_false grep -q '^plugin:' "$ORDER_LOG" "run_installs: --skills-only skips plugins"
-assert_eq "$(tail -n1 "$ORDER_LOG")" "skillsrc:." "run_installs: '.' still last under --skills-only"
+assert_eq "$(tail -n1 "$ORDER_LOG")" "skillsrc:$FORGE_SOURCE" "run_installs: forge source still last under --skills-only"
 
 # run_installs propagates a nonzero exit when a source fails (continues, but returns 1)
 install_skill_group() { [ "$1" = "mattpocock/skills" ] && return 1; return 0; }
