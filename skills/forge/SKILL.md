@@ -313,3 +313,7 @@ See **[references/autonomy.md](references/autonomy.md)** for the full per-step m
 ## Anti-patterns & Red Flags
 
 See **[references/anti-patterns.md](references/anti-patterns.md)** for the common-mistakes table and the red-flag stop list. Both bind under `automode` too, and that file is the canonical home for new rules learned during a forge session.
+
+## Dependencies & Install
+
+See **[references/dependencies.md](references/dependencies.md)** for what forge composes and how to install it (`./install.sh`).
