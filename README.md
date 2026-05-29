@@ -41,7 +41,15 @@ Pass flags after a `--`. A fully non-interactive run, for example:
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/radimsem/forge-skills/main/install.sh)" -- -y
 ```
 
-The rest work the same way: `--skills-only` installs the bare skills and skips the Claude Code plugins, `--force` reinstalls even when a dependency looks present, and `--help` prints the full option list.
+The full set:
+
+```
+-y, --yes        non-interactive (auto-accept everything)
+--skills-only    bare skills only, skip the Claude Code plugins
+--force          reinstall even when a dependency looks present
+--agents "a,b"   install onto specific agents (default: auto-detect your installed agents)
+-h, --help       full option list
+```
 
 The installer pulls in everything forge composes (see [What forge uses](#what-forge-uses)) and installs forge last, using `npx skills` for the bare skills and `claude plugin` for the reviewer plugins. On a non-Claude-Code host, pass `--skills-only` to skip the plugin step.
 
