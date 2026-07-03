@@ -27,7 +27,7 @@ Part 2 — Lifecycle (7–12):   implement → review-loop → refactor → spin
 
 ## Parameters
 
-Parse the invocation as `/forge <ref> [automode] [docs] [tdd] [worktree] [lookup] [secure] [changelog] [ci-watch] [codex | codex challenge] [coderabbit]`, or `/forge pr <N> [...]`. The words can appear anywhere in the request. A `<ref>` resolves to a git-host issue or a Jira ticket per the grammar below, and the `pr <N>` form selects PR-review entry mode. Flags are orthogonal and compose freely; some modes have their own allowed or ignored flags, listed in [references/modes/pr-entry.md](references/modes/pr-entry.md) for PR mode.
+Parse the invocation as `/forge <ref> [automode] [docs] [tdd] [worktree] [lookup] [secure] [changelog] [ci-watch] [compress] [codex | codex challenge] [coderabbit]`, or `/forge pr <N> [...]`. The words can appear anywhere in the request. A `<ref>` resolves to a git-host issue or a Jira ticket per the grammar below, and the `pr <N>` form selects PR-review entry mode. Flags are orthogonal and compose freely; some modes have their own allowed or ignored flags, listed in [references/modes/pr-entry.md](references/modes/pr-entry.md) for PR mode.
 
 Full flag matrix (effects, composition rules, conflicts): **[references/flags.md](references/flags.md)**.
 
@@ -60,6 +60,7 @@ Each line says what the flag does and where it acts; the linked file owns the de
 - `secure` — adds a `security-review` pass at Step 8 once the regular review converges, before Step 9. See [references/modes/secure.md](references/modes/secure.md).
 - `changelog` — Step 12 drafts a changelog entry in the repo's existing format. See [references/modes/changelog.md](references/modes/changelog.md).
 - `ci-watch` — after a Step 12 push, polls CI; a red result reopens Step 8. See [references/modes/ci-watch.md](references/modes/ci-watch.md).
+- `compress` — sources a token-saving output skill for the whole session before Step 1: `ponytail` if installed, else `caveman`; if neither is installed, the flag is ignored with a one-line note. See [references/modes/compress.md](references/modes/compress.md).
 - `codex` / `codex challenge` — adds Codex as a Step 8 generic reviewer; `challenge` runs an adversarial review instead. Claude Code only. See [references/reviewers/codex.md](references/reviewers/codex.md).
 - `coderabbit` — adds CodeRabbit as a Step 8 generic reviewer, with rework handled by `coderabbit:autofix`. Claude Code only; composes with `codex` (both run, rework routes per finding). See [references/reviewers/coderabbit.md](references/reviewers/coderabbit.md).
 
@@ -214,7 +215,7 @@ Steps 8 and 9 reference this block. It is two actions, in order:
 /compact  →  re-source /karpathy-guidelines
 ```
 
-Run it before touching code on every non-converged review pass and before approved refactor work. The point is to shed stale reviewer-transcript tokens and reload clean-code discipline. On a review pass, capture the must-fix and should-fix findings before `/compact` so they survive it, then fix from that list. Do not restate `/goal` here; it is set once, in Step 7.
+Run it before touching code on every non-converged review pass and before approved refactor work. The point is to shed stale reviewer-transcript tokens and reload clean-code discipline. On a review pass, capture the must-fix and should-fix findings before `/compact` so they survive it, then fix from that list. Do not restate `/goal` here; it is set once, in Step 7. With `compress`, also re-source the compression skill chosen at startup, since `/compact` can shed its persistence — see [references/modes/compress.md](references/modes/compress.md).
 
 ## Step 7 — Implement
 

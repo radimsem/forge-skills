@@ -16,6 +16,7 @@ The full set of flags the forge skill understands, with composition rules and co
 | `secure` | Compose `security-review` after Step 8 convergence; findings re-enter Step 8 as must-fix | [modes/secure.md](modes/secure.md) |
 | `changelog` | At Step 12, draft a changelog entry per repo convention | [modes/changelog.md](modes/changelog.md) |
 | `ci-watch` | After Step 12 push, poll CI; on red, re-enter Step 8 with the failure as a finding | [modes/ci-watch.md](modes/ci-watch.md) |
+| `compress` | Before Step 1, source a token-saving output skill for the session: `ponytail` if installed, else `caveman`, else ignore the flag with a one-line note | [modes/compress.md](modes/compress.md) |
 | `coderabbit` | Add CodeRabbit to the generic-reviewer set. Step 8b rework path uses `coderabbit:autofix`. Claude Code only | [reviewers/coderabbit.md](reviewers/coderabbit.md) |
 
 ## Entry verbs
@@ -35,3 +36,4 @@ In addition to the flags above, the skill supports an entry-mode verb:
 | `ci-watch` requires the Step 12 push option | Polling without a published target is pointless. Silently skip if user picked a non-push Step 12 option. |
 | `tdd` discipline binds under `automode` | The "observe failing test before implementing" rule is the point of the flag; under `automode` the agent runs the test itself and confirms red. |
 | `/forge pr <N>` ignores all lifecycle flags except `automode` and reviewer flags | PR-review mode skips Step 7 implementation; only Step 8 reviewer engines and the `automode` no-gates property apply. |
+| `compress` composes with every flag and entry mode, including `pr` | It shapes session output, not the lifecycle; no step depends on it. Inert (one-line note) when neither `ponytail` nor `caveman` is installed. |

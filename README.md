@@ -84,6 +84,7 @@ Flags are orthogonal and compose freely. You can stack as many as you want in on
 | `secure` | Adds a `security-review` pass once the normal review converges. |
 | `changelog` | Drafts a changelog entry at close time, in your repo's existing format. |
 | `ci-watch` | Polls CI after a push; a red result reopens the review loop. |
+| `compress` | Sources a token-saving output skill (`ponytail`, else `caveman`) for the whole session before Step 1. Ignored if neither is installed. |
 | `codex` / `codex challenge` | Adds Codex as a reviewer (`challenge` runs an adversarial pass). Claude Code only. |
 | `coderabbit` | Adds CodeRabbit as a reviewer, with rework via `coderabbit:autofix`. Claude Code only. |
 

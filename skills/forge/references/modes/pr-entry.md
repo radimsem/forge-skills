@@ -64,6 +64,7 @@ Flags that operate **at Step 8 or later** apply in PR-entry mode:
 - `changelog` — applies (drafts entry for the fixup commits if option 2)
 - `ci-watch` — applies (polls CI after option 2 push)
 - `coderabbit` — applies
+- `compress` — applies (session-wide output mode, sourced before Step 1; see [compress.md](compress.md))
 
 Flags that operate **before Step 8** are ignored with a one-line warning:
 
