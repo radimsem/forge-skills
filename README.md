@@ -86,6 +86,7 @@ Flags are orthogonal and compose freely. You can stack as many as you want in on
 | `ci-watch` | Polls CI after a push; a red result reopens the review loop. |
 | `compress` | Sources a token-saving output skill (`ponytail`, else `caveman`) for the whole session before Step 1. Ignored if neither is installed. |
 | `codex` / `codex challenge` | Adds Codex as a reviewer (`challenge` runs an adversarial pass). Claude Code only. |
+| `codex impl` | Delegates implementation to Codex (GPT-5.6 Sol/Terra/Luna, auto-tiered by task); Claude reviews the result. Claude Code only. |
 | `coderabbit` | Adds CodeRabbit as a reviewer, with rework via `coderabbit:autofix`. Claude Code only. |
 
 The reviewer flags add to the project's own reviewer agents rather than replacing them, and `codex` and `coderabbit` can both run in the same pass.
