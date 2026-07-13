@@ -27,7 +27,7 @@ Part 2 — Lifecycle (7–12):   implement → review-loop → refactor → spin
 
 ## Parameters
 
-Parse the invocation as `/forge <ref> [automode] [docs] [tdd] [worktree] [lookup] [secure] [changelog] [ci-watch] [compress] [codex | codex challenge] [coderabbit]`, or `/forge pr <N> [...]`. The words can appear anywhere in the request. A `<ref>` resolves to a git-host issue or a Jira ticket per the grammar below, and the `pr <N>` form selects PR-review entry mode. Flags are orthogonal and compose freely; some modes have their own allowed or ignored flags, listed in [references/modes/pr-entry.md](references/modes/pr-entry.md) for PR mode.
+Parse the invocation as `/forge <ref> [automode] [docs] [tdd] [worktree] [lookup] [secure] [changelog] [ci-watch] [compress] [codex | codex challenge | codex impl [challenge]] [coderabbit]`, or `/forge pr <N> [...]`. The words can appear anywhere in the request. A `<ref>` resolves to a git-host issue or a Jira ticket per the grammar below, and the `pr <N>` form selects PR-review entry mode. Flags are orthogonal and compose freely; some modes have their own allowed or ignored flags, listed in [references/modes/pr-entry.md](references/modes/pr-entry.md) for PR mode.
 
 Full flag matrix (effects, composition rules, conflicts): **[references/flags.md](references/flags.md)**.
 
@@ -62,12 +62,13 @@ Each line says what the flag does and where it acts; the linked file owns the de
 - `ci-watch` — after a Step 12 push, polls CI; a red result reopens Step 8. See [references/modes/ci-watch.md](references/modes/ci-watch.md).
 - `compress` — sources a token-saving output skill for the whole session before Step 1: `ponytail` if installed, else `caveman`; if neither is installed, the flag is ignored with a one-line note. See [references/modes/compress.md](references/modes/compress.md).
 - `codex` / `codex challenge` — adds Codex as a Step 8 generic reviewer; `challenge` runs an adversarial review instead. Claude Code only. See [references/reviewers/codex.md](references/reviewers/codex.md).
+- `codex impl` — Codex (GPT-5.6, auto-tiered Sol/Terra/Luna) implements at Step 7 and handles Step 8b rework; the Step 8 generic reviewer reverts to the default for cross-model review, and `challenge` composes as an extra adversarial engine. Claude Code only. See [references/modes/codex-impl.md](references/modes/codex-impl.md).
 - `coderabbit` — adds CodeRabbit as a Step 8 generic reviewer, with rework handled by `coderabbit:autofix`. Claude Code only; composes with `codex` (both run, rework routes per finding). See [references/reviewers/coderabbit.md](references/reviewers/coderabbit.md).
 
 The reviewer flags add to the generic-reviewer set; the project reviewer agents always run alongside, and `codex` and `coderabbit` can both be set in one run. For example, `forge ticket PROJ-7 automode docs codex challenge coderabbit` is a valid invocation.
 
 - `automode` with `docs` writes `CONTEXT.md` directly with no interview, then goes straight to Step 7.
-- On a non-Claude-Code runtime, `codex`, `codex challenge`, and `coderabbit` are ignored with a one-line warning, and the generic reviewer stays `superpowers:requesting-code-review`.
+- On a non-Claude-Code runtime, `codex`, `codex challenge`, `codex impl`, and `coderabbit` are ignored with a one-line warning, and the generic reviewer stays `superpowers:requesting-code-review`.
 
 ## When to Use
 
@@ -228,9 +229,11 @@ When the **`tdd`** flag is set, write the failing test first, run it, watch it f
 
 With `docs`, load the plan from `CONTEXT.md` and check its stamp matches this ref; on a mismatch, warn and re-propose rather than implement a stale plan. Implement the approved plan and keep it minimal, surgical, and in scope. Make no edits before the opener is done, and before the observed-red test is done if `tdd` is set.
 
+When the **`codex impl`** flag is set, delegate the implementation to Codex (GPT-5.6, auto-tiered) after the opener — and after the observed-red test if `tdd` is set — then conformance-check the returned diff against the plan before Step 8. See **[references/modes/codex-impl.md](references/modes/codex-impl.md)**; on preflight failure it degrades to inline implementation.
+
 ## Step 8 — Review loop
 
-Run the project reviewer subagents (from `.agents/agents/` or the runtime equivalent) together with the generic reviewer. The generic reviewer is `superpowers:requesting-code-review` by default, or Codex under `codex` or `codex challenge`. The project subagents always run.
+Run the project reviewer subagents (from `.agents/agents/` or the runtime equivalent) together with the generic reviewer. The generic reviewer is `superpowers:requesting-code-review` by default, or Codex under `codex` or `codex challenge`. Under `codex impl`, the generic reviewer stays the default — the model family that wrote the diff must never be the only reviewer — and `codex impl challenge` adds Codex adversarial review as an extra engine. The project subagents always run.
 
 Terminate the loop at zero actionable findings; nits do not block. Cap the loop at a fixed number of passes. On each non-converged pass, run the re-hydrate block, fix the findings, then re-review.
 
@@ -246,6 +249,7 @@ A flag adds an engine to the Step 8 generic-reviewer set, replacing the default 
 |---|---|---|
 | *(none — default)* | `superpowers:requesting-code-review` | (no dedicated rework skill; in-pass fixes only) |
 | `codex` / `codex challenge` | Codex `review` / `adversarial-review` via `scripts/resolve-codex.py` foreground | `codex:codex-rescue` foreground `--wait` (re-hydrate first, inline karpathy constraints) |
+| `codex impl` [+ `challenge`] | default reviewer (+ Codex `adversarial-review` with `challenge`) | companion `task --write` at the Terra/Luna tier (re-hydrate first) per [references/modes/codex-impl.md](references/modes/codex-impl.md) |
 | `coderabbit` | `coderabbit:code-review` | `coderabbit:autofix` foreground `--wait` (re-hydrate first, inline karpathy constraints) |
 
 See **[references/reviewers/codex.md](references/reviewers/codex.md)** for Codex specifics and **[references/reviewers/coderabbit.md](references/reviewers/coderabbit.md)** for CodeRabbit specifics.

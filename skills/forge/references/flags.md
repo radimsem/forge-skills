@@ -10,6 +10,7 @@ The full set of flags the forge skill understands, with composition rules and co
 | `docs` | Source plan from `CONTEXT.md`; Step 12 proposal → `/tmp/forge-<ref>.md` | — |
 | `codex` | Add Codex to the generic-reviewer set (resolve via `scripts/resolve-codex.py`). Claude Code only | [reviewers/codex.md](reviewers/codex.md) |
 | `codex challenge` | Codex `review` → `adversarial-review`. Implies `codex` | [reviewers/codex.md](reviewers/codex.md) |
+| `codex impl` | Codex (GPT-5.6 auto-tiered: Sol/Terra/Luna) implements Step 7 and handles Step 8b rework; the generic reviewer reverts to the default. Claude Code only | [modes/codex-impl.md](modes/codex-impl.md) |
 | `tdd` | Compose `/tdd` at Step 7; observe failing test before implementation | [modes/tdd.md](modes/tdd.md) |
 | `worktree` | Compose `superpowers:using-git-worktrees` at Step 3 instead of in-place branch switch | [modes/worktree.md](modes/worktree.md) |
 | `lookup` | Query the `context7` MCP/resources at Step 4 for library-specific facts | [modes/lookup.md](modes/lookup.md) |
@@ -33,6 +34,8 @@ In addition to the flags above, the skill supports an entry-mode verb:
 |---|---|
 | `codex` and `coderabbit` compose | Both run in the same Step 8 pass; each finding's rework routes to the engine that raised it. |
 | `codex challenge` implies `codex` | Challenge mode is a variant of the Codex reviewer pass. |
+| `codex impl` reverts the generic reviewer to the default | The model family that wrote the diff must never be the only reviewer (cross-model review). `codex impl challenge` re-adds Codex adversarial review as an *additional* engine, never the only one. |
+| `codex impl` is inert at Step 7 under `/forge pr <N>` | PR mode has no Step 7; the Step 8b rework tiering still applies. One-line note, no error. |
 | `ci-watch` requires the Step 12 push option | Polling without a published target is pointless. Silently skip if user picked a non-push Step 12 option. |
 | `tdd` discipline binds under `automode` | The "observe failing test before implementing" rule is the point of the flag; under `automode` the agent runs the test itself and confirms red. |
 | `/forge pr <N>` ignores all lifecycle flags except `automode` and reviewer flags | PR-review mode skips Step 7 implementation; only Step 8 reviewer engines and the `automode` no-gates property apply. |

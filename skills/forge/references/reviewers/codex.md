@@ -4,6 +4,8 @@ Loaded on demand by SKILL.md Step 8 **only when the `codex` or `codex challenge`
 
 **Claude Code only** — the `codex` plugin is CC-exclusive. Non-CC runtime: ignore the flag, warn once, use `superpowers:requesting-code-review`, do not read further. The rest of forge stays runtime-generic.
 
+This file is reviewer-only. Implementation delegation (the `codex impl` flag) is owned by [../modes/codex-impl.md](../modes/codex-impl.md); when `impl` is set, Step 8b rework routes through that file's tiered `task` path instead of the subagent path below.
+
 ## Step 8a — Codex generic reviewer
 
 `/codex:review` / `/codex:adversarial-review` are `disable-model-invocation: true` — unreachable via the Skill/command tool inside an autonomous loop. Drive the companion script over Bash:

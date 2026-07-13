@@ -2,7 +2,7 @@
 
 Patterns that cause forge to misbehave or ship the wrong work. Split across two files:
 
-- **[mistakes.md](mistakes.md)** — Common Mistakes table. 33 rows covering pre-implementation discipline, the review loop, Step 12 closing, and per-flag mistakes. Lookup table for "I'm about to do X, is that wrong?"
+- **[mistakes.md](mistakes.md)** — Common Mistakes table. 34 rows covering pre-implementation discipline, the review loop, Step 12 closing, and per-flag mistakes. Lookup table for "I'm about to do X, is that wrong?"
 - **[red-flags.md](red-flags.md)** — Red Flags STOP list. 12 bullets covering specific phrases that should halt forward motion. Pattern-match against your own reasoning out loud, not against the user's words.
 
 Both bind under `automode` — `automode` lifts user gates, not safety floors.
