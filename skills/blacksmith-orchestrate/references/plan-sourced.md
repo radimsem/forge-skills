@@ -23,9 +23,11 @@ A task's plan source is resolved in this order, and the first hit wins:
 1. An explicit `plan <path|glob>` argument in the invocation.
 2. `docs/superpowers/plans/*.md`.
 3. `docs/superpowers/specs/*-design.md`.
-4. A plan location named by the repo's own `CLAUDE.md` / `AGENTS.md`.
+4. A plan location named by the repo's own `CLAUDE.md` / `AGENTS.md` — an explicit path or glob the guide states. If the guide names a location that resolves to no existing file or directory, this tier is skipped with a one-line note rather than treated as a match; an unresolvable configured path degrades, it does not stall the run.
 
 A task that matches none of these has no plan source and goes straight to the Step 3b scout fan-out; that is not a failure, it is the expected outcome for refs, containers, and free-form tasks that never claimed a plan.
+
+**A tier that matches more than one file is ambiguous, not resolved.** Tiers 2–4 are globs over directories that normally hold many files once a few features have shipped, so matching several plans is a routine outcome, not an edge case. Ambiguity is not-dispatch-ready, and not-dispatch-ready means scout: the orchestrator does not guess which of several candidates governs this task. It lists the candidate files and asks which plan applies, in the Step 5 proposed-answer format. Under `automode`, where it cannot ask: if exactly one candidate contains a task that corresponds to the work source, use it and record the assumption on the battle plan; otherwise fall back to Step 3b scouting for that task. Falling back costs one scout run; guessing wrong costs implementing a plan written for different work — the same trade the dispatch-ready ladder already makes everywhere else: when a cheap check cannot establish an answer, the fallback is to scout, not to improvise.
 
 ## Task boundaries come from the plan
 
@@ -35,7 +37,7 @@ A task that matches none of these has no plan source and goes straight to the St
 
 A task is dispatch-ready — eligible to skip the scout and go straight to `/forge plan <path>` — only when all three hold:
 
-1. The plan slice names a concrete file list for the task (not "various files" or an unstated scope).
+1. The plan slice names a concrete file list for the task (not "various files" or an unstated scope). Naming a list is necessary but not sufficient on its own — whether those paths still exist on disk *today* is a separate, ongoing check; see the Freshness guard below.
 2. The plan slice states pass criteria for the task — `Run:`/`Expected:` lines or an equivalently concrete deliverable.
 3. The plan slice's scope boundary is unambiguous — nothing in the task's own description implies work outside the file list in condition 1.
 
@@ -66,4 +68,6 @@ A plan-sourced task's dispatch-readiness is void the moment its plan slice no lo
 - The slice's stamp — a recorded base SHA where the plan states one, otherwise the plan file's own last commit — is compared against current `HEAD` for the paths the slice names.
 - Any changed path in that comparison flags the task **stale**. A stale task falls back to scouting rather than dispatching against a plan written for a tree state that has since moved; scouting rebuilds the file list and scope from the live tree instead of trusting a description that stopped matching it.
 
-This is forge's own `docs` stamp check — the same staleness test `/forge plan <path>` runs against a single slice at its own Step P — applied here across a set of tasks before any of them is scheduled.
+**When no base SHA can be determined at all** — no `Base:` line in the plan, and the plan file itself has no commit yet — the second bullet has nothing to compare against. This is not an exotic case; it is the *most common* one, because the natural workflow is brainstorm → write plan → orchestrate in a single session, before the plan file is ever committed. A slice in this state cannot be *proven* fresh, but it must not be treated as **stale** either — blocking here would break the exact workflow this route exists to serve. Fall back to the path-existence check alone (the first bullet), record the gap on the battle plan as a stated assumption — `freshness unverified: plan not yet committed` — and proceed. An uncommitted plan is almost always one just written, so the risk the stamp check guards against, a plan written against a tree state that has since moved, barely applies here; surfacing the assumption costs one line on the battle plan, while blocking costs the user their whole flow.
+
+This is forge's own `docs` stamp check — the same staleness test `/forge plan <path>` runs against a single slice at its own Step P, including its own no-determinable-base-SHA fallback — applied here across a set of tasks before any of them is scheduled.
