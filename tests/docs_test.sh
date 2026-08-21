@@ -187,5 +187,13 @@ done)
 assert_eq "$_bs_norecipe" "" \
   "every blacksmith-orchestrate/references/*.md (except flags.md, anti-patterns.md) has a Manual verification recipe"
 
+# --- blacksmith: Steps 6-7 provisioning, dispatch, and the ledger ---
+assert_file "$BS/references/ledger.md" "blacksmith: ledger.md exists"
+assert_contains "$BS/references/ledger.md" 'git rev-parse --git-common-dir' \
+  "ledger.md: ledger lives under the common git dir"
+for _st in planned provisioned running review pr-open parked merged done failed; do
+  assert_contains "$BS/references/ledger.md" "$_st" "ledger.md: defines state $_st"
+done
+
 printf '\n%s\n' "FAILS=$FAILS"
 [ "$FAILS" -eq 0 ]

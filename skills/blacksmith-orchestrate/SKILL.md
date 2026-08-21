@@ -36,6 +36,18 @@ Forge's hard floors are inherited unchanged, and orchestrating many runs never r
 
 "The agent" means whatever agent runs this skill, and "one agent per task" means whatever subagent or parallel-run mechanism the runtime exposes. Adapt every reference — config directory, agent guide, interview UI, host CLI — to your runtime, exactly as forge does. If the runtime cannot run work in parallel at all, say so and fall back to running the waves sequentially rather than pretending to fan out.
 
+## Runtime
+
+This skill is Claude-Code-first, degrading elsewhere in the same way forge's `codex` and `coderabbit` flags do: each surface below is used where the host provides it, and the workflow still completes, one step slower, where it does not.
+
+| Surface | Used for | Why |
+|---|---|---|
+| Workflow tool | Step 3b scout fan-out | bounded parallel fan-out, schema-validated returns, keeps N proposals out of the orchestrator's context |
+| Agent tool | Step 7 implementation dispatch | per-agent model selection, and the human gates and multi-hour parks live in the main loop |
+| Ledger file | Steps 6–9 state | survives `/compact`, crash and resume |
+
+On a non-Claude-Code runtime the skill degrades with a one-line warning to sequential forge runs in dependency order, one worktree per component, no `afk`, and inline analysis instead of a scout fan-out.
+
 ## Parameters
 
 Parse the invocation as `/blacksmith-orchestrate <work-source> [orchestrator-flags] [forge-flags]`. Flag words are orthogonal and can appear anywhere in the request, exactly as in forge. The `<work-source>` is one of five routes — one or more issue refs, a tracker container such as a milestone or epic or label, `plan <path>`, a quoted free-form goal, or `resume` — and routes may combine in a single invocation, so every task carries the route it arrived by. Read **[references/entry-routes.md](references/entry-routes.md)** for the route table, how the routes normalize into one task list, and how containers expand.
@@ -49,7 +61,7 @@ These are consumed by the orchestrator and are never passed through to a forge r
 | Flag | Effect | Detail |
 |---|---|---|
 | `afk` | After a 5-minute quiet timeout, self-verify and merge **blocking PRs only** — the single documented exception to forge's never-auto-push floor | [references/afk.md](references/afk.md) |
-| `resume` | Resume a run from its ledger instead of starting a new one | `references/ledger.md` |
+| `resume` | Resume a run from its ledger instead of starting a new one | [references/ledger.md](references/ledger.md) |
 | `budget <n>` | Token ceiling for the run, with a deterministic degradation ladder | [references/scheduling.md](references/scheduling.md) |
 | `strict` | No depth downgrade; every task runs full forge | [references/triage.md](references/triage.md) |
 | `stack` | Blocked tasks base off the blocker's branch and open stacked PRs | [references/scheduling.md](references/scheduling.md) |
@@ -112,6 +124,14 @@ Step 3's `filesToTouch`, `symbols`, `declaredBlockers` and `blastRadius` feed th
 Everything Steps 1 through 4 produced is assembled into one battle plan and shown to the user. **Do not create any worktree and do not dispatch any forge run until the user approves.** This is the same invariant forge states at its own Step 6, one level up: nothing here touches the filesystem, opens a branch, or spends an agent's budget on implementation until approval is explicit. Read **[references/battle-plan.md](references/battle-plan.md)** for the literal artifact format, its required elements, and the exact approval semantics — they are not restated here.
 
 `automode` is the only sanctioned bypass, and it lifts this gate exactly as it lifts forge's Step 6: the plan is still assembled and still shown, but as a record the run already acted on rather than a question awaiting an answer. Lifting this gate does not lift any hard floor named in the Overview — no dispatched run auto-commits, auto-pushes, or writes back to a tracker under `automode` either.
+
+## Step 6 — Provision
+
+Create one worktree per group, per the topology Step 4 decided — a lone task gets its own worktree, a `unified` component shares one worktree and one branch, a `split` component gets one worktree per task — composing `superpowers:using-git-worktrees` at every worktree exactly as forge's `worktree` flag composes it at its own Step 3, so naming, layout and cleanup match what a single forge run already does rather than inventing a second worktree convention. Write the run ledger before dispatching anything: an interrupted run is resumable only because the ledger already recorded every worktree and every task's `planned` state before Step 7 touched any of them. Read **[references/ledger.md](references/ledger.md)** for the schema, the task-state vocabulary, and the resume contract.
+
+## Step 7 — Dispatch
+
+Dispatch one agent per task, at the tier and depth Step 4 assigned, running in that task's worktree. A plan-sourced task is dispatched as `/forge plan <slice> <pass-through-flags>`; a scouted task is dispatched as `/forge <ref> <pass-through-flags>` with the scout's proposal supplied as the already-approved plan, so the dispatched run does not re-derive what Step 3b already found. Concurrency is capped at `max` (default `4`), against the waves Step 4 already computed. Update the ledger row on every state change, so **[references/ledger.md](references/ledger.md)**'s task-state vocabulary is never stale by more than one transition. On a runtime without a parallel agent surface, dispatch sequentially in dependency order instead, with a one-line warning naming why.
 
 ## Step 8 — Relay
 

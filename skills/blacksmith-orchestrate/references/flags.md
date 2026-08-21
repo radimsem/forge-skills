@@ -9,7 +9,7 @@ Each flag is consumed by the orchestrator and never forwarded to a dispatched fo
 | Flag | Effect | Detail |
 |---|---|---|
 | `afk` | After a 5-minute quiet timeout, self-verify and merge **blocking PRs only** — the single documented exception to forge's never-auto-push floor | [afk.md](afk.md) |
-| `resume` | Resume a run from its ledger instead of starting a new one | `ledger.md` |
+| `resume` | Resume a run from its ledger instead of starting a new one | [ledger.md](ledger.md) |
 | `budget <n>` | Token ceiling for the run, with a deterministic degradation ladder | [scheduling.md](scheduling.md) |
 | `strict` | No depth downgrade; every task runs full forge | [triage.md](triage.md) |
 | `stack` | Blocked tasks base off the blocker's branch and open stacked PRs | [scheduling.md](scheduling.md) |
