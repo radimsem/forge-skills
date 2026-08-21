@@ -99,6 +99,7 @@ The reviewer flags add to the project's own reviewer agents rather than replacin
 /forge PROJ-123                    # Jira ticket (or Linear issue)
 /forge linear ENG-42               # force Linear routing
 /forge pr 47                       # review-entry mode against an existing PR diff
+/forge plan docs/superpowers/plans/x.md#task-3   # implement one plan task directly
 ```
 
 Stack flags as needed:

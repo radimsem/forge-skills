@@ -27,7 +27,7 @@ Part 2 — Lifecycle (7–12):   implement → review-loop → refactor → spin
 
 ## Parameters
 
-Parse the invocation as `/forge <ref> [automode] [docs] [tdd] [worktree] [lookup] [secure] [changelog] [ci-watch] [compress] [codex | codex challenge | codex impl [challenge]] [coderabbit]`, or `/forge pr <N> [...]`. The words can appear anywhere in the request. A `<ref>` resolves to a git-host issue or a Jira ticket per the grammar below, and the `pr <N>` form selects PR-review entry mode. Flags are orthogonal and compose freely; some modes have their own allowed or ignored flags, listed in [references/modes/pr-entry.md](references/modes/pr-entry.md) for PR mode.
+Parse the invocation as `/forge <ref> [automode] [docs] [tdd] [worktree] [lookup] [secure] [changelog] [ci-watch] [compress] [codex | codex challenge | codex impl [challenge]] [coderabbit]`, or `/forge pr <N> [...]`, or `/forge plan <path>[#<slug>] [...]`. The words can appear anywhere in the request. A `<ref>` resolves to a git-host issue or a Jira ticket per the grammar below, and the `pr <N>` form selects PR-review entry mode. Flags are orthogonal and compose freely; some modes have their own allowed or ignored flags, listed in [references/modes/pr-entry.md](references/modes/pr-entry.md) for PR mode.
 
 Full flag matrix (effects, composition rules, conflicts): **[references/flags.md](references/flags.md)**.
 
@@ -42,10 +42,13 @@ The target is the first reference-shaped token, or the token right after a `tick
 | after `ticket` keyword | **Jira ticket**; number-only → ask project key | `forge ticket PROJ-123`, `solve ticket 42` |
 | after `linear` keyword | **Linear issue** (forces Linear routing, skips disambiguation) | `forge linear ENG-42` |
 | after `pr` keyword | **PR-review entry mode** (skips Steps 4–7; enters at Step 8 against the PR diff) | `forge pr 47`, `forge pr #123` |
+| after `plan` keyword | **plan-entry mode** (skips Steps 4–6; enters at Step 7 against the plan slice) | `forge plan docs/superpowers/plans/x.md#task-3` |
 
 A bare number routes to a tracker only if `ticket` or `linear` precedes it, and PR mode requires the `pr` keyword. A key-shaped ref is either Jira or Linear: when both trackers are configured, the agent disambiguates per the Jira/Linear disambiguation section in [references/trackers/linear.md](references/trackers/linear.md). Single-tracker setups skip the prompt.
 
 Read **[references/modes/pr-entry.md](references/modes/pr-entry.md)** for the PR-entry mode step modifications, the allowed and ignored flags, and the PR-specific Step 12 closing menu.
+
+Read **[references/modes/plan-entry.md](references/modes/plan-entry.md)** for the plan-entry step modifications and slice addressing.
 
 ### Modifier flags
 

@@ -66,5 +66,13 @@ assert_eq "$(flag_names "$ROOT/skills/forge/references/flags.md" '^## Flags')" \
           "$(flag_names "$ROOT/README.md" '^## Modifier flags')" \
           "forge: flags.md and README flag tables agree"
 
+# --- forge: the plan entry verb is documented in all three places ---
+assert_file "$ROOT/skills/forge/references/modes/plan-entry.md" \
+  "forge: plan-entry.md exists"
+assert_contains "$ROOT/skills/forge/SKILL.md" 'after .`?plan.`? keyword' \
+  "forge SKILL.md: target grammar has a plan row"
+assert_contains "$ROOT/skills/forge/references/flags.md" '/forge plan <path>' \
+  "forge flags.md: entry-verbs table has the plan verb"
+
 printf '\n%s\n' "FAILS=$FAILS"
 [ "$FAILS" -eq 0 ]
