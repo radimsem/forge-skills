@@ -104,5 +104,18 @@ assert_nonempty "$_bs_skill" "blacksmith: SKILL.md Parameters flag table is non-
 assert_eq "$_bs_flags" "$_bs_skill" \
           "blacksmith: SKILL.md and flags.md flag tables agree"
 
+# --- blacksmith: analysis route and scout script ---
+assert_file "$BS/references/plan-sourced.md" "blacksmith: plan-sourced.md exists"
+assert_file "$BS/scripts/scout-fanout.mjs"   "blacksmith: scout-fanout.mjs exists"
+assert_contains "$BS/references/plan-sourced.md" 'dispatch-ready' \
+  "plan-sourced.md: defines the dispatch-ready check"
+assert_contains "$BS/references/plan-sourced.md" 'stale' \
+  "plan-sourced.md: defines the freshness guard"
+if node --check "$BS/scripts/scout-fanout.mjs" 2>/dev/null; then
+  pass "scout-fanout.mjs parses"
+else
+  fail "scout-fanout.mjs parses"
+fi
+
 printf '\n%s\n' "FAILS=$FAILS"
 [ "$FAILS" -eq 0 ]

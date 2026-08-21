@@ -57,7 +57,7 @@ These are consumed by the orchestrator and are never passed through to a forge r
 | `max <n>` | Concurrent implementation agents; default `4` | `references/scheduling.md` |
 | `dry` | Emit the battle plan and stop; dispatch nothing | `references/battle-plan.md` |
 | `unified` / `split` | Override worktree grouping: `unified` puts a coupled cluster in one worktree behind one PR, `split` gives every task its own | `references/scheduling.md` |
-| `plan <path>` | Source tasks from a written implementation plan; each plan task becomes one orchestration task | `references/plan-sourced.md` |
+| `plan <path>` | Source tasks from a written implementation plan; each plan task becomes one orchestration task | [references/plan-sourced.md](references/plan-sourced.md) |
 
 Every other flag forge understands passes through unchanged to every dispatched run: `automode`, `docs`, `tdd`, `lookup`, `secure`, `changelog`, `ci-watch`, `compress`, `codex`, `codex challenge`, `codex impl`, and `coderabbit`. Two of forge's flags are overridden rather than passed through as written. `worktree` is always implied and orchestrator-managed, because Step 6 provisions, names and tracks every worktree itself and a run-level worktree decision cannot be delegated to the individual runs; passing it explicitly is accepted with a one-line note rather than treated as an error, since the user is asking for what already happens. `automode` lifts the Step 5 battle-plan gate exactly as it lifts forge's Step 6 gate, and still passes through to each dispatched run; it does not lift any hard floor named in the Overview.
 
@@ -83,3 +83,22 @@ Every task needs a stable identifier before analysis, because the battle plan, t
 ### Scouts never interview
 
 This rule is stated here because it governs every ref Step 2 hands onward. A scout dispatched in Step 3 that hits a forge Step 4 context gap returns the open question rather than asking it, and never blocks waiting for an answer. The orchestrator batches every task's open questions into **one** consolidated interview attached to the Step 5 gate, using forge's proposed-answer format with the most likely option marked `(Recommended)` and "Other" implicit. A scout that interviewed on its own would stall a parallel fan-out behind N separate prompts and would split into N approvals the single approval the gate exists to collect. Under `automode` the `(Recommended)` answer is taken for every open question and the assumption is recorded in the battle plan, exactly as forge does at its own Step 4.
+
+## Step 3 — Analyze
+
+Every task needs to know which files it will touch before Step 4 can build a collision graph, and there are two ways to learn that: read it off a plan someone already wrote, or pay an agent to go find out. Route **per task, not per run** — a plan covering three of five tasks is dispatch-ready for those three and scouts only the other two, because the two routes answer the same question at very different cost and a task's route says nothing about its neighbor's.
+
+| Route | When | Cost |
+|---|---|---|
+| 3a — plan-sourced | The task's route is `plan` and its slice passes the dispatch-ready check | Zero agent spawns; dispatches straight through `/forge plan <path>` |
+| 3b — scout fan-out | Every other task, plus any plan-sourced task that fails dispatch-ready or is `stale` | One forge Part 1 run per task |
+
+### Step 3a — Plan-sourced
+
+A task routed to `plan` in Step 1 is analyzed by reading its own plan slice rather than by dispatching an agent to rediscover what the plan author already wrote down. The dispatch-ready check, the freshness guard that can void it, and the fallback to 3b when either fails are all in **[references/plan-sourced.md](references/plan-sourced.md)** — read it before implementing this step; its rules are not restated here.
+
+### Step 3b — Scout fan-out
+
+Every task that is not dispatch-ready — whether it never had a plan slice or fell out of one — is analyzed by dispatching one forge Part 1 run (Steps 1 through 6, stopping at the gate) per task, run in parallel. The fan-out runs as one Workflow invocation using **`scripts/scout-fanout.mjs`**, which returns one structured proposal per task rather than prose the orchestrator would otherwise have to parse. Schema validation on that return shape is enforced at the tool layer, so a malformed scout return is retried by the runtime itself rather than parsed defensively here.
+
+This is the same runtime-parallelism dependency the Overview already states for wave dispatch — "if the runtime cannot run work in parallel at all, say so and fall back to running \[...\] sequentially rather than pretending to fan out." Step 3 does not restate that rule independently; it is the same rule firing earlier in the workflow. Concretely here: on a runtime without a Workflow surface, the analysis runs inline and sequentially instead, with a one-line warning naming why.
