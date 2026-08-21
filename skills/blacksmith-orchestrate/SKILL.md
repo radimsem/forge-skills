@@ -138,3 +138,20 @@ Dispatch one agent per task, at the tier and depth Step 4 assigned, running in t
 When a blocked task's blocker lands, the dependent is not released on a merged label alone — the orchestrator proves the blocker's changes are actually reachable from the dependent's base with an ancestor check, falling back to a content-and-PR-number proof when a squash or rebase merge has rewritten the SHA, then rebases the dependent onto the current base before it dispatches. The full proof sequence, the fallback, and what happens without a host PR CLI at all are in **[references/relay.md](references/relay.md)**.
 
 By default, merge authority stays with the user: the orchestrator notifies that a blocking PR is ready and parks — it never merges, on this run or any other, `automode` included. **[references/afk.md](references/afk.md)** documents the one flag that changes that, `afk`, the single sanctioned exception to forge's no-auto-push floor, and the seven-item checklist every one of its blocking-PR merges has to pass in full before it acts.
+
+## Step 9 — Close-out
+
+The orchestrator emits one aggregate report: per task, its PR or branch, final state, depth, tier and `/goal` result; every task `budget` deferred or downgraded, named explicitly by ref and by which rung of the degradation ladder acted on it; every parked task and precisely what it is waiting on, not just that it is waiting; and a worktree cleanup reminder for every worktree Step 6 provisioned. Cleanup is **never auto-run**, inheriting forge's own `worktree` rule that losing in-progress state on inferred completion is the wrong default — a task reading `merged` in the ledger is still the orchestrator's inference from the evidence it gathered, not a claim the user has personally confirmed, and removing a worktree on that inference risks deleting something the user still wanted to look at.
+
+Two forge steps are **hoisted to the orchestrator**, because running them per task would produce N conflicting writes to the same targets:
+
+| Forge step | Dispatched run does | Orchestrator does |
+|---|---|---|
+| Step 10 — spin-off issues via `/to-issues` | collects candidates and reports them; files nothing | dedupes across all tasks, then files once under forge's normal rules |
+| Step 11 — self-evolution | reports candidate lessons; writes nothing | dedupes, and proposes a single skill, rule, guide or memory edit |
+
+Both hoisted steps write outside the dispatched task's own worktree — Step 10 to the tracker, Step 11 to the agent's own config or memory — and a worktree is exactly the boundary that keeps N parallel forge runs from touching each other's state. Running either step inside every dispatched run would turn that shared, out-of-worktree target into an N-way race: N runs each drafting and filing their own spin-off issues for overlapping observations duplicates tracker noise nobody asked for, and N runs each proposing their own skill or memory edit competes to write the same config file from N worktrees that cannot see one another's in-flight change. Hoisting is what keeps the write singular — every dispatched run still does the analysis and still surfaces what it found, it just stops short of acting on a target it does not have exclusive access to, and the orchestrator, which alone can see every task's candidates at once, dedupes and acts the one time the write is safe to make.
+
+Orchestrator-level self-evolution has its own subject matter, distinct from what any single dispatched run could observe: triage misses that required a runtime promotion, edges the collision graph over- or under-serialized, and plan slices that proved stale. Those lessons belong in `references/anti-patterns.md`, this skill's own canonical home for them, exactly as forge's is for forge's.
+
+The ledger is written to its final state before the report is emitted, so a run that is reported is always a run that can be resumed or audited — the report is read off the same file `resume` would read, never off a separate in-memory summary that could drift from it.

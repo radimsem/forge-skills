@@ -195,5 +195,10 @@ for _st in planned provisioned running review pr-open parked merged done failed;
   assert_contains "$BS/references/ledger.md" "$_st" "ledger.md: defines state $_st"
 done
 
+# --- blacksmith: Step 9 close-out and the hoisted forge steps ---
+assert_contains "$BS/SKILL.md" '^## Step 9' "SKILL.md: has a Step 9 close-out"
+assert_contains "$BS/SKILL.md" 'hoisted to the orchestrator' \
+  "SKILL.md: states that forge Steps 10 and 11 are hoisted"
+
 printf '\n%s\n' "FAILS=$FAILS"
 [ "$FAILS" -eq 0 ]
