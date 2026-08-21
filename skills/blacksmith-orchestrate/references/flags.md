@@ -16,7 +16,7 @@ Each flag is consumed by the orchestrator and never forwarded to a dispatched fo
 | `rescout` | Force scout analysis even where dispatch-ready plans exist | `plan-sourced.md` |
 | `max <n>` | Concurrent implementation agents; default `4` | `scheduling.md` |
 | `dry` | Emit the battle plan and stop; dispatch nothing | `battle-plan.md` |
-| `unified` / `split` | Override worktree grouping — one PR per coupled cluster, or one PR per task | `scheduling.md` |
+| `unified` / `split` | Override worktree grouping: `unified` puts a coupled cluster in one worktree behind one PR, `split` gives every task its own | `scheduling.md` |
 | `plan <path>` | Source tasks from a written implementation plan; each plan task becomes one orchestration task | `plan-sourced.md` |
 
 ## `afk` and the no-auto-push floor
