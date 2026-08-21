@@ -152,6 +152,12 @@ Two forge steps are **hoisted to the orchestrator**, because running them per ta
 
 Both hoisted steps write outside the dispatched task's own worktree — Step 10 to the tracker, Step 11 to the agent's own config or memory — and a worktree is exactly the boundary that keeps N parallel forge runs from touching each other's state. Running either step inside every dispatched run would turn that shared, out-of-worktree target into an N-way race: N runs each drafting and filing their own spin-off issues for overlapping observations duplicates tracker noise nobody asked for, and N runs each proposing their own skill or memory edit competes to write the same config file from N worktrees that cannot see one another's in-flight change. Hoisting is what keeps the write singular — every dispatched run still does the analysis and still surfaces what it found, it just stops short of acting on a target it does not have exclusive access to, and the orchestrator, which alone can see every task's candidates at once, dedupes and acts the one time the write is safe to make.
 
-Orchestrator-level self-evolution has its own subject matter, distinct from what any single dispatched run could observe: triage misses that required a runtime promotion, edges the collision graph over- or under-serialized, and plan slices that proved stale. Those lessons belong in `references/anti-patterns.md`, this skill's own canonical home for them, exactly as forge's is for forge's.
+Orchestrator-level self-evolution has its own subject matter, distinct from what any single dispatched run could observe: triage misses that required a runtime promotion, edges the collision graph over- or under-serialized, and plan slices that proved stale. Those lessons belong in **[references/anti-patterns.md](references/anti-patterns.md)**, this skill's own canonical home for them, exactly as forge's is for forge's.
 
 The ledger is written to its final state before the report is emitted, so a run that is reported is always a run that can be resumed or audited — the report is read off the same file `resume` would read, never off a separate in-memory summary that could drift from it.
+
+---
+
+## Anti-patterns & Red Flags
+
+See **[references/anti-patterns.md](references/anti-patterns.md)** for the red-flag table — the canonical home for lessons learned during an orchestration run.

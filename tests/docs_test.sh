@@ -200,5 +200,10 @@ assert_contains "$BS/SKILL.md" '^## Step 9' "SKILL.md: has a Step 9 close-out"
 assert_contains "$BS/SKILL.md" 'hoisted to the orchestrator' \
   "SKILL.md: states that forge Steps 10 and 11 are hoisted"
 
+# --- blacksmith: anti-patterns ---
+assert_file "$BS/references/anti-patterns.md" "blacksmith: anti-patterns.md exists"
+assert_eq "$(grep -c '^| ' "$BS/references/anti-patterns.md")" "10" \
+  "anti-patterns.md: 9 red-flag rows plus the header row"
+
 printf '\n%s\n' "FAILS=$FAILS"
 [ "$FAILS" -eq 0 ]
