@@ -137,6 +137,16 @@ for _field in ref title kind filesToTouch symbols plan passCriteria difficulty \
   assert_contains "$_scout" "$_field" "scout-fanout.mjs: schema has field $_field"
 done
 
+# --- blacksmith: Step 4 triage ---
+assert_file "$BS/references/triage.md" "blacksmith: triage.md exists"
+assert_contains "$BS/references/triage.md" 'never be assigned .`?lite' \
+  "triage.md: states the blast-radius depth floor"
+assert_contains "$BS/references/triage.md" 'never the only reviewer' \
+  "triage.md: states the cross-model review floor"
+assert_eq "$(awk '/^## Axis 1/{f=1;next} /^## /{f=0} f' "$BS/references/triage.md" \
+  | grep -c '^| high\|^| medium\|^| low')" "3" \
+  "triage.md: tier table has exactly three difficulty rows"
+
 # --- blacksmith: Step 4 collision graph ---
 assert_file "$BS/references/collision-graph.md" "blacksmith: collision-graph.md exists"
 assert_contains "$BS/references/collision-graph.md" 'acyclic by construction' \
