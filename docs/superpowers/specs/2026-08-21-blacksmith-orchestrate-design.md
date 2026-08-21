@@ -183,7 +183,7 @@ Schema validation is enforced at the tool layer, so a malformed return is retrie
 
 ## 4. Collision graph (Step 4)
 
-**Edges.** Two tasks collide when their `filesToTouch` sets intersect.
+**Edges.** Two tasks collide when their `filesToTouch` sets intersect, or when one names the other in `declaredBlockers` — file overlap is inferred evidence of a dependency, a declared blocker is stated evidence, and stated beats inferred, so a declared edge is drawn whether or not the files overlap and is graded hard regardless.
 
 **Orientation.** Edges are always oriented, never left undirected, by a single deterministic priority:
 
@@ -192,7 +192,7 @@ Schema validation is enforced at the tool layer, so a malformed return is retrie
 3. else more files touched goes first;
 4. else lower ref number.
 
-Because orientation follows one total order, **the graph is acyclic by construction.** There is no cycle-breaking case and no deadlock detection.
+Because orientation follows one total order, **overlap-derived edges are acyclic by construction** — no cycle-breaking case, no deadlock detection. Declared edges are the exception: their direction is stated rather than computed, so a chain of them can close into a cycle (the two-node case is two tasks each naming the other). Step 4 checks declared edges for cycles and, on finding one, drops that cycle's edges back to priority order and flags it on the battle plan — a declared cycle means the source issues contradict each other, which is for the user to see, not for the orchestrator to resolve quietly.
 
 **Overlap grades.** File-level matching over-serializes, so overlap has two grades:
 
