@@ -74,5 +74,14 @@ assert_contains "$ROOT/skills/forge/SKILL.md" 'after .`?plan.`? keyword' \
 assert_contains "$ROOT/skills/forge/references/flags.md" '/forge plan <path>' \
   "forge flags.md: entry-verbs table has the plan verb"
 
+# --- blacksmith: skeleton exists and its flag tables agree ---
+BS="$ROOT/skills/blacksmith-orchestrate"
+assert_file "$BS/SKILL.md"                      "blacksmith: SKILL.md exists"
+assert_file "$BS/references/entry-routes.md"    "blacksmith: entry-routes.md exists"
+assert_file "$BS/references/flags.md"           "blacksmith: flags.md exists"
+assert_eq "$(flag_names "$BS/references/flags.md" '^## Flags')" \
+          "$(flag_names "$BS/SKILL.md" '^## Parameters')" \
+          "blacksmith: SKILL.md and flags.md flag tables agree"
+
 printf '\n%s\n' "FAILS=$FAILS"
 [ "$FAILS" -eq 0 ]
