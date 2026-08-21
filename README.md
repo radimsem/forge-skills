@@ -112,6 +112,42 @@ Stack flags as needed:
 
 The reference token can sit anywhere in the request. "solve issue 42 with tests" works as well as `/forge 42 tdd`.
 
+## Orchestrating many issues at once
+
+`blacksmith-orchestrate` is a wrapper around forge, not a fork of it: it decides which tasks collide on the same files, schedules the colliding ones sequentially, and runs the rest in parallel worktrees at the model tier and forge depth each one earns, then dispatches one ordinary forge run per task. It never reimplements a forge step — every dispatched run is the normal twelve-step workflow above, gate included.
+
+```
+Part 1 — Plan (1–5):     normalize → materialize → analyze → schedule → [GATE] battle plan
+Part 2 — Execute (6–9):  provision → dispatch waves → relay → close-out
+```
+
+Wakes up on `/blacksmith-orchestrate <work-source>` or a request naming several issues, a milestone, or a plan. The full step-by-step contract lives in [`skills/blacksmith-orchestrate/SKILL.md`](skills/blacksmith-orchestrate/SKILL.md).
+
+```sh
+/blacksmith-orchestrate 42 43 51 60          # four issues, scheduled by file collisions
+/blacksmith-orchestrate milestone 3 automode # a whole milestone, unattended
+/blacksmith-orchestrate plan docs/superpowers/plans/x.md   # straight from a written plan
+```
+
+## Orchestrator flags
+
+Orchestrator flags are consumed by `blacksmith-orchestrate` itself and are never forwarded to a dispatched forge run. The full matrix, with composition and conflict rules, is in [`references/flags.md`](skills/blacksmith-orchestrate/references/flags.md).
+
+| Flag | What it does |
+|---|---|
+| `afk` | After a 5-minute quiet timeout, self-verify and merge blocking PRs only — the single sanctioned exception to forge's never-auto-push floor. |
+| `resume` | Resume a run from its ledger instead of starting a new one. |
+| `budget <n>` | Token ceiling for the run, with a deterministic degradation ladder. |
+| `strict` | No depth downgrade; every task runs full forge. |
+| `stack` | Blocked tasks base off the blocker's branch and open stacked PRs. |
+| `rescout` | Force scout analysis even where dispatch-ready plans exist. |
+| `max <n>` | Concurrent implementation agents; default `4`. |
+| `dry` | Emit the battle plan and stop; dispatch nothing. |
+| `unified` / `split` | Override worktree grouping: `unified` puts a coupled cluster in one worktree behind one PR, `split` gives every task its own. |
+| `plan <path>` | Source tasks from a written implementation plan; each plan task becomes one orchestration task. |
+
+Every flag forge understands also passes through unchanged to every dispatched run.
+
 ## What forge uses
 
 Forge leans on a handful of other skills and plugins, all installed for you by `./install.sh`:

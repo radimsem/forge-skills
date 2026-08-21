@@ -202,8 +202,29 @@ assert_contains "$BS/SKILL.md" 'hoisted to the orchestrator' \
 
 # --- blacksmith: anti-patterns ---
 assert_file "$BS/references/anti-patterns.md" "blacksmith: anti-patterns.md exists"
-assert_eq "$(grep -c '^| ' "$BS/references/anti-patterns.md")" "10" \
-  "anti-patterns.md: 9 red-flag rows plus the header row"
+assert_eq "$(grep -c '^| ' "$BS/references/anti-patterns.md")" "12" \
+  "anti-patterns.md: 11 red-flag rows plus the header row"
+
+# --- blacksmith: flags.md and the README flag table agree ---
+assert_eq "$(flag_names "$BS/references/flags.md" '^## Flags')" \
+          "$(flag_names "$ROOT/README.md" '^## Orchestrator flags')" \
+          "blacksmith: flags.md and README flag tables agree"
+
+# --- blacksmith: no stale `references/*.md` inline-code mentions left unconverted ---
+# Every reference file exists now, so a bare backtick-quoted `references/x.md` mention in
+# SKILL.md or flags.md (rather than a real markdown link) is a straggler that should have
+# been converted when the file it names was created.
+stale_ref_mentions() { # $1=markdown file $2=base dir references/ paths resolve against
+  grep -oE '`references/[^`]+\.md`' "$1" 2>/dev/null | tr -d '`' | while read -r _t; do
+    [ -f "$2/$_t" ] && printf '%s -> %s\n' "$1" "$_t"
+  done
+}
+_stale_refs=$(
+  stale_ref_mentions "$BS/SKILL.md" "$BS"
+  stale_ref_mentions "$BS/references/flags.md" "$BS"
+)
+assert_eq "$_stale_refs" "" \
+  "blacksmith: no stale references/*.md inline-code mentions (should be real links)"
 
 printf '\n%s\n' "FAILS=$FAILS"
 [ "$FAILS" -eq 0 ]

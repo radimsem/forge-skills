@@ -60,7 +60,7 @@ These are consumed by the orchestrator and are never passed through to a forge r
 
 | Flag | Effect | Detail |
 |---|---|---|
-| `afk` | After a 5-minute quiet timeout, self-verify and merge **blocking PRs only** — the single documented exception to forge's never-auto-push floor | [references/afk.md](references/afk.md) |
+| `afk` | After a 5-minute quiet timeout, self-verify and merge **blocking PRs only** — the single sanctioned exception to forge's never-auto-push floor | [references/afk.md](references/afk.md) |
 | `resume` | Resume a run from its ledger instead of starting a new one | [references/ledger.md](references/ledger.md) |
 | `budget <n>` | Token ceiling for the run, with a deterministic degradation ladder | [references/scheduling.md](references/scheduling.md) |
 | `strict` | No depth downgrade; every task runs full forge | [references/triage.md](references/triage.md) |

@@ -13,3 +13,5 @@ This file is the canonical home for lessons learned during an orchestration run,
 | Treating disjoint file sets as proof of independence | Semantic conflicts exist; the rebase-then-`/goal` rule is the defense. |
 | Auto-removing worktrees | Inherited from forge's `worktree` flag: losing in-progress state on inferred completion is the wrong default. |
 | Silent truncation under `budget` | Anything deferred or downgraded must be named in the close-out. |
+| A check written without its failure branch | An agent hitting the failed check has no defined behavior, so two runs diverge; every check needs its branch and the reason. |
+| A classification rule that routes missing data to the permissive branch | An empty list satisfies a "disjoint"-style predicate vacuously, so unknown scope silently takes the parallel-safe path; missing data must route to the conservative branch. |

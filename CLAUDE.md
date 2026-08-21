@@ -4,22 +4,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repo is
 
-This repo **ships a skill, not an application.** The deliverable is `forge` — an agent-runtime-agnostic skill that turns an issue/ticket/PR reference into a shipped fix through a gated 12-step workflow. "The code" is the prose in the skill's markdown; the only executable is the installer.
+This repo **ships two skills, not an application.** The primary deliverable is `forge` — an agent-runtime-agnostic skill that turns an issue/ticket/PR reference into a shipped fix through a gated 12-step workflow. Alongside it, `blacksmith-orchestrate` is forge's orchestration wrapper: it takes several issues, a milestone, or a written plan, decides which of them collide and which can run in parallel, then dispatches one ordinary forge run per task. "The code" is the prose in each skill's markdown; the only executable is the installer.
 
-Because the artifact is instructions an agent reads and follows, edits to `skills/forge/**` are changes to behavior. Treat wording with the same care as code: a sentence in `SKILL.md` is a contract the running agent will obey literally.
+Because the artifact is instructions an agent reads and follows, edits to `skills/**` are changes to behavior. Treat wording with the same care as code: a sentence in `SKILL.md` is a contract the running agent will obey literally.
 
 ## Commands
 
 Everything lives in POSIX `sh`; there is no package manager, build step, or linter config.
 
 ```sh
-sh tests/install_test.sh          # run the full installer unit suite (the only test command)
+sh tests/install_test.sh          # run the installer unit suite
+sh tests/docs_test.sh             # run the structural-invariants suite across both skills' prose
 sh tests/install_test.sh | grep FAIL   # quick check for failures; exits non-zero if FAILS>0
 sh install.sh -h                  # see installer usage
 ```
 
 - `tests/install_test.sh` sources `install.sh` with `INSTALL_SH_SOURCED=1`, which is the guard that prevents `main()` from running on source (see the bottom of `install.sh`). This lets the suite unit-test individual functions (`parse_args`, `build_skill_group_cmd`, `run_installs`, …) by stubbing `npx`/`claude`.
-- There is no single-test selector; the suite is one script. To isolate a check, comment out the others or add a temporary `assert_*` near the function under test.
+- `tests/docs_test.sh` asserts structural invariants across the shipped prose for both skills: relative markdown links resolve, the flag tables agree across `SKILL.md`/`references/flags.md`/`README.md`, no `TBD`/`TODO`/`FIXME` placeholders remain, and every `references/modes/*.md` (forge) or `references/*.md` (blacksmith-orchestrate) file carries a manual verification recipe.
+- There is no single-test selector; each suite is one script. To isolate a check, comment out the others or add a temporary `assert_*` near the function under test.
 - `shellcheck` is not configured or installed here, but the scripts are written to pass it — keep new shell POSIX-clean (no bashisms).
 
 ## Architecture
@@ -43,6 +45,22 @@ skills/forge/
     reviewers/              # one file per pluggable Step 8 reviewer: codex, coderabbit
     trackers/               # one file per issue source: github, gitlab, jira, linear
   scripts/resolve-codex.py  # resolves the Codex review invocation for the `codex` flag
+
+skills/blacksmith-orchestrate/
+  SKILL.md                  # 9-step workflow + Parameters/orchestrator-flag table + When-to-Use
+  references/
+    flags.md                # orchestrator flag matrix, composition + conflict rules
+    entry-routes.md         # the five work-source routes, normalization, container expansion
+    triage.md                # two-axis triage (difficulty tier, blast-radius depth) + the four hard floors
+    collision-graph.md      # file/declared/plan-order edges, acyclicity, worktree-grouping input
+    scheduling.md            # connected components, wave assignment, budget degradation ladder
+    battle-plan.md           # Step 5 gate artifact format and approval phrase
+    plan-sourced.md          # Step 3a dispatch-ready check and the freshness guard
+    relay.md                 # Step 8 ancestor proof, rebase-then-release sequence
+    afk.md                   # the single sanctioned floor exception + its 7-item verify checklist
+    ledger.md                # run-state schema, task-state vocabulary, resume contract
+    anti-patterns.md         # canonical home for orchestration-level lessons
+  scripts/scout-fanout.mjs  # Workflow tool driving the Step 3b scout fan-out
 ```
 
 ### The workflow's shape
@@ -73,6 +91,6 @@ Part 2 — Lifecycle (7–12):   implement → review-loop → refactor → spin
 
 ## Conventions
 
-- **Keep `SKILL.md`, `README.md`, and `references/flags.md` consistent.** The flag list and behaviors appear in all three; they must not drift.
+- **Keep `SKILL.md`, `README.md`, and `references/flags.md` consistent.** The flag list and behaviors appear in all three; they must not drift. The same three-way sync rule applies to `blacksmith-orchestrate`'s orchestrator flags, and `tests/docs_test.sh` enforces both skills' flag tables mechanically rather than relying on review alone.
 - New lessons learned during a forge session belong in `references/anti-patterns.md` (its stated canonical home), not scattered into `SKILL.md`.
 - When listing files an agent should touch, the skill's own rule applies to edits here too: verify paths exist before referencing them, and drop `:line` suffixes for files you haven't opened.
