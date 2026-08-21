@@ -240,7 +240,7 @@ Signals: user-facing surface, auth/payment/security adjacency, public API or mig
 1. **Step 12 `/goal` verification runs at every depth.** `patch` means "verified without a review loop," never "unverified." Forge's hard floor is inherited unchanged.
 2. **High blast radius can never be assigned `lite` or `patch`,** whatever difficulty says. This is the entire reason the axes are separate.
 3. **Rigor-increasing flags are sticky.** `secure` and `tdd` survive a depth downgrade.
-4. **The implementer is never the only reviewer.** Generalized from `codex impl`: a Haiku-implemented task is reviewed at Sonnet or above; a same-family review is at minimum a distinct agent instance, and a different family is preferred where a reviewer flag makes one available.
+4. **The implementer is never the only reviewer.** Generalized from `codex impl`: a Haiku-implemented task is reviewed at Sonnet or above. A different model family reviews wherever the host makes one available; a same-family distinct instance is the degraded fallback for when it does not — never the preferred choice, and never the same instance that implemented.
 
 ### Runtime promotion
 
