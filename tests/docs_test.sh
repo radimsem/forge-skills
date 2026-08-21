@@ -154,6 +154,14 @@ assert_contains "$BS/references/collision-graph.md" 'acyclic by construction' \
 assert_contains "$BS/references/collision-graph.md" 'do not prove independence' \
   "collision-graph.md: states the semantic-conflict caveat"
 
+# --- blacksmith: Step 4/6 scheduling and the Step 5 battle-plan gate ---
+assert_file "$BS/references/scheduling.md"  "blacksmith: scheduling.md exists"
+assert_file "$BS/references/battle-plan.md" "blacksmith: battle-plan.md exists"
+assert_contains "$BS/references/scheduling.md" 'connected components' \
+  "scheduling.md: components are the grouping unit"
+assert_contains "$BS/references/battle-plan.md" 'yes, forge them' \
+  "battle-plan.md: states the approval phrase"
+
 # --- blacksmith: every references/*.md carries a manual verification recipe ---
 # flags.md and anti-patterns.md are excluded, same as forge's own top-level
 # references/ files: a flag matrix and a red-flag/anti-pattern list are not

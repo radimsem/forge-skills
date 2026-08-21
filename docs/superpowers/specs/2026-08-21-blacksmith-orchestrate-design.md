@@ -450,6 +450,7 @@ skills/blacksmith-orchestrate/
     collision-graph.md          # edges, orientation, hard vs soft overlap
     triage.md                   # the two axes, tier/depth tables, the four floors
     scheduling.md               # waves, components, unified vs split, budget ladder
+    battle-plan.md              # literal gate artifact format (analogue of forge's proposal-template.md)
     relay.md                    # ancestor proof, rebase, park semantics
     afk.md                      # the sanctioned floor exception + verify checklist
     ledger.md                   # schema, states, resume contract

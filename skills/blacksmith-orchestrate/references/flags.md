@@ -10,13 +10,13 @@ Each flag is consumed by the orchestrator and never forwarded to a dispatched fo
 |---|---|---|
 | `afk` | After a 5-minute quiet timeout, self-verify and merge **blocking PRs only** — the single documented exception to forge's never-auto-push floor | `afk.md` |
 | `resume` | Resume a run from its ledger instead of starting a new one | `ledger.md` |
-| `budget <n>` | Token ceiling for the run, with a deterministic degradation ladder | `scheduling.md` |
+| `budget <n>` | Token ceiling for the run, with a deterministic degradation ladder | [scheduling.md](scheduling.md) |
 | `strict` | No depth downgrade; every task runs full forge | [triage.md](triage.md) |
-| `stack` | Blocked tasks base off the blocker's branch and open stacked PRs | `scheduling.md` |
+| `stack` | Blocked tasks base off the blocker's branch and open stacked PRs | [scheduling.md](scheduling.md) |
 | `rescout` | Force scout analysis even where dispatch-ready plans exist | [plan-sourced.md](plan-sourced.md) |
-| `max <n>` | Concurrent implementation agents; default `4` | `scheduling.md` |
-| `dry` | Emit the battle plan and stop; dispatch nothing | `battle-plan.md` |
-| `unified` / `split` | Override worktree grouping: `unified` puts a coupled cluster in one worktree behind one PR, `split` gives every task its own | `scheduling.md` |
+| `max <n>` | Concurrent implementation agents; default `4` | [scheduling.md](scheduling.md) |
+| `dry` | Emit the battle plan and stop; dispatch nothing | [battle-plan.md](battle-plan.md) |
+| `unified` / `split` | Override worktree grouping: `unified` puts a coupled cluster in one worktree behind one PR, `split` gives every task its own | [scheduling.md](scheduling.md) |
 | `plan <path>` | Source tasks from a written implementation plan; each plan task becomes one orchestration task | [plan-sourced.md](plan-sourced.md) |
 
 ## `afk` and the no-auto-push floor
