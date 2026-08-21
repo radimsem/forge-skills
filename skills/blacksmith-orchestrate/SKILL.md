@@ -48,7 +48,7 @@ These are consumed by the orchestrator and are never passed through to a forge r
 
 | Flag | Effect | Detail |
 |---|---|---|
-| `afk` | After a 5-minute quiet timeout, self-verify and merge **blocking PRs only** — the single documented exception to forge's never-auto-push floor | `references/afk.md` |
+| `afk` | After a 5-minute quiet timeout, self-verify and merge **blocking PRs only** — the single documented exception to forge's never-auto-push floor | [references/afk.md](references/afk.md) |
 | `resume` | Resume a run from its ledger instead of starting a new one | `references/ledger.md` |
 | `budget <n>` | Token ceiling for the run, with a deterministic degradation ladder | [references/scheduling.md](references/scheduling.md) |
 | `strict` | No depth downgrade; every task runs full forge | [references/triage.md](references/triage.md) |
@@ -112,3 +112,9 @@ Step 3's `filesToTouch`, `symbols`, `declaredBlockers` and `blastRadius` feed th
 Everything Steps 1 through 4 produced is assembled into one battle plan and shown to the user. **Do not create any worktree and do not dispatch any forge run until the user approves.** This is the same invariant forge states at its own Step 6, one level up: nothing here touches the filesystem, opens a branch, or spends an agent's budget on implementation until approval is explicit. Read **[references/battle-plan.md](references/battle-plan.md)** for the literal artifact format, its required elements, and the exact approval semantics — they are not restated here.
 
 `automode` is the only sanctioned bypass, and it lifts this gate exactly as it lifts forge's Step 6: the plan is still assembled and still shown, but as a record the run already acted on rather than a question awaiting an answer. Lifting this gate does not lift any hard floor named in the Overview — no dispatched run auto-commits, auto-pushes, or writes back to a tracker under `automode` either.
+
+## Step 8 — Relay
+
+When a blocked task's blocker lands, the dependent is not released on a merged label alone — the orchestrator proves the blocker's changes are actually reachable from the dependent's base with an ancestor check, falling back to a content-and-PR-number proof when a squash or rebase merge has rewritten the SHA, then rebases the dependent onto the current base before it dispatches. The full proof sequence, the fallback, and what happens without a host PR CLI at all are in **[references/relay.md](references/relay.md)**.
+
+By default, merge authority stays with the user: the orchestrator notifies that a blocking PR is ready and parks — it never merges, on this run or any other, `automode` included. **[references/afk.md](references/afk.md)** documents the one flag that changes that, `afk`, the single sanctioned exception to forge's no-auto-push floor, and the seven-item checklist every one of its blocking-PR merges has to pass in full before it acts.

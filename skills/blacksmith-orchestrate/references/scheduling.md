@@ -14,7 +14,7 @@ The connected components of the collision graph are the unit — tasks in differ
 |---|---|
 | one task | own worktree, own branch, own PR |
 | two tasks, tightly coupled, same kind | **unified** — one worktree, tasks run sequentially as ordinary commits on one branch, one PR |
-| larger | **split** — one worktree per task, with the relay (`relay.md`) |
+| larger | **split** — one worktree per task, with the [relay](relay.md) |
 
 Unification is the cheap win: it converts an entire park → notify → merge → rebase cycle into two sequential commits in the same worktree, with no PR-to-PR relay in between. Splitting is the default past two tasks because six colliding tasks landing in one PR is a bad review artifact, even though it would merge more easily than six separate ones — a reviewer cannot usefully hold six tasks' worth of intent in one diff, and the relay's per-edge granularity is what keeps a large component reviewable at all. `unified` and `split` force the choice globally, overriding the shape rule above for every component in the run, not just the one that prompted the flag.
 
@@ -24,11 +24,11 @@ A component larger than `max` is not held back from dispatch on that basis alone
 
 ## Waves
 
-Tasks with no unsatisfied blockers form wave 1 and dispatch in parallel up to `max` (default `4`). A task enters a later wave when every blocker it depends on has released its relay — not when the blocker's PR merges, and not when the blocker's wave finishes; release is `relay.md`'s ancestor proof passing, which can happen after the blocker's PR merges or, without a host CLI, after its branch lands on the local base.
+Tasks with no unsatisfied blockers form wave 1 and dispatch in parallel up to `max` (default `4`). A task enters a later wave when every blocker it depends on has released its relay — not when the blocker's PR merges, and not when the blocker's wave finishes; release is [relay.md](relay.md)'s ancestor proof passing, which can happen after the blocker's PR merges or, without a host CLI, after its branch lands on the local base.
 
 Wave gating reads only hard versus soft off each edge, never which of the three mechanisms in [collision-graph.md](collision-graph.md) produced it — file overlap, `declaredBlockers`, or plan task order are all the same to scheduling once the graph has graded and oriented the edge. A hard edge parks the dependent until release; a soft edge parks it too under the default schedule (soft is a conservative default, not a free pass to parallelize), unless `stack` is set, in which case the dependent dispatches in the same wave as its blocker, based off the blocker's branch, with its PR opened stacked on the blocker's.
 
-A wave where every task is parked is not a stall condition scheduling treats specially — it is the ordinary result of every remaining task having an unreleased blocker at that point in the run, and it resolves itself the instant one of those blockers relays and its dependent's wave is recomputed. There is nothing to dispatch in such a wave and nothing is dispatched; the run's forward progress that tick is at the blocker still in flight, not at scheduling, so this is not reported as an error or a degraded state — only the ordinary case of Parking in `relay.md` applies, unchanged: parked is not blocked-forever, and any *other* wave with an unblocked task keeps running regardless of how many tasks are parked in this one.
+A wave where every task is parked is not a stall condition scheduling treats specially — it is the ordinary result of every remaining task having an unreleased blocker at that point in the run, and it resolves itself the instant one of those blockers relays and its dependent's wave is recomputed. There is nothing to dispatch in such a wave and nothing is dispatched; the run's forward progress that tick is at the blocker still in flight, not at scheduling, so this is not reported as an error or a degraded state — only the ordinary case of Parking in [relay.md](relay.md) applies, unchanged: parked is not blocked-forever, and any *other* wave with an unblocked task keeps running regardless of how many tasks are parked in this one.
 
 ## Budget degradation ladder
 

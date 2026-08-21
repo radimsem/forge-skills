@@ -162,6 +162,17 @@ assert_contains "$BS/references/scheduling.md" 'connected components' \
 assert_contains "$BS/references/battle-plan.md" 'yes, forge them' \
   "battle-plan.md: states the approval phrase"
 
+# --- blacksmith: Step 8 relay, and the afk floor exception ---
+assert_file "$BS/references/relay.md" "blacksmith: relay.md exists"
+assert_file "$BS/references/afk.md"   "blacksmith: afk.md exists"
+assert_contains "$BS/references/relay.md" 'merge-base --is-ancestor' \
+  "relay.md: uses the ancestor proof"
+assert_contains "$BS/references/afk.md" 'single sanctioned exception' \
+  "afk.md: labels itself the sanctioned floor exception"
+assert_eq "$(awk '/^## The verify checklist/{f=1;next} /^## /{f=0} f' \
+  "$BS/references/afk.md" | grep -c '^[0-9]\+\.')" "7" \
+  "afk.md: verify checklist has exactly seven items"
+
 # --- blacksmith: every references/*.md carries a manual verification recipe ---
 # flags.md and anti-patterns.md are excluded, same as forge's own top-level
 # references/ files: a flag matrix and a red-flag/anti-pattern list are not
