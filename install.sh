@@ -137,6 +137,7 @@ deps_table() {
 4|skill|greptileai/skills|greploop
 4|skill|greptileai/skills|check-pr
 6|skill|radimsem/forge-skills|forge
+6|skill|radimsem/forge-skills|blacksmith-orchestrate
 EOF
 }
 

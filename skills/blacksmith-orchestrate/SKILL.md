@@ -1,0 +1,165 @@
+---
+name: blacksmith-orchestrate
+description: "Orchestrate many forge runs at once: analyze which tasks collide on the same files, schedule the colliding ones sequentially, and run the rest in parallel worktrees at the right model tier and review depth. Use when the user runs /blacksmith-orchestrate or asks to ship several issues, a milestone, or a written implementation plan in one go."
+---
+
+# Blacksmith Orchestrate
+
+> Decide **which tasks run, in what order, at what depth, by which model, in which worktree** — then dispatch one forge run per task.
+
+## Overview
+
+This is a wrapper around `forge`, not a fork of it. It never reimplements a forge step: every task it dispatches runs the ordinary twelve-step forge workflow, and everything this skill adds is a decision *about* those runs — which ones may run at the same time, how deep each one goes, and where each one's work lives.
+
+Nine numbered steps, split by one gate, deliberately mirroring forge's shape:
+
+```
+Part 1 — Plan (1–5):     normalize → materialize → analyze → schedule → [GATE] battle plan
+Part 2 — Execute (6–9):  provision → dispatch waves → relay → close-out
+
+  gate held: no worktree is created and no forge Part 2 runs until "yes, forge them"
+```
+
+| Step | Action |
+|---|---|
+| 1 | Parse the invocation; split orchestrator flags from pass-through forge flags; route the work source into a canonical task list |
+| 2 | Materialize refs — spec-file and free-form routes get real issue refs via `/to-issues`, or synthetic `T1..Tn` IDs if the user declines filing |
+| 3 | Analyze — route each task to the plan-sourced path or the scout fan-out |
+| 4 | Build the collision graph, triage matrix and worktree grouping → scheduling waves |
+| 5 | **[GATE]** one battle plan, one approval |
+| 6 | Provision worktrees; write the run ledger |
+| 7 | Dispatch waves — one agent per task at its assigned model tier and forge depth |
+| 8 | Relay — prove a blocker's changes are on the dependent's base, rebase, release |
+| 9 | Close-out — aggregate report, PR list, worktree cleanup reminders, self-evolution |
+
+Forge's hard floors are inherited unchanged, and orchestrating many runs never relaxes them: every run's Step 12 `/goal` verification still has to pass before that run assembles a commit, and no dispatched run ever writes back to the *source* issue or ticket it was dispatched for — that stays with the user under every flag combination, `afk` included. That is narrower than "never writes to a tracker": Step 2 files *new* issues via `/to-issues` for the plan and free-form routes, including under `automode`, exactly as forge's own Step 10 sanctions filing spin-off issues it did not author — see [references/entry-routes.md](references/entry-routes.md). Whether a dispatched run may also commit and open a PR for its own task is a separate question, resolved three ways: by default, the Step 5 "yes, forge them" approval *is* the Step 12 commit-and-PR selection forge requires, granted once for every task the approved plan named (see Step 7); under `automode` without `afk`, nobody made that selection, so every dispatched run stops at its own Step 12 plan-only output, exactly as a standalone `automode` forge run does, and nothing is pushed; `afk` is the single sanctioned exception, authorizing unattended commit-and-PR as well as the blocking-PR merge it already governs — it is labelled that way everywhere it appears, so the exception stays auditable instead of becoming a quiet contradiction. Terminal PRs and worktree cleanup stay with the user under every flag combination, `afk` included.
+
+"The agent" means whatever agent runs this skill, and "one agent per task" means whatever subagent or parallel-run mechanism the runtime exposes. Adapt every reference — config directory, agent guide, interview UI, host CLI — to your runtime, exactly as forge does. If the runtime cannot run work in parallel at all, say so and fall back to running the waves sequentially rather than pretending to fan out.
+
+## Runtime
+
+This skill is Claude-Code-first, degrading elsewhere in the same way forge's `codex` and `coderabbit` flags do: each surface below is used where the host provides it, and the workflow still completes, one step slower, where it does not.
+
+| Surface | Used for | Why |
+|---|---|---|
+| Workflow tool | Step 3b scout fan-out | bounded parallel fan-out, schema-validated returns, keeps N proposals out of the orchestrator's context |
+| Agent tool | Step 7 implementation dispatch | per-agent model selection, and the human gates and multi-hour parks live in the main loop |
+| Ledger file | Steps 6–9 state | survives `/compact`, crash and resume |
+
+This is the same runtime-parallelism degradation the Overview already states — "If the runtime cannot run work in parallel at all, say so and fall back to running \[...\] sequentially rather than pretending to fan out." This section does not restate that rule independently; it is the same rule applied to the three Claude-Code surfaces above. Concretely here: on a non-Claude-Code runtime the skill degrades with a one-line warning to sequential forge runs in dependency order, one worktree per component, no `afk`, and inline analysis instead of a scout fan-out.
+
+## Parameters
+
+Parse the invocation as `/blacksmith-orchestrate <work-source> [orchestrator-flags] [forge-flags]`. Flag words are orthogonal and can appear anywhere in the request, exactly as in forge. The `<work-source>` is one of five routes — one or more issue refs, a tracker container such as a milestone or epic or label, `plan <path>`, a quoted free-form goal, or `resume` — and routes may combine in a single invocation, so every task carries the route it arrived by. Read **[references/entry-routes.md](references/entry-routes.md)** for the route table, how the routes normalize into one task list, and how containers expand.
+
+Full flag matrix (effects, composition rules, conflicts): **[references/flags.md](references/flags.md)**.
+
+### Orchestrator flags
+
+These are consumed by the orchestrator and are never passed through to a forge run. Each row's detail file owns that flag's behavior.
+
+| Flag | Effect | Detail |
+|---|---|---|
+| `afk` | After a 5-minute quiet timeout, self-verify and merge **blocking PRs only** — the single sanctioned exception to forge's never-auto-push floor | [references/afk.md](references/afk.md) |
+| `resume` | Resume a run from its ledger instead of starting a new one | [references/ledger.md](references/ledger.md) |
+| `budget <n>` | Token ceiling for the run, with a deterministic degradation ladder | [references/scheduling.md](references/scheduling.md) |
+| `strict` | No depth downgrade; every task runs full forge | [references/triage.md](references/triage.md) |
+| `stack` | Blocked tasks on a **soft** edge base off the blocker's branch and open stacked PRs; hard-edge blocks still park | [references/scheduling.md](references/scheduling.md) |
+| `rescout` | Force scout analysis even where dispatch-ready plans exist | [references/plan-sourced.md](references/plan-sourced.md) |
+| `max <n>` | Concurrent implementation agents; default `4` | [references/scheduling.md](references/scheduling.md) |
+| `dry` | Emit the battle plan and stop; dispatch nothing | [references/battle-plan.md](references/battle-plan.md) |
+| `unified` / `split` | Override worktree grouping: `unified` puts a coupled cluster in one worktree behind one PR, `split` gives every task its own | [references/scheduling.md](references/scheduling.md) |
+| `plan <path>` | Source tasks from a written implementation plan; each plan task becomes one orchestration task | [references/plan-sourced.md](references/plan-sourced.md) |
+
+Every other flag forge understands passes through unchanged to every dispatched run: `automode`, `docs`, `tdd`, `lookup`, `secure`, `changelog`, `ci-watch`, `compress`, `codex`, `codex challenge`, `codex impl`, and `coderabbit`. Two of forge's flags are overridden rather than passed through as written. `worktree` is always implied and orchestrator-managed, because Step 6 provisions, names and tracks every worktree itself and a run-level worktree decision cannot be delegated to the individual runs; passing it explicitly is accepted with a one-line note rather than treated as an error, since the user is asking for what already happens. `automode` lifts the Step 5 battle-plan gate exactly as it lifts forge's Step 6 gate, and still passes through to each dispatched run; it does not lift any hard floor named in the Overview.
+
+## When to Use
+
+- `/blacksmith-orchestrate <refs>` with two or more issue or ticket refs.
+- "ship this milestone", "implement this plan", "fix these five issues".
+- A written implementation plan whose tasks should all land in one sitting.
+- Any request to run several forge-shaped pieces of work together, where the ordering between them matters.
+
+**Don't use** when:
+- A single issue, ticket or PR is in scope. Use `/forge <ref>`: with one task there is no collision graph, no wave to schedule and no topology to choose, so the wrapper adds a second gate and buys nothing.
+- No work source is given. Ask which issues, milestone or plan is meant rather than inferring a task list from the repo, for the reason in Step 1.
+
+## Step 1 — Parse the invocation and normalize the work source
+
+Split the invocation into three parts: the work source, the orchestrator flags from the Parameters table, and every remaining flag, which is forge pass-through. A token that matches neither the orchestrator flag table nor forge's own flag list is **not** assumed to be a pass-through flag: stop, name the token back to the user, and suggest the near miss when there is an obvious one — `strct` almost certainly meant `strict`. Forge lives with the same open-world assumption and pays for it once; here an unrecognized token is forwarded to every dispatched run and silently dropped by each, so a user who typed `strct` gets depth triage applied across the whole batch and finds out at close-out, which is the one place the cost of a typo scales with the wave. Route the work source into one canonical task list in which each task records the route it came from, because Step 3 chooses its analysis path per task rather than per run; the five routes, their combination rules and deduplication are in **[references/entry-routes.md](references/entry-routes.md)**. If no work source resolves — a bare invocation, or flags with nothing to act on — stop and ask which issues, milestone or plan is meant; inferring a batch from the repo would dispatch work nobody asked for across several worktrees at once, which is far more expensive to undo than one question is to ask. If both `unified` and `split` are present, stop and report the conflict instead of applying a precedence, because the two ask for opposite PR topologies and silently honouring one would hide from the user which shape actually shipped.
+
+## Step 2 — Materialize refs
+
+Every task needs a stable identifier before analysis, because the battle plan, the ledger, the worktree names and each dispatched forge run all address tasks by ref. Ref and container routes already have one; the plan and free-form routes do not, so file real issues for those tasks with **`/to-issues`** and adopt the returned refs, or fall back to synthetic `T1..Tn` IDs when the user declines filing — a synthetic ID is local to this run and never reaches a tracker, so any later step that would write to a tracker for such a task skips that write and names the skip in the Step 9 report. The free-form route carries one exception: under `automode` its tasks are never filed, unless the user named the split themselves — for example by enumerating the tasks in the goal, or by re-invoking with refs once they have seen the recorded split — because otherwise the split is the agent's own assumption rather than a detail of a human-written request; see the free-form decomposition section of **[references/entry-routes.md](references/entry-routes.md)**. If a ref does not resolve to something its tracker can return, name it and ask whether to continue without it; under `automode`, drop it and record the omission in Step 9, because a silently missing task is indistinguishable from one that was never requested, and that is the single failure a batch run must never hide. Route mechanics — the `/to-issues` handoff, container expansion and which trackers are supported — are in **[references/entry-routes.md](references/entry-routes.md)**.
+
+### Scouts never interview
+
+This rule is stated here because it governs every ref Step 2 hands onward. A scout dispatched in Step 3 that hits a forge Step 4 context gap returns the open question rather than asking it, and never blocks waiting for an answer. The orchestrator batches every task's open questions into **one** consolidated interview attached to the Step 5 gate, using forge's proposed-answer format with the most likely option marked `(Recommended)` and "Other" implicit. A scout that interviewed on its own would stall a parallel fan-out behind N separate prompts and would split into N approvals the single approval the gate exists to collect. Under `automode` the `(Recommended)` answer is taken for every open question and the assumption is recorded in the battle plan, exactly as forge does at its own Step 4.
+
+## Step 3 — Analyze
+
+Every task needs to know which files it will touch before Step 4 can build a collision graph, and there are two ways to learn that: read it off a plan someone already wrote, or pay an agent to go find out. Route **per task, not per run** — a plan covering three of five tasks is dispatch-ready for those three and scouts only the other two, because the two routes answer the same question at very different cost and a task's route says nothing about its neighbor's.
+
+| Route | When | Cost |
+|---|---|---|
+| 3a — plan-sourced | The task's route is `plan` and its slice passes the dispatch-ready check | Zero agent spawns; dispatches straight through `/forge plan <path>` |
+| 3b — scout fan-out | Every other task, plus any plan-sourced task that fails dispatch-ready or is `stale` | One forge Part 1 run per task |
+
+### Step 3a — Plan-sourced
+
+A task routed to `plan` in Step 1 is analyzed by reading its own plan slice rather than by dispatching an agent to rediscover what the plan author already wrote down. The dispatch-ready check, the freshness guard that can void it, and the fallback to 3b when either fails are all in **[references/plan-sourced.md](references/plan-sourced.md)** — read it before implementing this step; its rules are not restated here.
+
+### Step 3b — Scout fan-out
+
+Every task that is not dispatch-ready — whether it never had a plan slice or fell out of one — is analyzed by dispatching one forge Part 1 run (Steps 1 through 6, stopping at the gate) per task, run in parallel. The fan-out runs as one Workflow invocation using **`scripts/scout-fanout.mjs`**, which returns one structured proposal per task rather than prose the orchestrator would otherwise have to parse. Schema validation on that return shape is enforced at the tool layer, so a malformed scout return is retried by the runtime itself rather than parsed defensively here.
+
+Per the Overview's runtime-parallelism rule, applied here to Step 3b specifically: on a runtime without a Workflow surface, the analysis runs inline and sequentially instead, with a one-line warning naming why.
+
+## Step 4 — Schedule
+
+Step 3's `filesToTouch`, `symbols`, `declaredBlockers`, `blastRadius` and `difficulty` feed Step 4. The first four build the collision graph in **[references/collision-graph.md](references/collision-graph.md)**: two tasks collide when their file sets intersect, one declares the other a blocker, or a plan orders one before the other, and every edge is oriented by a deterministic priority — overlap-derived edges are acyclic by construction, stated (declared or plan-order) edges are checked for cycles and dropped back to priority order when one turns up. Every task is then triaged along two independent axes — difficulty picks the model tier, blast radius picks the forge depth, both documented in [references/triage.md](references/triage.md) — before the graph's connected components are grouped into worktrees, per **[references/scheduling.md](references/scheduling.md)**: a lone task gets its own worktree, a small tightly-coupled component may run `unified` in one worktree behind one PR, and everything larger `split`s one worktree per task. Scheduling then emits waves from the oriented graph — every task with no unsatisfied blocker joins wave 1 up to the `max` concurrency ceiling, and a blocked task enters a later wave only once its blocker has relayed — and none of it dispatches anything; the whole plan surfaces at the Step 5 gate.
+
+## Step 5 — The gate
+
+Everything Steps 1 through 4 produced is assembled into one battle plan and shown to the user. **Do not create any worktree and do not dispatch any forge run until the user approves.** This is the same invariant forge states at its own Step 6, one level up: nothing here touches the filesystem, opens a branch, or spends an agent's budget on implementation until approval is explicit. Read **[references/battle-plan.md](references/battle-plan.md)** for the literal artifact format, its required elements, and the exact approval semantics — they are not restated here.
+
+`automode` is the only sanctioned bypass, and it lifts this gate exactly as it lifts forge's Step 6: the plan is still assembled and still shown, but as a record the run already acted on rather than a question awaiting an answer. Lifting this gate does not lift any hard floor named in the Overview — no dispatched run auto-commits, auto-pushes, or writes back to a tracker under `automode` either.
+
+## Step 6 — Provision
+
+Create one worktree per group, per the topology Step 4 decided — a lone task gets its own worktree, a `unified` component shares one worktree and one branch, a `split` component gets one worktree per task — composing `superpowers:using-git-worktrees` at every worktree exactly as forge's `worktree` flag composes it at its own Step 3, so naming, layout and cleanup match what a single forge run already does rather than inventing a second worktree convention. Write the run ledger before dispatching anything: an interrupted run is resumable only because the ledger already recorded every worktree and every task's `planned` state before Step 7 touched any of them. Read **[references/ledger.md](references/ledger.md)** for the schema, the task-state vocabulary, and the resume contract.
+
+## Step 7 — Dispatch
+
+Dispatch one agent per task, at the tier and depth Step 4 assigned, running in that task's worktree. A plan-sourced task is dispatched as `/forge plan <slice> <pass-through-flags>`; a scouted task is dispatched as `/forge <ref> <pass-through-flags>` with the scout's proposal supplied as the already-approved plan, so the dispatched run does not re-derive what Step 3b already found. Concurrency is capped at `max` (default `4`), against the waves Step 4 already computed. Update the ledger row on every state change, so **[references/ledger.md](references/ledger.md)**'s task-state vocabulary is never stale by more than one transition. On a runtime without a parallel agent surface, dispatch sequentially in dependency order instead, with a one-line warning naming why.
+
+The same approval that supplied each run's Step 5 plan above also supplies its Step 12 commit-and-PR selection, for exactly the tasks named on the approved battle plan and no others — forge's Step 12 requires an explicit human selection before any run commits or opens a PR, and "yes, forge them" against a plan that named every task is that selection, made once for all of them. Under `automode` without `afk`, no human made it, so every dispatched run's own Step 12 stops at its plan-only output instead, exactly as a standalone `automode` forge run does; `afk` authorizes the commit-and-PR selection unattended, the same way it already authorizes the blocking-PR merge at Step 8. See **[references/afk.md](references/afk.md)** for the full three-way rule and **[references/battle-plan.md](references/battle-plan.md)** for what the plan must show before it can grant this authorization.
+
+## Step 8 — Relay
+
+When a blocked task's blocker lands, the dependent is not released on a merged label alone — the orchestrator proves the blocker's changes are actually reachable from the dependent's base with an ancestor check, falling back to a content-and-PR-number proof when a squash or rebase merge has rewritten the SHA, then rebases the dependent onto the current base before it dispatches. The full proof sequence, the fallback, and what happens without a host PR CLI at all are in **[references/relay.md](references/relay.md)**.
+
+By default, merge authority stays with the user: the orchestrator notifies that a blocking PR is ready and parks — it never merges, on this run or any other, `automode` included. **[references/afk.md](references/afk.md)** documents the one flag that changes that, `afk`, the single sanctioned exception to forge's no-auto-push floor, and the seven-item checklist every one of its blocking-PR merges has to pass in full before it acts.
+
+## Step 9 — Close-out
+
+The orchestrator emits one aggregate report: per task, its PR, branch, or plan-only file — whichever its own Step 12 actually produced, per the three-way commit-and-PR rule in the Overview and Step 7 — final state, depth, tier and `/goal` result; every task `budget` deferred or downgraded, named explicitly by ref and by which rung of the degradation ladder acted on it; every parked task and precisely what it is waiting on, not just that it is waiting — including, under `automode` without `afk`, any task left parked for the rest of the run because its blocker never produced anything the relay could prove ancestry against, per [references/relay.md](references/relay.md)'s "Without a landable commit" section; and a worktree cleanup reminder for every worktree Step 6 provisioned. Cleanup is **never auto-run**, inheriting forge's own `worktree` rule that losing in-progress state on inferred completion is the wrong default — a task reading `merged` in the ledger is still the orchestrator's inference from the evidence it gathered, not a claim the user has personally confirmed, and removing a worktree on that inference risks deleting something the user still wanted to look at.
+
+Two forge steps are **hoisted to the orchestrator**, because running them per task would produce N conflicting writes to the same targets:
+
+| Forge step | Dispatched run does | Orchestrator does |
+|---|---|---|
+| Step 10 — spin-off issues via `/to-issues` | collects candidates and reports them; files nothing | dedupes across all tasks, then files once under forge's normal rules |
+| Step 11 — self-evolution | reports candidate lessons; writes nothing | dedupes, and proposes a single skill, rule, guide or memory edit |
+
+A worktree is exactly the boundary that keeps N parallel forge runs from touching each other's state, and both hoisted steps write outside it. Running either step inside every dispatched run would turn that shared, out-of-worktree target into an N-way race: N runs each drafting and filing their own spin-off issues for overlapping observations duplicates tracker noise nobody asked for, and N runs each proposing their own skill or memory edit competes to write the same config file from N worktrees that cannot see one another's in-flight change. The orchestrator, which alone can see every task's candidates at once, is the one place the write is safe to make.
+
+Orchestrator-level self-evolution has its own subject matter, distinct from what any single dispatched run could observe: triage misses that required a runtime promotion, edges the collision graph over- or under-serialized, and plan slices that proved stale. Those lessons belong in **[references/anti-patterns.md](references/anti-patterns.md)**, this skill's own canonical home for them, exactly as forge's is for forge's.
+
+The ledger is written to its final state before the report is emitted, so a run that is reported is always a run that can be resumed or audited — the report is read off the same file `resume` would read, never off a separate in-memory summary that could drift from it.
+
+---
+
+## Anti-patterns & Red Flags
+
+See **[references/anti-patterns.md](references/anti-patterns.md)** for the red-flag table — the canonical home for lessons learned during an orchestration run.

@@ -80,16 +80,23 @@ assert_eq "$(build_plugin_install_cmd superpowers@claude-plugins-official)" \
   "claude plugin install superpowers@claude-plugins-official -s user" \
   "build_plugin_install_cmd"
 
-# --- inventory data (table has exactly 16 rows: 10 tier-1, 1 tier-2, 2 tier-3, 2 tier-4, 1 tier-6) ---
-assert_eq "$(deps_table | grep -c '^[1-6]|')" "16" "deps_table: 16 dependency rows"
-assert_eq "$(deps_table | awk -F'|' '$1==6{print $4}')" "forge" "deps_table: tier 6 is forge"
+# --- inventory data (table has exactly 17 rows: 10 tier-1, 1 tier-2, 2 tier-3, 2 tier-4, 2 tier-6) ---
+assert_eq "$(deps_table | grep -c '^[1-6]|')" "17" "deps_table: 17 dependency rows"
+assert_eq "$(deps_table | awk -F'|' '$1==6{printf "%s ", $4}')" "forge blacksmith-orchestrate " \
+  "deps_table: tier 6 is forge then blacksmith-orchestrate"
 assert_eq "$(deps_table | awk -F'|' '$1==1 && $2=="skill"{c++} END{print c}')" "10" \
   "deps_table: 10 tier-1 skills (8 mattpocock incl. zoom-out + bootstrap + karpathy)"
 assert_eq "$(deps_table | grep -c '^1|skill|mattpocock/skills|zoom-out$')" "1" \
   "deps_table: zoom-out present in mattpocock group"
-# forge must be the last skill row encountered (installed last)
-assert_eq "$(deps_table | awk -F'|' '$2=="skill"{last=$4} END{print last}')" "forge" \
-  "deps_table: forge is the final skill row"
+# blacksmith-orchestrate wraps forge, so forge must precede it and be installed with it
+assert_eq "$(deps_table | awk -F'|' '$2=="skill"{last=$4} END{print last}')" "blacksmith-orchestrate" \
+  "deps_table: blacksmith-orchestrate is the final skill row"
+assert_eq "$(skills_for_source "$FORGE_SOURCE" | tr '\n' ' ')" "forge blacksmith-orchestrate " \
+  "skills_for_source: forge precedes blacksmith-orchestrate"
+parse_args   # pin OPT_YES empty so the expected command is deterministic
+assert_eq "$(build_skill_group_cmd "$FORGE_SOURCE" "forge blacksmith-orchestrate")" \
+  "npx -y skills@latest add radimsem/forge-skills -s forge -s blacksmith-orchestrate -g" \
+  "build_skill_group_cmd: batches both local skills from one source"
 
 # --- status row rendering (skills: filesystem present-anywhere; plugins: present in list) ---
 # Skills checked against a temp store; plugins against the plugin-list fixture loaded above.
@@ -170,13 +177,19 @@ assert_eq "$(head -n1 "$ORDER_LOG")" "skillsrc:mattpocock/skills" "run_installs:
 # each source is installed in exactly ONE batched pass (not once per skill)
 assert_eq "$(grep -c '^skillsrc:mattpocock/skills$' "$ORDER_LOG")" "1" \
   "run_installs: mattpocock batched into ONE pass"
-assert_true grep -q '^plugin:superpowers@claude-plugins-official$' "$ORDER_LOG" \
+# helper ignores its trailing message arg, unlike grep, which would otherwise treat the
+# message string as a second file operand and print a spurious "No such file" to stderr
+superpowers_plugin_present() { grep -q '^plugin:superpowers@claude-plugins-official$' "$1"; }
+assert_true superpowers_plugin_present "$ORDER_LOG" \
   "run_installs: superpowers plugin installed"
 
 # --skills-only skips plugins
 : > "$ORDER_LOG"; OPT_SKILLS_ONLY="1"
 run_installs
-assert_false grep -q '^plugin:' "$ORDER_LOG" "run_installs: --skills-only skips plugins"
+# helper ignores its trailing message arg, unlike grep, which would otherwise treat the
+# message string as a second file operand and print a spurious "No such file" to stderr
+plugin_line_present() { grep -q '^plugin:' "$1"; }
+assert_false plugin_line_present "$ORDER_LOG" "run_installs: --skills-only skips plugins"
 assert_eq "$(tail -n1 "$ORDER_LOG")" "skillsrc:$FORGE_SOURCE" "run_installs: forge source still last under --skills-only"
 
 # run_installs propagates a nonzero exit when a source fails (continues, but returns 1)
