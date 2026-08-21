@@ -137,5 +137,26 @@ for _field in ref title kind filesToTouch symbols plan passCriteria difficulty \
   assert_contains "$_scout" "$_field" "scout-fanout.mjs: schema has field $_field"
 done
 
+# --- blacksmith: Step 4 collision graph ---
+assert_file "$BS/references/collision-graph.md" "blacksmith: collision-graph.md exists"
+assert_contains "$BS/references/collision-graph.md" 'acyclic by construction' \
+  "collision-graph.md: states the acyclicity property"
+assert_contains "$BS/references/collision-graph.md" 'do not prove independence' \
+  "collision-graph.md: states the semantic-conflict caveat"
+
+# --- blacksmith: every references/*.md carries a manual verification recipe ---
+# flags.md and anti-patterns.md are excluded, same as forge's own top-level
+# references/ files: a flag matrix and a red-flag/anti-pattern list are not
+# behaviors verified by running something, so neither carries a recipe by
+# convention.
+_bs_norecipe=$(find "$BS/references" -maxdepth 1 -name '*.md' -type f | sort | while read -r _f; do
+  case "$_f" in
+    */flags.md|*/anti-patterns.md) continue ;;
+  esac
+  grep -q 'Manual verification recipe' "$_f" || printf '%s\n' "$_f"
+done)
+assert_eq "$_bs_norecipe" "" \
+  "every blacksmith-orchestrate/references/*.md (except flags.md, anti-patterns.md) has a Manual verification recipe"
+
 printf '\n%s\n' "FAILS=$FAILS"
 [ "$FAILS" -eq 0 ]
