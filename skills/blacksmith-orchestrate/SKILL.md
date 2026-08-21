@@ -46,7 +46,7 @@ This skill is Claude-Code-first, degrading elsewhere in the same way forge's `co
 | Agent tool | Step 7 implementation dispatch | per-agent model selection, and the human gates and multi-hour parks live in the main loop |
 | Ledger file | Steps 6–9 state | survives `/compact`, crash and resume |
 
-On a non-Claude-Code runtime the skill degrades with a one-line warning to sequential forge runs in dependency order, one worktree per component, no `afk`, and inline analysis instead of a scout fan-out.
+This is the same runtime-parallelism degradation the Overview already states — "If the runtime cannot run work in parallel at all, say so and fall back to running \[...\] sequentially rather than pretending to fan out." This section does not restate that rule independently; it is the same rule applied to the three Claude-Code surfaces above. Concretely here: on a non-Claude-Code runtime the skill degrades with a one-line warning to sequential forge runs in dependency order, one worktree per component, no `afk`, and inline analysis instead of a scout fan-out.
 
 ## Parameters
 

@@ -177,7 +177,10 @@ assert_eq "$(head -n1 "$ORDER_LOG")" "skillsrc:mattpocock/skills" "run_installs:
 # each source is installed in exactly ONE batched pass (not once per skill)
 assert_eq "$(grep -c '^skillsrc:mattpocock/skills$' "$ORDER_LOG")" "1" \
   "run_installs: mattpocock batched into ONE pass"
-assert_true grep -q '^plugin:superpowers@claude-plugins-official$' "$ORDER_LOG" \
+# helper ignores its trailing message arg, unlike grep, which would otherwise treat the
+# message string as a second file operand and print a spurious "No such file" to stderr
+superpowers_plugin_present() { grep -q '^plugin:superpowers@claude-plugins-official$' "$1"; }
+assert_true superpowers_plugin_present "$ORDER_LOG" \
   "run_installs: superpowers plugin installed"
 
 # --skills-only skips plugins
