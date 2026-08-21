@@ -8,11 +8,11 @@ Loaded on demand when the invocation is `/forge plan <path>`.
 /forge plan docs/superpowers/plans/2026-08-21-auth.md#task-3
 ```
 
-Expected: Steps 1, 2, 4, 5 and 6 collapse into a single Step P validation pass; Step 3 still resolves the branch; implementation begins at Step 7 with `/goal` derived from the plan slice's testable deliverable.
+Expected: Steps 1, 2, 4, 5 and 6 collapse into a single Step P validation pass; Step 3 still resolves the branch; implementation begins at Step 7 with `/goal` derived from the slice's own `Run:`/`Expected:` lines and stated deliverable.
 
 ## The not-dispatch-ready fallback
 
-**A slice that fails any Step P check other than anchor resolution is not dispatch-ready. When that happens, fall back to normal forge Part 1 (Steps 4–6: check context, propose, gate) instead of implementing.** This mirrors how the blacksmith orchestrator treats the same situation — a plan slice that fails its own dispatch-ready check falls back to scouting instead of dispatching an agent blind. Implementing on a check that failed is exactly the failure each check exists to catch; falling back costs one extra interview-and-propose pass, which is cheap next to shipping the wrong thing. The individual failure cases below all resolve to this rule; none of them repeat it.
+**A slice that fails any Step P check other than anchor resolution is not dispatch-ready. When that happens, fall back to normal forge Part 1 (Steps 4–6: check context, propose, gate) instead of implementing.** Implementing on a check that failed is exactly the failure each check exists to catch; falling back costs one extra interview-and-propose pass, which is cheap next to shipping the wrong thing. The individual failure cases below all resolve to this rule; none of them repeat it.
 
 The one exception is an unresolvable slice anchor (see Slice addressing) — that case stops and asks instead, because Part 1 needs to know *which* task to propose against, and forge cannot guess that.
 
