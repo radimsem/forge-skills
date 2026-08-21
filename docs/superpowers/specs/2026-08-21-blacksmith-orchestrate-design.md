@@ -183,7 +183,7 @@ Schema validation is enforced at the tool layer, so a malformed return is retrie
 
 ## 4. Collision graph (Step 4)
 
-**Edges.** Two tasks collide when their `filesToTouch` sets intersect, or when one names the other in `declaredBlockers` — file overlap is inferred evidence of a dependency, a declared blocker is stated evidence, and stated beats inferred, so a declared edge is drawn whether or not the files overlap and is graded hard regardless.
+**Edges.** Two tasks collide when their `filesToTouch` sets intersect, when one names the other in `declaredBlockers`, or (for plan-sourced tasks) when the plan's task order implies one comes before the other — file overlap is inferred evidence of a dependency, `declaredBlockers` and plan task order are stated evidence, and stated beats inferred, so a stated edge is drawn whether or not the files overlap and is graded hard regardless.
 
 **Orientation.** Edges are always oriented, never left undirected, by a single deterministic priority:
 
@@ -200,6 +200,8 @@ Because orientation follows one total order, **overlap-derived edges are acyclic
 |---|---|---|
 | Hard | same file **and** overlapping symbols or regions | serialize — dependent parks |
 | Soft | same file, disjoint symbols | serialize (conservative default); runs parallel under `stack` |
+
+When either side's `symbols` list is empty or overlap is otherwise undeterminable, hard-vs-soft cannot be decided, so the grade defaults to **hard**, not soft, and the reason is surfaced on the battle plan for the user to override — missing information is the worst basis for authorizing two agents onto the same file concurrently.
 
 The battle plan always states which grade produced each edge, so an over-serialization is visible and correctable at the gate.
 
