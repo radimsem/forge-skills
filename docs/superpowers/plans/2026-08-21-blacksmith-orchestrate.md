@@ -373,17 +373,30 @@ assert_contains "$BS/references/plan-sourced.md" 'dispatch-ready' \
   "plan-sourced.md: defines the dispatch-ready check"
 assert_contains "$BS/references/plan-sourced.md" 'stale' \
   "plan-sourced.md: defines the freshness guard"
-if node --check "$BS/scripts/scout-fanout.mjs" 2>/dev/null; then
-  pass "scout-fanout.mjs parses"
+# scout-fanout.mjs is a Workflow script, not a standalone module: the runtime
+# supplies agent/parallel/pipeline/phase/log/args/budget as free variables and
+# permits a top-level `return`, so `node --check` would reject it by design —
+# these structural checks stand in for a parse check instead.
+_scout="$BS/scripts/scout-fanout.mjs"
+assert_contains "$_scout" 'export const meta' \
+  "scout-fanout.mjs: exports meta"
+assert_contains "$_scout" 'blacksmith-scout-fanout' \
+  "scout-fanout.mjs: meta.name is blacksmith-scout-fanout"
+if [ -f "$_scout" ] && grep -q 'export default' "$_scout"; then
+  fail "scout-fanout.mjs: no export default (Workflow scripts are not standalone modules)"
 else
-  fail "scout-fanout.mjs parses"
+  pass "scout-fanout.mjs: no export default (Workflow scripts are not standalone modules)"
 fi
+for _field in ref title kind filesToTouch symbols plan passCriteria difficulty \
+              blastRadius declaredBlockers openQuestions risks; do
+  assert_contains "$_scout" "$_field" "scout-fanout.mjs: schema has field $_field"
+done
 ```
 
 - [ ] **Step 2: Run to verify it fails**
 
 Run: `sh tests/docs_test.sh`
-Expected: FAIL on all five, exit non-zero.
+Expected: FAIL on all new assertions in this block (nineteen, given the structural checks replacing the single parse check), exit non-zero.
 
 - [ ] **Step 3: Create `references/plan-sourced.md`**
 
@@ -397,6 +410,8 @@ Required content, in order:
 6. `## Freshness guard` — the three bullets from spec §3a (paths must exist; stamped base SHA or the plan file's last commit compared against current `HEAD` for those paths; any changed path flags the task **stale**, and stale tasks fall back to scouting). Close with the sentence that this is forge's `docs` stamp check applied to a set.
 
 - [ ] **Step 4: Create `scripts/scout-fanout.mjs`**
+
+This is a Workflow script, not a standalone Node module — the runtime supplies `agent`, `parallel`, `pipeline`, `phase`, `log`, `args` and `budget` as free variables and permits the top-level `return` below, so open the file with a comment saying so; that is why Step 1 asserts its shape structurally instead of running `node --check` on it.
 
 ```js
 export const meta = {

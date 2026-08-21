@@ -53,7 +53,7 @@ These are consumed by the orchestrator and are never passed through to a forge r
 | `budget <n>` | Token ceiling for the run, with a deterministic degradation ladder | `references/scheduling.md` |
 | `strict` | No depth downgrade; every task runs full forge | `references/triage.md` |
 | `stack` | Blocked tasks base off the blocker's branch and open stacked PRs | `references/scheduling.md` |
-| `rescout` | Force scout analysis even where dispatch-ready plans exist | `references/plan-sourced.md` |
+| `rescout` | Force scout analysis even where dispatch-ready plans exist | [references/plan-sourced.md](references/plan-sourced.md) |
 | `max <n>` | Concurrent implementation agents; default `4` | `references/scheduling.md` |
 | `dry` | Emit the battle plan and stop; dispatch nothing | `references/battle-plan.md` |
 | `unified` / `split` | Override worktree grouping: `unified` puts a coupled cluster in one worktree behind one PR, `split` gives every task its own | `references/scheduling.md` |

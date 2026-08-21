@@ -1,3 +1,12 @@
+// Not a standalone Node module. The Workflow runtime evaluates this file's
+// body in its own wrapper, which supplies `agent`, `parallel`, `pipeline`,
+// `phase`, `log`, `args` and `budget` as free variables and permits a
+// top-level `return` as the script's result value. That is this file's
+// actual contract — do not "fix" the bare `return` or the free variables by
+// wrapping the body in an exported function; doing so makes `node --check`
+// pass while making the script fail when the Workflow runtime actually
+// invokes it. There is deliberately no `node --check` assertion for this
+// file in tests/docs_test.sh; see the comment there for why.
 export const meta = {
   name: 'blacksmith-scout-fanout',
   description: 'Run forge Part 1 for each task in parallel and return structured proposals',
@@ -25,32 +34,25 @@ const SCOUT_SCHEMA = {
   },
 }
 
-// Wrapped in an exported function so this file is a syntactically valid ES
-// module: a bare top-level `return` (as in the originating task brief) is
-// illegal outside a function in both scripts and modules. `args`, `phase`,
-// `parallel`, `agent` and `log` are the Workflow engine's injected call
-// surface; the body below is otherwise unchanged from the brief.
-export default async function run(args, { phase, parallel, agent, log }) {
-  const tasks = Array.isArray(args) ? args : []
+const tasks = Array.isArray(args) ? args : []
 
-  phase('Scout')
-  const proposals = await parallel(
-    tasks.map((t) => () =>
-      agent(
-        [
-          `Load the forge skill and run Part 1 only (Steps 1 through 6) for ref ${t.ref}.`,
-          'Stop at the Step 6 gate. Do NOT edit any file and do NOT ask the user anything.',
-          'If a Step 4 required field is missing, do not interview: record the question in',
-          'openQuestions and continue with your best assumption noted in risks.',
-          'Return the structured proposal only.',
-          t.hint ? `Context from the caller: ${t.hint}` : '',
-        ].filter(Boolean).join('\n'),
-        { label: `scout:${t.ref}`, phase: 'Scout', schema: SCOUT_SCHEMA },
-      ),
+phase('Scout')
+const proposals = await parallel(
+  tasks.map((t) => () =>
+    agent(
+      [
+        `Load the forge skill and run Part 1 only (Steps 1 through 6) for ref ${t.ref}.`,
+        'Stop at the Step 6 gate. Do NOT edit any file and do NOT ask the user anything.',
+        'If a Step 4 required field is missing, do not interview: record the question in',
+        'openQuestions and continue with your best assumption noted in risks.',
+        'Return the structured proposal only.',
+        t.hint ? `Context from the caller: ${t.hint}` : '',
+      ].filter(Boolean).join('\n'),
+      { label: `scout:${t.ref}`, phase: 'Scout', schema: SCOUT_SCHEMA },
     ),
-  )
+  ),
+)
 
-  const ok = proposals.filter(Boolean)
-  log(`scouted ${ok.length}/${tasks.length} tasks`)
-  return { proposals: ok, failed: tasks.length - ok.length }
-}
+const ok = proposals.filter(Boolean)
+log(`scouted ${ok.length}/${tasks.length} tasks`)
+return { proposals: ok, failed: tasks.length - ok.length }

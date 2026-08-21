@@ -13,7 +13,7 @@ Each flag is consumed by the orchestrator and never forwarded to a dispatched fo
 | `budget <n>` | Token ceiling for the run, with a deterministic degradation ladder | `scheduling.md` |
 | `strict` | No depth downgrade; every task runs full forge | `triage.md` |
 | `stack` | Blocked tasks base off the blocker's branch and open stacked PRs | `scheduling.md` |
-| `rescout` | Force scout analysis even where dispatch-ready plans exist | `plan-sourced.md` |
+| `rescout` | Force scout analysis even where dispatch-ready plans exist | [plan-sourced.md](plan-sourced.md) |
 | `max <n>` | Concurrent implementation agents; default `4` | `scheduling.md` |
 | `dry` | Emit the battle plan and stop; dispatch nothing | `battle-plan.md` |
 | `unified` / `split` | Override worktree grouping: `unified` puts a coupled cluster in one worktree behind one PR, `split` gives every task its own | `scheduling.md` |

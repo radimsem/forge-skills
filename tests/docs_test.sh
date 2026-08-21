@@ -111,11 +111,31 @@ assert_contains "$BS/references/plan-sourced.md" 'dispatch-ready' \
   "plan-sourced.md: defines the dispatch-ready check"
 assert_contains "$BS/references/plan-sourced.md" 'stale' \
   "plan-sourced.md: defines the freshness guard"
-if node --check "$BS/scripts/scout-fanout.mjs" 2>/dev/null; then
-  pass "scout-fanout.mjs parses"
+
+# scout-fanout.mjs is deliberately NOT `node --check`-able: it is a Workflow
+# script, not a standalone module. The Workflow runtime evaluates its body in
+# a wrapper that supplies agent/parallel/pipeline/phase/log/args/budget as
+# free variables and permits a top-level `return` as the script's result —
+# that is its real contract, documented in the file's own header comment.
+# `node --check` would reject that on sight, so a parse check here would
+# reward wrapping the body in an exported function, which parses cleanly but
+# breaks the script at the runtime that actually calls it. These structural
+# checks assert the shape the Workflow runtime and later tasks depend on
+# instead of module validity.
+_scout="$BS/scripts/scout-fanout.mjs"
+assert_contains "$_scout" 'export const meta' \
+  "scout-fanout.mjs: exports meta"
+assert_contains "$_scout" 'blacksmith-scout-fanout' \
+  "scout-fanout.mjs: meta.name is blacksmith-scout-fanout"
+if [ -f "$_scout" ] && grep -q 'export default' "$_scout"; then
+  fail "scout-fanout.mjs: no export default (Workflow scripts are not standalone modules)"
 else
-  fail "scout-fanout.mjs parses"
+  pass "scout-fanout.mjs: no export default (Workflow scripts are not standalone modules)"
 fi
+for _field in ref title kind filesToTouch symbols plan passCriteria difficulty \
+              blastRadius declaredBlockers openQuestions risks; do
+  assert_contains "$_scout" "$_field" "scout-fanout.mjs: schema has field $_field"
+done
 
 printf '\n%s\n' "FAILS=$FAILS"
 [ "$FAILS" -eq 0 ]
