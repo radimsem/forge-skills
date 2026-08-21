@@ -86,6 +86,10 @@ The chain above is the common path, not a strict single line: `parked` is reacha
 | `done` | Closed out: nothing further depends on this task, and it is reported as finished at Step 9. |
 | `failed` | The dispatched run errored, or failed its `/goal` past [triage.md](triage.md)'s one runtime-promotion retry, and parked for the user rather than looping. |
 
+### `pr-open` and `merged` under `automode` without `afk`
+
+Under `automode` without `afk`, `pr-open` and `merged` are unreachable states for every task in the run. Per the three-way commit-and-PR rule stated in `SKILL.md`'s Overview and Step 7, no dispatched run's own Step 12 ever commits or opens a PR in that combination — every run stops at its plan-only output, exactly as a standalone `automode` forge run does. A task that completes under this combination is recorded `done` directly from `review` (or from `running`, at a depth that skips review), with `pr: null` and its plan-file path standing in for the PR the schema above shows; Step 9's close-out, not the state name, is what carries the caveat that nothing was pushed. A task with an unreleased blocker under the same combination never reaches `pr-open` either, for a different reason: [relay.md](relay.md)'s "Without a landable commit" section — there is nothing for the relay to prove ancestry against, so it stays `parked` for the remainder of the run instead of resolving.
+
 ## Resume contract
 
 `/blacksmith-orchestrate resume [run-id]` rebuilds wave state, worktree paths and PR numbers from the ledger, but it **re-verifies before continuing rather than trusting the file** — the file is a record of what Step 6 and Step 7 believed was true when they last wrote it, not a live view of the worktrees or the host:

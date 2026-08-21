@@ -43,7 +43,7 @@ It is a wrapper, not a fork. It never reimplements a forge step. Nearly every de
 
 ### Work sources
 
-Four routes converge on one canonical task list. This mirrors forge's Step 1, which routes four ref shapes into one fetch.
+Five routes converge on one canonical task list. This mirrors forge's Step 1, which routes four ref shapes into one fetch.
 
 | Form | Route | Example |
 |---|---|---|
@@ -192,7 +192,7 @@ Schema validation is enforced at the tool layer, so a malformed return is retrie
 3. else more files touched goes first;
 4. else lower ref number.
 
-Because orientation follows one total order, **overlap-derived edges are acyclic by construction** — no cycle-breaking case, no deadlock detection. Declared edges are the exception: their direction is stated rather than computed, so a chain of them can close into a cycle (the two-node case is two tasks each naming the other). Step 4 checks declared edges for cycles and, on finding one, drops that cycle's edges back to priority order and flags it on the battle plan — a declared cycle means the source issues contradict each other, which is for the user to see, not for the orchestrator to resolve quietly.
+Because orientation follows one total order, **overlap-derived edges are acyclic by construction** — no cycle-breaking case, no deadlock detection. Stated edges (`declaredBlockers` and plan task order alike) are the exception: their direction is stated rather than computed, so a chain of them can close into a cycle (the two-node case is two tasks each naming the other). Step 4 checks stated edges for cycles and, on finding one, drops that cycle's edges back to priority order and flags it on the battle plan — a stated cycle means the source issues or the plan contradict themselves, which is for the user to see, not for the orchestrator to resolve quietly.
 
 **Overlap grades.** File-level matching over-serializes, so overlap has two grades:
 
@@ -445,7 +445,7 @@ skills/blacksmith-orchestrate/
   SKILL.md                      # 9-step workflow + flag table + when-to-use
   references/
     flags.md                    # flag matrix, composition + conflicts
-    entry-routes.md             # the four work sources → canonical task list
+    entry-routes.md             # the five work sources → canonical task list
     plan-sourced.md             # §3a: detection, dispatch-ready, freshness
     collision-graph.md          # edges, orientation, hard vs soft overlap
     triage.md                   # the two axes, tier/depth tables, the four floors
@@ -507,4 +507,4 @@ Canonical list for `references/anti-patterns.md`:
 2. Default pool width is `4`, chosen for worktree disk cost, review noise and rate limits rather than measured throughput.
 3. The AFK timeout is 5 minutes of session quiet, as specified. It is not adaptive.
 4. Unification triggers at two tightly-coupled tasks. The threshold is a judgment call, not a measured optimum.
-5. Free-form goal decomposition has no ground truth to check against; it is the weakest of the four entry routes and always surfaces its task split at the gate.
+5. Free-form goal decomposition has no ground truth to check against; it is the weakest of the five entry routes and always surfaces its task split at the gate.

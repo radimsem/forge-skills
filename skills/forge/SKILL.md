@@ -42,7 +42,7 @@ The target is the first reference-shaped token, or the token right after a `tick
 | after `ticket` keyword | **Jira ticket**; number-only → ask project key | `forge ticket PROJ-123`, `solve ticket 42` |
 | after `linear` keyword | **Linear issue** (forces Linear routing, skips disambiguation) | `forge linear ENG-42` |
 | after `pr` keyword | **PR-review entry mode** (skips Steps 4–7; enters at Step 8 against the PR diff) | `forge pr 47`, `forge pr #123` |
-| after `plan` keyword | **plan-entry mode** (skips Steps 4–6; enters at Step 7 against the plan slice) | `forge plan docs/superpowers/plans/x.md#task-3` |
+| after `plan` keyword | **plan-entry mode** (replaces Steps 1, 2, 4–6 with a single Step P validation pass; Step 3 still runs; enters at Step 7 against the plan slice) | `forge plan docs/superpowers/plans/x.md#task-3` |
 
 A bare number routes to a tracker only if `ticket` or `linear` precedes it, and PR mode requires the `pr` keyword. A key-shaped ref is either Jira or Linear: when both trackers are configured, the agent disambiguates per the Jira/Linear disambiguation section in [references/trackers/linear.md](references/trackers/linear.md). Single-tracker setups skip the prompt.
 

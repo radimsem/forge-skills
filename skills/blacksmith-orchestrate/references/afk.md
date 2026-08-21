@@ -1,6 +1,6 @@
-# Blacksmith — `afk`: the sanctioned merge exception
+# Blacksmith — `afk`: the sanctioned unattended-action exception
 
-The one flag in this skill that lets the orchestrator merge a PR without a human clicking merge. Loaded by Step 8 whenever a blocking PR is ready and `afk` is set.
+The one flag in this skill that lets the orchestrator act without a human present: merge a blocking PR without a human clicking merge, and — combined with `automode` — commit and open a PR without a human having approved the battle plan. Loaded by Step 7 and Step 12 whenever `automode afk` grants a dispatched run its commit-and-PR selection, and by Step 8 whenever a blocking PR is ready and `afk` is set.
 
 ## Manual verification recipe
 
@@ -20,13 +20,19 @@ Merging requires **every** item to pass, verbatim from spec §8:
 
 1. the PR is mergeable with no conflicts;
 2. CI is green for the PR head SHA across all required checks;
-3. that task's forge review loop converged to zero actionable findings, read from the ledger;
+3. that task's forge review loop converged to zero actionable findings, read from the ledger — at `patch` depth, where [triage.md](triage.md) runs no review loop at all, this item is satisfied instead by the orchestrator's own diff read that depth already requires, per [triage.md](triage.md)'s depth table, and is not treated as vacuously passed just because there was no loop to converge;
 4. there are zero unresolved human review comments or change requests;
 5. the diff's file list is a subset of the approved proposal's file list;
 6. `/goal` verifies green in the worktree at the PR head;
 7. the base branch permits the merge.
 
 Any single failure keeps the PR parked and notifies; there is no merge retry loop — the checks are simply re-evaluated on the next poll, exactly as they would be for a PR with no `afk` verification pending at all.
+
+## Commit-and-PR authorization
+
+`afk` is one flag with one meaning — "I am not here, act on my behalf with the stated verification" — and that meaning covers two actions, not one. Besides the blocking-PR merge above, `afk` combined with `automode` is also what authorizes each dispatched run's own Step 12 commit-and-PR selection when no human ever approved the battle plan to begin with: `automode` alone only lifts the Step 5 gate, which is a different thing from granting the Step 12 selection that gate would otherwise have granted on approval, so without `afk` an `automode` run's dispatched tasks stop at Step 12 plan-only, exactly as a standalone `automode` forge run does — nobody delegated the commit. With `afk` added, that delegation is explicit, and each dispatched run commits and opens its PR for the tasks the plan named, subject to the same Step 12 `/goal` verification forge already requires at every depth. This is not a second exception to forge's no-auto-push floor alongside the merge above — it is the same one, covering the same floor, stated here so both of `afk`'s actions are labelled as auditably as each other.
+
+Outside `automode`, this half of `afk` is inert: the Step 5 approval already grants the Step 12 selection on its own (see `SKILL.md`'s Overview and Step 7), so there is nothing left for `afk` to additionally authorize there — its only live effect on a non-`automode` run is the blocking-PR merge above.
 
 ## Scope limits
 

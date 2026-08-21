@@ -60,6 +60,12 @@ A plan's task list is assumed to be a blocker chain — task 2 depends on task 1
 
 Both conditions must hold for the second case; disjoint file sets alone are not enough; a shared interface described only in prose and not the file list still creates a real edge that a `filesToTouch` diff would miss.
 
+## Triage inputs for a plan-sourced task
+
+A plan-sourced task never runs a scout, so `difficulty`, `blastRadius` and `symbols` are never populated the scouted way — and [triage.md](triage.md)'s and [collision-graph.md](collision-graph.md)'s undeterminable defaults are not meant to be the common case for a route that exists specifically to be cheap. The orchestrator grades both triage axes and lists the symbols from the slice text itself before Step 4 sees the task: the files the slice already names (condition 1 of the dispatch-ready check above) for file count and symbol candidates, the plan's own File Structure section and prose for new-interface and algorithmic-content signals that inform `difficulty`, and the surface the slice's deliverable touches — user-facing, auth/payment-adjacent, public API, migration, existing test coverage — for `blastRadius`. This is the same grading [triage.md](triage.md) already describes, done by reading the plan instead of by dispatching a scout to rediscover it.
+
+The undeterminable defaults — `difficulty: high`, `blastRadius: high`, `symbols: []` — apply to a plan-sourced task only when the slice genuinely does not say, the same standard the dispatch-ready check above already applies to a missing file list or missing pass criteria: silence in the text, not merely the absence of a scout run. Grading every plan-sourced task to the undeterminable defaults by default would put every one of them at `opus × full` with every edge hard, which defeats the entire reason this route exists — a written plan is supposed to be *cheaper* to dispatch from than a scout, not more conservatively triaged than one.
+
 ## Freshness guard
 
 A plan-sourced task's dispatch-readiness is void the moment its plan slice no longer describes the tree it will run against:

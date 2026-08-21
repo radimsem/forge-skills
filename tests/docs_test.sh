@@ -210,13 +210,20 @@ assert_eq "$(flag_names "$BS/references/flags.md" '^## Flags')" \
           "$(flag_names "$ROOT/README.md" '^## Orchestrator flags')" \
           "blacksmith: flags.md and README flag tables agree"
 
-# --- blacksmith: no stale `references/*.md` inline-code mentions left unconverted ---
-# Every reference file exists now, so a bare backtick-quoted `references/x.md` mention in
-# SKILL.md or flags.md (rather than a real markdown link) is a straggler that should have
-# been converted when the file it names was created.
+# --- blacksmith: no stray `references/*.md` inline-code mentions ---
+# A bare backtick-quoted `references/x.md` mention in SKILL.md or flags.md (rather than a
+# real markdown link) is checked two ways: if the file exists, the mention is a straggler
+# that should have been converted to a real link when the file was created; if the file
+# does not exist, the mention names a reference that was never written or has since moved
+# — a typo or a stale name that broken_links above cannot catch, because it only walks
+# real `](...)` links, not inline code.
 stale_ref_mentions() { # $1=markdown file $2=base dir references/ paths resolve against
   grep -oE '`references/[^`]+\.md`' "$1" 2>/dev/null | tr -d '`' | while read -r _t; do
-    [ -f "$2/$_t" ] && printf '%s -> %s\n' "$1" "$_t"
+    if [ -f "$2/$_t" ]; then
+      printf '%s -> %s (exists: convert to a real link)\n' "$1" "$_t"
+    else
+      printf '%s -> %s (missing: broken reference)\n' "$1" "$_t"
+    fi
   done
 }
 _stale_refs=$(
@@ -224,7 +231,7 @@ _stale_refs=$(
   stale_ref_mentions "$BS/references/flags.md" "$BS"
 )
 assert_eq "$_stale_refs" "" \
-  "blacksmith: no stale references/*.md inline-code mentions (should be real links)"
+  "blacksmith: no stray references/*.md inline-code mentions (unconverted links or broken references)"
 
 printf '\n%s\n' "FAILS=$FAILS"
 [ "$FAILS" -eq 0 ]

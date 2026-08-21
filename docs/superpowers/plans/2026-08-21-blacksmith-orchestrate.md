@@ -17,7 +17,7 @@
 - **Progressive disclosure.** Step-level contract goes in `SKILL.md`; expandable detail goes in the matching `references/` file and is *linked*, never inlined.
 - **Three-way sync.** The flag list appears in `SKILL.md`, `README.md`, and `references/flags.md`. They must not drift — `tests/docs_test.sh` enforces this from Task 1 onward.
 - **`deps_table` is the single source of truth** for what gets installed. Changing it requires updating the corresponding assertions in `tests/install_test.sh` in the same commit.
-- **Forge's hard floors must not weaken.** No auto-commit, auto-push, or tracker write-back; the Step 12 `/goal` verification always runs. The `afk` flag is the single documented exception and must be labelled as such wherever it appears.
+- **Forge's hard floors must not weaken.** No auto-commit, auto-push, or tracker write-back; the Step 12 `/goal` verification always runs. The `afk` flag is the single sanctioned exception and must be labelled as such wherever it appears.
 - **Exact names:** skill directory `skills/blacksmith-orchestrate`, skill name `blacksmith-orchestrate`, install source `radimsem/forge-skills` (unchanged `FORGE_SOURCE`).
 - **New lessons** learned during implementation go in the owning skill's `references/anti-patterns.md`, never scattered into `SKILL.md`.
 

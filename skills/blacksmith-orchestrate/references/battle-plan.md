@@ -23,6 +23,7 @@ BATTLE PLAN — 4 tasks, 2 waves, split topology
 
   relay:  #43 releases when #42's changes are proven on its base
   merge:  human (no `afk`) — you are notified when #101 is ready
+  commit: approving this plan authorizes Step 12 commit + PR for #42, #43, #51, #60
   budget: no ceiling set
   stale:  none
 
@@ -56,9 +57,15 @@ Under `automode`, the gate itself is skipped (see Approval semantics below), but
 
 ## Required elements
 
-Every task's ref, title, tier, depth, worktree and analysis route; every edge with its overlap grade and the exact file or symbol that produced it; the topology decision; any plan slice flagged stale; the merge-authority mode in force; anything `budget` will defer; and the consolidated interview.
+Every task's ref, title, tier, depth, worktree and analysis route; every edge with its overlap grade and the exact file or symbol that produced it; the topology decision; any plan slice flagged stale; the merge-authority mode in force; the commit-and-PR authorization this approval will grant — every task it covers, named explicitly, and none it does not (see Commit-and-PR authorization below); anything `budget` will defer; and the consolidated interview.
 
 A batch run accumulates undetermined and out-of-run conditions from every reference this step composes — `symbols undeterminable` and `declared blocker outside this run: <ref>` from [collision-graph.md](collision-graph.md), `difficulty undeterminable: <ref>` and `blastRadius undeterminable: <ref>` from [triage.md](triage.md), `freshness unverified: plan not yet committed` from `plan-sourced.md`, and `unified (mixed kind)` from [scheduling.md](scheduling.md). These are one class, not a list to duplicate here: any condition a task or edge carries when it reaches the gate is rendered on the line for the task or edge it describes, in the wording its owning reference already defines, never re-derived or re-worded at this step. Battle-plan assembly does not invent a parallel vocabulary for a condition an earlier step already named — it renders what it is handed.
+
+## Commit-and-PR authorization
+
+Approving the plan is also the Step 12 selection forge requires before any dispatched run may commit or open a PR: "yes, forge them" said against a plan that names every task is that selection, made once for all of them rather than once per run — the same relay Step 7 already performs when it supplies the scout's proposal as an already-approved Step 5 plan. The plan states this on its face, in the `commit:` line above, naming exactly the tasks the approval covers, so the human sees what they are authorizing before they say yes; an amendment that adds or drops a task changes what that line covers and re-asks for approval like any other amendment.
+
+Under `automode`, no human says "yes, forge them" — the gate is skipped, not answered — so this authorization is never granted by default, and every dispatched run's own Step 12 stops at its plan-only output instead: see `automode`'s row in [flags.md](flags.md) and [afk.md](afk.md) for the one flag, `afk`, that grants it anyway.
 
 ## Approval semantics
 

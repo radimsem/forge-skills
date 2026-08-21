@@ -27,7 +27,7 @@ In addition to the flags above, the skill supports an entry-mode verb:
 | Verb | Effect | Detail |
 |---|---|---|
 | `/forge pr <N>` | Skip Steps 4–7; enter Step 8 against the existing PR diff. Pre-Step-8 flags are ignored; Step-8-or-later flags apply | [modes/pr-entry.md](modes/pr-entry.md) |
-| `/forge plan <path>` | Skip Steps 4–6; enter at Step 7 with the plan slice as the approved proposal. Step 3 still runs | [modes/plan-entry.md](modes/plan-entry.md) |
+| `/forge plan <path>` | Replace Steps 1, 2, 4–6 with a single Step P validation pass; enter at Step 7 with the plan slice as the approved proposal. Step 3 still runs | [modes/plan-entry.md](modes/plan-entry.md) |
 
 ## Composition rules
 

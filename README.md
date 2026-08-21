@@ -135,11 +135,11 @@ Orchestrator flags are consumed by `blacksmith-orchestrate` itself and are never
 
 | Flag | What it does |
 |---|---|
-| `afk` | After a 5-minute quiet timeout, self-verify and merge blocking PRs only — the single sanctioned exception to forge's never-auto-push floor. |
+| `afk` | After a 5-minute quiet timeout, self-verify and merge blocking PRs only; combined with `automode`, also authorizes each dispatched run's own Step 12 commit-and-PR — the single sanctioned exception to forge's never-auto-push floor. |
 | `resume` | Resume a run from its ledger instead of starting a new one. |
 | `budget <n>` | Token ceiling for the run, with a deterministic degradation ladder. |
 | `strict` | No depth downgrade; every task runs full forge. |
-| `stack` | Blocked tasks base off the blocker's branch and open stacked PRs. |
+| `stack` | Blocked tasks on a soft edge base off the blocker's branch and open stacked PRs; hard-edge blocks still park. |
 | `rescout` | Force scout analysis even where dispatch-ready plans exist. |
 | `max <n>` | Concurrent implementation agents; default `4`. |
 | `dry` | Emit the battle plan and stop; dispatch nothing. |
