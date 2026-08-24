@@ -63,5 +63,34 @@ else
   PASSES=$((PASSES+1)); echo "PASS: server-info removed on shutdown"
 fi
 
+# --- composer core: prompt + invocation assembly (pure, Node-testable) ---
+cat > "$TMP/check-composer.js" <<'EOF'
+require(process.env.BP + '/scripts/composer.js');
+const c = globalThis.blueprintComposer;
+const which = process.argv[2];
+if (which === 'response') {
+  process.stdout.write(c.assembleResponse('demo', [
+    { label: 'Tray', choice: 'a', note: null },
+    { label: 'Nits', choice: 'b', note: 'discoverable' },
+    { label: 'Skipped', choice: null, note: null },
+  ], [{ region: 'run.row', note: 'align right' }]));
+} else {
+  process.stdout.write(c.assembleInvocation({
+    verb: '/blacksmith-orchestrate',
+    source: 'plan (docs/plans/x.md)',
+    orchestrator: [{ name: 'afk', on: true }, { name: 'unified', on: true }, { name: 'budget', on: false }],
+    passthrough: [{ name: 'lookup', on: true }, { name: 'tdd', on: false }],
+  }));
+}
+EOF
+
+RESP=$(BP="$BP" node "$TMP/check-composer.js" response)
+WANT_RESP=$(printf '[blueprint:demo]\n1) Tray → A\n2) Nits → B — note: discoverable\nNit on run.row: align right')
+assert_eq "$RESP" "$WANT_RESP" "assembleResponse follows the clipboard contract"
+
+INV=$(BP="$BP" node "$TMP/check-composer.js" invocation)
+assert_eq "$INV" "/blacksmith-orchestrate plan (docs/plans/x.md) afk unified - lookup" \
+  "assembleInvocation follows the grammar (off-flags and empty groups omitted)"
+
 echo "PASSES=$PASSES FAILS=$FAILS"
 [ "$FAILS" -eq 0 ]
