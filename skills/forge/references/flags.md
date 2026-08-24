@@ -19,6 +19,8 @@ The full set of flags the forge skill understands, with composition rules and co
 | `ci-watch` | After Step 12 push, poll CI; on red, re-enter Step 8 with the failure as a finding | [modes/ci-watch.md](modes/ci-watch.md) |
 | `compress` | Before Step 1, source a token-saving output skill for the session: `ponytail` if installed, else `caveman`, else ignore the flag with a one-line note | [modes/compress.md](modes/compress.md) |
 | `coderabbit` | Add CodeRabbit to the generic-reviewer set. Step 8b rework path uses `coderabbit:autofix`. Claude Code only | [reviewers/coderabbit.md](reviewers/coderabbit.md) |
+| `code-review` | Add `/code-review` (two-axis: Standards + Spec) to the generic-reviewer set. Plain skill; any runtime | [reviewers/code-review.md](reviewers/code-review.md) |
+| `implement` | `/implement` builds Step 7 scoped to the approved plan, with its own `/code-review` closeout skipped (Step 8 owns review) | [modes/implement.md](modes/implement.md) |
 
 ## Entry verbs
 
@@ -41,3 +43,7 @@ In addition to the flags above, the skill supports an entry-mode verb:
 | `tdd` discipline binds under `automode` | The "observe failing test before implementing" rule is the point of the flag; under `automode` the agent runs the test itself and confirms red. |
 | `/forge pr <N>` ignores all lifecycle flags except `automode` and reviewer flags | PR-review mode skips Step 7 implementation; only Step 8 reviewer engines and the `automode` no-gates property apply. |
 | `compress` composes with every flag and entry mode, including `pr` | It shapes session output, not the lifecycle; no step depends on it. Inert (one-line note) when neither `ponytail` nor `caveman` is installed. |
+| `code-review` composes with `codex` and `coderabbit` | All set engines run in the same Step 8 pass; a `code-review` finding has no dedicated rework skill, so it is fixed in-pass. |
+| `implement` conflicts with `codex impl` | Two engines cannot own the same Step 7. Stop and report the conflict rather than applying a precedence — silently honouring one would hide which engine actually built the diff. |
+| `implement` makes `tdd` redundant | `/implement` already drives `/tdd` at pre-agreed seams. Accept the combination with a one-line note; the discipline is not doubled. |
+| `implement` is inert at Step 7 under `/forge pr <N>` | PR mode has no Step 7. One-line note, no error — same rule as `codex impl`. |

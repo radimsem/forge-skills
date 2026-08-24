@@ -59,7 +59,7 @@ Neither task in the example above is synthetic, so neither shows the one field t
 
 | `syntheticIdReason` | How it arose | What `resume` must still refuse |
 |---|---|---|
-| `declined-filing` | The user was offered `/to-issues` filing for a real, human-stated task and declined it — entry-routes.md's "Materializing refs" | Nothing beyond the ordinary rule: a synthetic ID never reaches a tracker on its own, but filing it later, on request, is always available. |
+| `declined-filing` | The user was offered `/to-tickets` filing for a real, human-stated task and declined it — entry-routes.md's "Materializing refs" | Nothing beyond the ordinary rule: a synthetic ID never reaches a tracker on its own, but filing it later, on request, is always available. |
 | `automode-freeform` | The task came from an `automode` free-form goal split — entry-routes.md's "Free-form decomposition" | Filing outright. The split itself was the orchestrator's own guess, made without the Step 5 gate that would otherwise have shown it to a person; it must not be filed until a human has actually seen the split, not merely until one is asked. |
 
 A task with a real ref never carries `syntheticIdReason` — the field's absence is itself meaningful, not an omission. `resume` reads the field back unchanged rather than re-deriving it from the task's route, because the route alone does not distinguish the two cases (both can originate from a free-form task) and re-deriving it risks quietly relaxing the `automode-freeform` restriction on a run that already recorded it correctly the first time.

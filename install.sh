@@ -124,11 +124,15 @@ deps_table() {
 1|skill|mattpocock/skills|tdd
 1|skill|mattpocock/skills|grill-me
 1|skill|mattpocock/skills|grill-with-docs
-1|skill|mattpocock/skills|to-issues
-1|skill|mattpocock/skills|diagnose
-1|skill|mattpocock/skills|write-a-skill
+1|skill|mattpocock/skills|to-tickets
+1|skill|mattpocock/skills|diagnosing-bugs
+1|skill|mattpocock/skills|writing-for-agents
 1|skill|mattpocock/skills|improve-codebase-architecture
-1|skill|mattpocock/skills|zoom-out
+1|skill|mattpocock/skills|wait-what
+1|skill|mattpocock/skills|code-review
+1|skill|mattpocock/skills|resolving-merge-conflicts
+1|skill|mattpocock/skills|wayfinder
+1|skill|mattpocock/skills|implement
 1|skill|mattpocock/skills|setup-matt-pocock-skills
 1|skill|forrestchang/andrej-karpathy-skills|karpathy-guidelines
 2|plugin|anthropics/claude-plugins-official|superpowers@claude-plugins-official
@@ -273,7 +277,7 @@ post_install_notes() {
 
 Done. Next steps / runtime notes:
   - Run `/setup-matt-pocock-skills` once in each repo where you use forge
-    (bootstraps tracker + triage labels consumed by tdd/to-issues/diagnose/improve-codebase-architecture).
+    (bootstraps tracker + triage labels consumed by tdd/to-tickets/diagnosing-bugs/implement/code-review/improve-codebase-architecture).
   - Built-in, no install needed: /goal, /compact, and security-review (Claude Code built-ins).
   - Optional, set up if you use the matching flag/tracker:
       * context7 MCP — the `lookup` flag's doc source; Atlassian MCP (Jira); Linear MCP (Linear)

@@ -88,8 +88,10 @@ Flags are orthogonal and compose freely. You can stack as many as you want in on
 | `codex` / `codex challenge` | Adds Codex as a reviewer (`challenge` runs an adversarial pass). Claude Code only. |
 | `codex impl` | Delegates implementation to Codex (GPT-5.6 Sol/Terra/Luna, auto-tiered by task); Claude reviews the result. Claude Code only. |
 | `coderabbit` | Adds CodeRabbit as a reviewer, with rework via `coderabbit:autofix`. Claude Code only. |
+| `code-review` | Adds `/code-review` (two-axis: Standards + Spec) as a reviewer. A plain skill — works on any runtime. |
+| `implement` | Delegates implementation to `/implement`, scoped to the approved plan; forge keeps the review loop. Conflicts with `codex impl`. |
 
-The reviewer flags add to the project's own reviewer agents rather than replacing them, and `codex` and `coderabbit` can both run in the same pass.
+The reviewer flags add to the project's own reviewer agents rather than replacing them, and `codex`, `coderabbit`, and `code-review` can all run in the same pass.
 
 ## Examples
 
@@ -174,7 +176,7 @@ Forge leans on a handful of other skills and plugins, all installed for you by `
 
 | Dependency | From | Used for |
 |---|---|---|
-| `tdd`, `grill-me`, `grill-with-docs`, `to-issues`, `diagnose`, `write-a-skill`, `improve-codebase-architecture`, `zoom-out` | [`mattpocock/skills`](https://github.com/mattpocock/skills) | the lifecycle steps and the `tdd`/grilling flags |
+| `tdd`, `grill-me`, `grill-with-docs`, `to-tickets`, `diagnosing-bugs`, `writing-for-agents`, `improve-codebase-architecture`, `wait-what`, `code-review`, `resolving-merge-conflicts`, `wayfinder`, `implement` | [`mattpocock/skills`](https://github.com/mattpocock/skills) | the lifecycle steps, the `tdd`/grilling/`code-review`/`implement` flags, conflict resolution, and pre-orchestration mapping |
 | `karpathy-guidelines` | [`forrestchang/andrej-karpathy-skills`](https://github.com/forrestchang/andrej-karpathy-skills) | re-loading clean-code discipline before each implement/refactor pass |
 | `superpowers:requesting-code-review`, `superpowers:using-git-worktrees` | [`obra/superpowers`](https://github.com/obra/superpowers) | the default reviewer and the `worktree` flag |
 | `codex` plugin | [`openai/codex-plugin-cc`](https://github.com/openai/codex-plugin-cc) | the `codex` flag (Claude Code only) |

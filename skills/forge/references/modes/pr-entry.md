@@ -54,6 +54,8 @@ PR-review done — how should the findings land?
 
 The `ci-watch` flag is meaningful here too: if the user picked option 2 (push fixup commits), `ci-watch` polls the PR's CI for the new HEAD.
 
+If landing fixup commits requires bringing the PR's head ref up to date with its base and that merge or rebase conflicts, resolve through **`/resolving-merge-conflicts`** — hunk by hunk, by intent traced to each side's primary source, finishing the operation rather than `--abort`ing — instead of resolving ad hoc.
+
 ## Allowed and ignored flags
 
 Flags that operate **at Step 8 or later** apply in PR-entry mode:
@@ -64,7 +66,9 @@ Flags that operate **at Step 8 or later** apply in PR-entry mode:
 - `changelog` — applies (drafts entry for the fixup commits if option 2)
 - `ci-watch` — applies (polls CI after option 2 push)
 - `coderabbit` — applies
+- `code-review` — applies (adds the two-axis skill reviewer; see [../reviewers/code-review.md](../reviewers/code-review.md))
 - `codex impl` — partially applies: Step 7 delegation is inert (no Step 7), the Step 8b rework tiering applies; see [codex-impl.md](codex-impl.md)
+- `implement` — inert: PR mode has no Step 7. One-line note, no error; see [implement.md](implement.md)
 - `compress` — applies (session-wide output mode, sourced before Step 1; see [compress.md](compress.md))
 
 Flags that operate **before Step 8** are ignored with a one-line warning:

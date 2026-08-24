@@ -10,7 +10,7 @@ Disciplined critique cycle. Runs after each implementation pass. Terminates when
 | `codex` / `codex challenge` | Project subagents **+** Codex (`review` or `adversarial-review`) — see [reviewers/codex.md](reviewers/codex.md) | Step 8 when the flag is set; Claude Code runtime only |
 | `coderabbit` | Project subagents **+** `coderabbit:code-review` — see [reviewers/coderabbit.md](reviewers/coderabbit.md) | Step 8 when the flag is set; Claude Code runtime only |
 | Fallback (no project reviewer agents, PR exists) | `/greploop` against the pushed PR | When no project reviewers configured AND a PR exists. Never auto-push to create one. |
-| Sub-pass (suspected bug or perf regression) | `/diagnose` | Surface findings, return to the main loop |
+| Sub-pass (suspected bug or perf regression) | `/diagnosing-bugs` | Surface findings, return to the main loop |
 
 **Project subagents always run.** Reviewer flags (`codex`, `coderabbit`) add to the generic-reviewer set; they never replace project agents. `codex` and `coderabbit` compose — set both and both engines run in the same pass.
 

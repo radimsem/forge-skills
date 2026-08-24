@@ -14,8 +14,8 @@
 | Step 8 (review loop) | Project reviewers + generic reviewer; terminate at zero actionable findings; cap the review passes; not converged → summarize, ask user | Same engines + cap; not converged → pick safest finding to act on, continue (no user prompt) | pass cap |
 | Step 8 — Jira-absent fallback | Warn + 3-choice prompt (paste / auth / abort) | Same — the fallback **still binds** under `automode` because a missing data source is not a gate | Jira-absent fallback |
 | Step 9 (refactor) | `/improve-codebase-architecture` surfaces opportunities; user approves | Agent decides — apply only clearly net-positive, in-scope refactors; otherwise continue | — |
-| Step 10 (spinoff issues) | Draft via `/to-issues`, show drafts, post on explicit user yes | Post drafts directly | — |
-| Step 11 (self-evolution) | Propose `/write-a-skill`, agent-config edit, or memory write; show diff + path; confirm before write | Decide and apply the smaller-blast-radius option with no proposal, incl. memory writes (prefer rule/guide edit over a new skill unless the pattern is clearly broad) | — |
+| Step 10 (spinoff issues) | Draft via `/to-tickets`, show drafts, post on explicit user yes | Post drafts directly | — |
+| Step 11 (self-evolution) | Propose `/writing-for-agents`, agent-config edit, or memory write; show diff + path; confirm before write | Decide and apply the smaller-blast-radius option with no proposal, incl. memory writes (prefer rule/guide edit over a new skill unless the pattern is clearly broad) | — |
 | Step 12 — verify | Run `/goal` pass criteria + repo standard pre-commit checks; show output; green first | Same — agent runs the checks itself and proceeds only on green | `/goal` verification gate |
 | Step 12 — closing | Ask the closing question (the closing menu) | Skip the question; emit the proposed small-commit history as a plan only (to `/tmp/forge-<ref>.md` under `docs`, else inline); stop | Never auto-commit / auto-push / Jira write-back |
 | Throughout | Stop at substantive gates listed above (Steps 6, 9, 10, 11, 12) | No user gates between Steps 7–11; only hard floors bind | All hard floors above |
@@ -45,5 +45,7 @@
 | `automode` + `/forge pr <N>` | Skip the PR-review closing menu; emit the review summary as a plan to `/tmp/forge-pr-<N>.md` and stop. No auto-push of fixup commits, no auto-approve, no auto-request-changes. See [modes/pr-entry.md](modes/pr-entry.md). |
 | `automode` + Linear (or Jira/Linear ambiguity) | Cannot interview to disambiguate; attempt Linear first if both trackers connected, record assumption, abort if Linear lookup 404s. See [trackers/linear.md](trackers/linear.md). |
 | `automode` + `coderabbit` | Reviewer runs unprompted; Step 8b rework delegation to `coderabbit:autofix` auto-decides. Composes with `codex` — both engines run, rework routes per finding. See [reviewers/coderabbit.md](reviewers/coderabbit.md). |
+| `automode` + `code-review` | The two-axis review runs unprompted; its findings are fixed in-pass under the regular `automode` pick-safest path. See [reviewers/code-review.md](reviewers/code-review.md). |
+| `automode` + `implement` | The `/implement` delegation runs unprompted; the conformance check against the approved plan is the agent's own, and deviations enter Step 8 as findings. See [modes/implement.md](modes/implement.md). |
 
 (This table grows as new flags land. Each flag's reference file states its `automode` behavior in a single row and links here.)
