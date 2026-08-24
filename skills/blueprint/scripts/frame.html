@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>blueprint</title>
+<link rel="stylesheet" href="/style.css">
+<style>
+  body { margin: 0; font-family: system-ui, sans-serif; }
+  #bp-frame-head { display: flex; align-items: center; gap: 8px; padding: 10px 16px;
+    border-bottom: 1px solid rgba(128,128,128,.3); font-weight: 600; }
+  #bp-dot { width: 9px; height: 9px; border-radius: 50%; background: #c33; }
+  #bp-dot.live { background: #3fb96f; }
+  #bp-screen-name { opacity: .6; font-weight: 400; }
+  #bp-content { padding: 16px 16px 84px; max-width: 1100px; margin: 0 auto; }
+  #bp-tray { position: fixed; left: 0; right: 0; bottom: 0; display: flex;
+    justify-content: space-between; align-items: center; padding: 10px 16px;
+    border-top: 1px solid rgba(128,128,128,.3);
+    background: var(--bp-tray-bg, #eef1fb); }
+  #bp-copy { background: var(--bp-accent, #5b7cfa); color: #fff; border: 0;
+    border-radius: 6px; padding: 8px 16px; font-weight: 600; cursor: pointer; }
+  .bp-selected { outline: 2px solid var(--bp-accent, #5b7cfa); outline-offset: -2px; }
+  [data-region]:hover { outline: 1px dashed rgba(128,128,128,.6); }
+  .bp-nit { outline: 2px dashed var(--bp-nit, #e0863a) !important; }
+  .bp-note-btn { border: 1px solid rgba(128,128,128,.4); background: none;
+    border-radius: 4px; margin-left: 6px; cursor: pointer; }
+  .bp-note-input { display: block; width: 100%; margin-top: 6px; padding: 4px 8px;
+    border: 1px solid var(--bp-accent, #5b7cfa); border-radius: 6px; }
+</style>
+</head>
+<body id="blueprint-frame">
+  <div id="bp-frame-head"><span id="bp-dot"></span><span>blueprint</span><span id="bp-screen-name"></span></div>
+  <div id="bp-content">
+<!--BLUEPRINT:CONTENT-->
+  </div>
+  <div id="bp-tray"><span id="bp-count">0 selections · 0 notes · 0 nits</span><button id="bp-copy">Copy response</button></div>
+  <script>
+    (function () {
+      var dot = document.getElementById('bp-dot');
+      function connect() {
+        var es = new EventSource('/events');
+        es.onopen = function () { dot.classList.add('live'); };
+        es.onmessage = function () { location.reload(); };
+        es.onerror = function () { dot.classList.remove('live'); es.close(); setTimeout(connect, 1500); };
+      }
+      connect();
+    })();
+  </script>
+  <script src="/composer.js"></script>
+</body>
+</html>

@@ -148,6 +148,26 @@ Orchestrator flags are consumed by `blacksmith-orchestrate` itself and are never
 
 Every flag forge understands also passes through unchanged to every dispatched run.
 
+## blueprint
+
+Design it before you forge it: `/blueprint` runs an interactive UI/UX
+brainstorming session in the browser. Proposal screens are rendered from the
+project's own design language (DESIGN.md + harvested tokens and components);
+clicking options, notes, and nit flags assembles a response prompt copied to
+your clipboard — paste it back into the session to resolve the round. An
+approval gate, a generated spec, and a handoff screen (plans, `/to-tickets`,
+or a `/blacksmith-orchestrate` invocation builder) close the loop. The
+pipeline reads: **blueprint** (design it) → **forge** (ship one task) →
+**blacksmith-orchestrate** (ship many).
+
+## Blueprint flags
+
+| Flag | Effect |
+|---|---|
+| `fresh` | Force a full design re-harvest, ignoring the `.brainstorm/` cache |
+| `terminal` | Skip the browser; run every round in the terminal fallback |
+| `resume` | Continue from an existing ledger: restart the server, re-push the last unresolved screen |
+
 ## What forge uses
 
 Forge leans on a handful of other skills and plugins, all installed for you by `./install.sh`:
