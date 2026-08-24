@@ -27,7 +27,7 @@ Part 2 — Lifecycle (7–12):   implement → review-loop → refactor → spin
 
 ## Parameters
 
-Parse the invocation as `/forge <ref> [automode] [docs] [tdd] [worktree] [lookup] [secure] [changelog] [ci-watch] [compress] [codex | codex challenge | codex impl [challenge]] [coderabbit]`, or `/forge pr <N> [...]`, or `/forge plan <path>[#<slug>] [...]`. The words can appear anywhere in the request. A `<ref>` resolves to a git-host issue or a Jira ticket per the grammar below, and the `pr <N>` form selects PR-review entry mode. Flags are orthogonal and compose freely; some modes have their own allowed or ignored flags, listed in [references/modes/pr-entry.md](references/modes/pr-entry.md) for PR mode.
+Parse the invocation as `/forge <ref> [automode] [docs] [tdd] [worktree] [lookup] [secure] [changelog] [ci-watch] [compress] [implement] [codex | codex challenge | codex impl [challenge]] [coderabbit] [code-review]`, or `/forge pr <N> [...]`, or `/forge plan <path>[#<slug>] [...]`. The words can appear anywhere in the request. A `<ref>` resolves to a git-host issue or a Jira ticket per the grammar below, and the `pr <N>` form selects PR-review entry mode. Flags are orthogonal and compose freely; some modes have their own allowed or ignored flags, listed in [references/modes/pr-entry.md](references/modes/pr-entry.md) for PR mode.
 
 Full flag matrix (effects, composition rules, conflicts): **[references/flags.md](references/flags.md)**.
 
@@ -64,11 +64,13 @@ Each line says what the flag does and where it acts; the linked file owns the de
 - `changelog` — Step 12 drafts a changelog entry in the repo's existing format. See [references/modes/changelog.md](references/modes/changelog.md).
 - `ci-watch` — after a Step 12 push, polls CI; a red result reopens Step 8. See [references/modes/ci-watch.md](references/modes/ci-watch.md).
 - `compress` — sources a token-saving output skill for the whole session before Step 1: `ponytail` if installed, else `caveman`; if neither is installed, the flag is ignored with a one-line note. See [references/modes/compress.md](references/modes/compress.md).
+- `implement` — delegates Step 7 implementation to `/implement`, scoped to the approved Step 5 plan; its built-in `/code-review` closeout is skipped because forge's Step 8 owns review. Conflicts with `codex impl` (two engines for one step — stop and report); makes `tdd` redundant (accepted with a one-line note, since `/implement` drives `/tdd` itself). See [references/modes/implement.md](references/modes/implement.md).
 - `codex` / `codex challenge` — adds Codex as a Step 8 generic reviewer; `challenge` runs an adversarial review instead. Claude Code only. See [references/reviewers/codex.md](references/reviewers/codex.md).
 - `codex impl` — Codex (GPT-5.6, auto-tiered Sol/Terra/Luna) implements at Step 7 and handles Step 8b rework; the Step 8 generic reviewer reverts to the default for cross-model review, and `challenge` composes as an extra adversarial engine. Claude Code only. See [references/modes/codex-impl.md](references/modes/codex-impl.md).
 - `coderabbit` — adds CodeRabbit as a Step 8 generic reviewer, with rework handled by `coderabbit:autofix`. Claude Code only; composes with `codex` (both run, rework routes per finding). See [references/reviewers/coderabbit.md](references/reviewers/coderabbit.md).
+- `code-review` — adds `/code-review` (two-axis: Standards + Spec) as a Step 8 generic reviewer. A plain skill, so unlike `codex` and `coderabbit` it runs on any runtime. See [references/reviewers/code-review.md](references/reviewers/code-review.md).
 
-The reviewer flags add to the generic-reviewer set; the project reviewer agents always run alongside, and `codex` and `coderabbit` can both be set in one run. For example, `forge ticket PROJ-7 automode docs codex challenge coderabbit` is a valid invocation.
+The reviewer flags add to the generic-reviewer set; the project reviewer agents always run alongside, and `codex`, `coderabbit`, and `code-review` can all be set in one run. For example, `forge ticket PROJ-7 automode docs codex challenge coderabbit` is a valid invocation.
 
 - `automode` with `docs` writes `CONTEXT.md` directly with no interview, then goes straight to Step 7.
 - On a non-Claude-Code runtime, `codex`, `codex challenge`, `codex impl`, and `coderabbit` are ignored with a one-line warning, and the generic reviewer stays `superpowers:requesting-code-review`.
@@ -234,13 +236,15 @@ With `docs`, load the plan from `CONTEXT.md` and check its stamp matches this re
 
 When the **`codex impl`** flag is set, delegate the implementation to Codex (GPT-5.6, auto-tiered) after the opener — and after the observed-red test if `tdd` is set — then conformance-check the returned diff against the plan before Step 8. See **[references/modes/codex-impl.md](references/modes/codex-impl.md)**; on preflight failure it degrades to inline implementation.
 
+When the **`implement`** flag is set, delegate the implementation to `/implement` after the opener, scoped to the approved Step 5 plan, with its own `/code-review` closeout skipped — forge's Step 8 owns review. See **[references/modes/implement.md](references/modes/implement.md)**; `implement` and `codex impl` together is a conflict (stop and report — two engines cannot own one step).
+
 ## Step 8 — Review loop
 
-Run the project reviewer subagents (from `.agents/agents/` or the runtime equivalent) together with the generic reviewer. The generic reviewer is `superpowers:requesting-code-review` by default, or Codex under `codex` or `codex challenge`. Under `codex impl`, the generic reviewer stays the default — the model family that wrote the diff must never be the only reviewer — and `codex impl challenge` adds Codex adversarial review as an extra engine. The project subagents always run.
+Run the project reviewer subagents (from `.agents/agents/` or the runtime equivalent) together with the generic reviewer. The generic reviewer is `superpowers:requesting-code-review` by default, or Codex under `codex` or `codex challenge`, or `/code-review` under `code-review`. Under `codex impl`, the generic reviewer stays the default — the model family that wrote the diff must never be the only reviewer — and `codex impl challenge` adds Codex adversarial review as an extra engine. The project subagents always run.
 
 Terminate the loop at zero actionable findings; nits do not block. Cap the loop at a fixed number of passes. On each non-converged pass, run the re-hydrate block, fix the findings, then re-review.
 
-See **[references/review-loop.md](references/review-loop.md)** for engine-selection details, the `/greploop` fallback and `/diagnose` sub-pass, pass discipline, the trim-only-cleanup skip rule, and `automode` behavior.
+See **[references/review-loop.md](references/review-loop.md)** for engine-selection details, the `/greploop` fallback and `/diagnosing-bugs` sub-pass, pass discipline, the trim-only-cleanup skip rule, and `automode` behavior.
 
 When the **`secure`** flag is set, run a `security-review` pass once there are zero actionable findings. Must-fix security findings reopen Step 8 with one dedicated security-pass budget. See **[references/modes/secure.md](references/modes/secure.md)**; security must clear before Step 9.
 
@@ -254,10 +258,11 @@ A flag adds an engine to the Step 8 generic-reviewer set, replacing the default 
 | `codex` / `codex challenge` | Codex `review` / `adversarial-review` via `scripts/resolve-codex.py` foreground | `codex:codex-rescue` foreground `--wait` (re-hydrate first, inline karpathy constraints) |
 | `codex impl` [+ `challenge`] | default reviewer (+ Codex `adversarial-review` with `challenge`) | companion `task --write` at the Terra/Luna tier (re-hydrate first) per [references/modes/codex-impl.md](references/modes/codex-impl.md) |
 | `coderabbit` | `coderabbit:code-review` | `coderabbit:autofix` foreground `--wait` (re-hydrate first, inline karpathy constraints) |
+| `code-review` | `/code-review` (two-axis: Standards + Spec, parallel sub-agents where the runtime has them) | (no dedicated rework skill; in-pass fixes only, re-hydrate first) |
 
-See **[references/reviewers/codex.md](references/reviewers/codex.md)** for Codex specifics and **[references/reviewers/coderabbit.md](references/reviewers/coderabbit.md)** for CodeRabbit specifics.
+See **[references/reviewers/codex.md](references/reviewers/codex.md)** for Codex specifics, **[references/reviewers/coderabbit.md](references/reviewers/coderabbit.md)** for CodeRabbit specifics, and **[references/reviewers/code-review.md](references/reviewers/code-review.md)** for the two-axis skill reviewer.
 
-Both `codex` and `coderabbit` are Claude Code only. On other runtimes the flag is ignored with a one-line warning, and the default generic reviewer stays in place.
+Both `codex` and `coderabbit` are Claude Code only. On other runtimes the flag is ignored with a one-line warning, and the default generic reviewer stays in place. `code-review` is exempt from that rule: it is a plain skill and runs on any runtime.
 
 ## Step 9 — Refactor (propose-only)
 
@@ -268,19 +273,19 @@ Run **`/improve-codebase-architecture`**.
 
 Never silently rewrite beyond the issue's scope.
 
-## Step 10 — Out-of-scope findings via `/to-issues`
+## Step 10 — Out-of-scope findings via `/to-tickets`
 
-For bugs or improvements that belong in a separate issue, draft them via **`/to-issues`**, show the drafts, and post only on an explicit user yes. Under `automode`, post them directly. If nothing qualifies, skip this step silently.
+For bugs or improvements that belong in a separate issue, draft them via **`/to-tickets`**, show the drafts, and post only on an explicit user yes. Under `automode`, post them directly. If nothing qualifies, skip this step silently.
 
 ## Step 11 — Self-evolution
 
-If you hit a caveat that could be automated for future agentic sessions, propose **`/write-a-skill`** or an edit to the project agent config (the agent guide, rules, or reviewer-agent directory for the runtime). Also consider recording the caveat in the agent's project memory so a later session does not repeat it. Use whatever memory store the runtime exposes for this project. If the user has installed an external memory provider they favor (a memory plugin or MCP seen earlier in the conversation), write there instead of the built-in store. Show the exact diff and path, and confirm before writing. Under `automode`, the agent decides on its own and applies the smaller-blast-radius option with no proposal or confirmation. Memory writes are included: it picks the built-in store or the user's preferred external provider and writes directly. It still prefers a rule or guide edit over a new skill unless the pattern is clearly broad. If nothing can be automated, skip this step silently.
+If you hit a caveat that could be automated for future agentic sessions, propose **`/writing-for-agents`** or an edit to the project agent config (the agent guide, rules, or reviewer-agent directory for the runtime). Also consider recording the caveat in the agent's project memory so a later session does not repeat it. Use whatever memory store the runtime exposes for this project. If the user has installed an external memory provider they favor (a memory plugin or MCP seen earlier in the conversation), write there instead of the built-in store. Show the exact diff and path, and confirm before writing. Under `automode`, the agent decides on its own and applies the smaller-blast-radius option with no proposal or confirmation. Memory writes are included: it picks the built-in store or the user's preferred external provider and writes directly. It still prefers a rule or guide edit over a new skill unless the pattern is clearly broad. If nothing can be automated, skip this step silently.
 
 ## Step 12 — Closing
 
 Verify `/goal` before anything else. Before assembling the proposal, run the Step 7 `/goal` pass criteria and the repo's standard pre-commit checks (build, test, and lint per the repo guide). Show the exact commands and their output. A command that exits 0 without running tests, such as "no tests collected" or empty output, does not prove `/goal`; treat it as not done. If anything fails, or you cannot run the checks, you are not done: return to Step 8 with the failure as a finding. Never assemble a commit proposal on an unverified `/goal`, because an unproven "done" is the one failure mode forge must not ship. `automode` does not lift this gate; it runs the checks itself and proceeds only on green.
 
-Then assemble the commit or PR proposal. The default is small atomic commits that match the branch's existing granularity and message style, which you can inspect with `git log --oneline <base>..HEAD`, rather than one squashed mega-commit. The repo's git or contribution guide from Step 3 still wins: if it mandates another shape, such as squash-on-merge, follow it and say why.
+Then assemble the commit or PR proposal. The default is small atomic commits that match the branch's existing granularity and message style, which you can inspect with `git log --oneline <base>..HEAD`, rather than one squashed mega-commit. The repo's git or contribution guide from Step 3 still wins: if it mandates another shape, such as squash-on-merge, follow it and say why. If landing requires a merge or rebase onto a moved base and it conflicts, resolve through **`/resolving-merge-conflicts`** (by intent, finish the operation, never `--abort`) instead of resolving ad hoc.
 
 When the **`changelog`** flag is set, draft a changelog entry in the repo's existing format after `/goal` verifies green and before assembling the commit list, and include it in the proposed history. See **[references/modes/changelog.md](references/modes/changelog.md)** for the file-detection order and entry conventions.
 

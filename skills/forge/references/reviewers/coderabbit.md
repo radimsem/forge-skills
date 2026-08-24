@@ -28,7 +28,7 @@ Engine selection at Step 8 (when `coderabbit` is set):
 |---|---|
 | Project reviewer subagents (`.agents/agents/` matched to diff) | Always run (unchanged by `coderabbit`) |
 | Generic reviewer | `coderabbit:code-review` |
-| Sub-pass (suspected bug / perf regression) | `/diagnose` (unchanged) |
+| Sub-pass (suspected bug / perf regression) | `/diagnosing-bugs` (unchanged) |
 | Fallback (no project reviewers, PR exists) | `/greploop` (unchanged) |
 
 Dispatch the CodeRabbit reviewer in parallel with the project subagents where possible. Collect findings; apply Step 8 termination (zero actionable) and pass-cap rules unchanged.

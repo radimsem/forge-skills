@@ -67,7 +67,7 @@ Forge is done — how should the changes land?
   - Lay down the proposed small-commit history on this branch, push nothing (Recommended)
   - Lay down that history, push to origin, and open a PR to the base branch
   - Lay down that history, push, open the PR, and comment + transition <KEY> on Jira   ← Jira target only
-  - Walk me through the implementation at a high level first — run /zoom-out, then re-ask
+  - Walk me through the implementation at a high level first — run /wait-what, then re-ask
   - Write the whole proposal (commit plan + diff summary) to /tmp/<name>.md and stop
   - Hold — leave the working tree uncommitted for my own manual review
 ```

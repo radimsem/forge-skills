@@ -80,14 +80,18 @@ assert_eq "$(build_plugin_install_cmd superpowers@claude-plugins-official)" \
   "claude plugin install superpowers@claude-plugins-official -s user" \
   "build_plugin_install_cmd"
 
-# --- inventory data (table has exactly 17 rows: 10 tier-1, 1 tier-2, 2 tier-3, 2 tier-4, 2 tier-6) ---
-assert_eq "$(deps_table | grep -c '^[1-6]|')" "17" "deps_table: 17 dependency rows"
+# --- inventory data (table has exactly 21 rows: 14 tier-1, 1 tier-2, 2 tier-3, 2 tier-4, 2 tier-6) ---
+assert_eq "$(deps_table | grep -c '^[1-6]|')" "21" "deps_table: 21 dependency rows"
 assert_eq "$(deps_table | awk -F'|' '$1==6{printf "%s ", $4}')" "forge blacksmith-orchestrate " \
   "deps_table: tier 6 is forge then blacksmith-orchestrate"
-assert_eq "$(deps_table | awk -F'|' '$1==1 && $2=="skill"{c++} END{print c}')" "10" \
-  "deps_table: 10 tier-1 skills (8 mattpocock incl. zoom-out + bootstrap + karpathy)"
-assert_eq "$(deps_table | grep -c '^1|skill|mattpocock/skills|zoom-out$')" "1" \
-  "deps_table: zoom-out present in mattpocock group"
+assert_eq "$(deps_table | awk -F'|' '$1==1 && $2=="skill"{c++} END{print c}')" "14" \
+  "deps_table: 14 tier-1 skills (12 mattpocock + bootstrap + karpathy)"
+assert_eq "$(deps_table | grep -c '^1|skill|mattpocock/skills|to-tickets$')" "1" \
+  "deps_table: to-tickets present in mattpocock group (renamed from to-issues)"
+assert_eq "$(deps_table | grep -Ec '\|(zoom-out|to-issues|diagnose|write-a-skill)$' || true)" "0" \
+  "deps_table: no retired mattpocock names (zoom-out/to-issues/diagnose/write-a-skill)"
+assert_eq "$(deps_table | grep -c '^1|skill|mattpocock/skills|wayfinder$')" "1" \
+  "deps_table: wayfinder present in mattpocock group"
 # blacksmith-orchestrate wraps forge, so forge must precede it and be installed with it
 assert_eq "$(deps_table | awk -F'|' '$2=="skill"{last=$4} END{print last}')" "blacksmith-orchestrate" \
   "deps_table: blacksmith-orchestrate is the final skill row"
