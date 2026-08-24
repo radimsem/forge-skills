@@ -233,5 +233,37 @@ _stale_refs=$(
 assert_eq "$_stale_refs" "" \
   "blacksmith: no stray references/*.md inline-code mentions (unconverted links or broken references)"
 
+# --- blueprint: skeleton, machinery, flag parity, recipes ---
+BLU="$ROOT/skills/blueprint"
+assert_nonempty "$(ls "$BLU/SKILL.md" 2>/dev/null)" "blueprint: SKILL.md exists"
+
+_blu_flags=$(flag_names "$BLU/references/flags.md" '^## Flags')
+_blu_skill=$(flag_names "$BLU/SKILL.md" '^## Parameters')
+_blu_readme=$(flag_names "$ROOT/README.md" '^## Blueprint flags')
+assert_nonempty "$_blu_flags"  "blueprint: flags.md flag table is non-empty"
+assert_nonempty "$_blu_skill"  "blueprint: SKILL.md flag table is non-empty"
+assert_nonempty "$_blu_readme" "blueprint: README flag table is non-empty"
+assert_eq "$_blu_flags" "$_blu_skill"  "blueprint: flags.md and SKILL.md flag tables agree"
+assert_eq "$_blu_flags" "$_blu_readme" "blueprint: flags.md and README flag tables agree"
+
+# flags.md and anti-patterns.md are excluded from the recipe rule, same
+# convention as blacksmith: a flag matrix and an anti-pattern list are not
+# behaviors verified by running something.
+_blu_norecipe=$(find "$BLU/references" -maxdepth 1 -name '*.md' -type f | sort | while read -r _f; do
+  case "$_f" in
+    */flags.md|*/anti-patterns.md) continue ;;
+  esac
+  grep -q 'Manual verification recipe' "$_f" || printf '%s\n' "$_f"
+done)
+assert_eq "$_blu_norecipe" "" \
+  "every blueprint/references/*.md (except flags.md, anti-patterns.md) has a Manual verification recipe"
+
+# Shipped machinery: both scripts must parse; the frame must carry the
+# placeholder serve.mjs substitutes fragments into.
+assert_eq "$(node --check "$BLU/scripts/serve.mjs" 2>&1)" "" "blueprint: serve.mjs parses"
+assert_eq "$(node --check "$BLU/scripts/composer.js" 2>&1)" "" "blueprint: composer.js parses"
+assert_nonempty "$(grep -l 'BLUEPRINT:CONTENT' "$BLU/scripts/frame.html" 2>/dev/null)" \
+  "blueprint: frame.html carries the content placeholder"
+
 printf '\n%s\n' "FAILS=$FAILS"
 [ "$FAILS" -eq 0 ]
