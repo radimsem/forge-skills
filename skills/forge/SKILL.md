@@ -5,11 +5,11 @@ description: "Forge an issue, ticket, or PR into a shipped fix: propose a plan, 
 
 # Forge
 
-> Forge an issue into a shipped fix: heat it (implement), hammer it (review loop), then temper it (refactor).
+> Plan an issue, implement the approved fix, review it, and verify the result.
 
 ## Overview
 
-Turn an issue or ticket reference into a verified, branch-correct, user-approved plan. Then, only after the user confirms (or immediately under `automode`), run the implementation lifecycle.
+Read the issue or ticket, check the branch and relevant code, and present a plan for approval. After approval, implement and verify the fix. `automode` skips the approval gate.
 
 One numbered workflow (Steps 1–12), split by a single gate:
 
@@ -17,11 +17,11 @@ One numbered workflow (Steps 1–12), split by a single gate:
 Part 1 — Gate (Steps 1–6):   classify → fetch → branch → context → propose → [GATE] approve
 Part 2 — Lifecycle (7–12):   implement → review-loop → refactor → spin-off → self-evolve → close
 
-  gate held: nothing touches the codebase until "yes, implement"  (automode = only sanctioned bypass)
+  gate held: no implementation edits until "yes, implement" (except under automode)
 ```
 
-- **Part 1 — The gate.** The contract; do not weaken it.
-- **Part 2 — Lifecycle.** Runs autonomously after approval, stopping only at substantive gates (the Autonomy section).
+- **Part 1 — The gate.** Show one proposal and wait for approval, except under `automode`. With `docs`, Step 5 writes the proposal to `CONTEXT.md` before approval.
+- **Part 2 — Implementation.** Run after approval and pause only at the decisions listed in the Autonomy section.
 
 "The agent" means whatever agent runs this skill. Adapt every reference (config directory, agent guide, interview UI) to your runtime. Nothing is hardcoded to one assistant.
 
@@ -199,7 +199,7 @@ Under **`automode`**, there are no options and no wait: go straight to Step 7, a
 
 ## Step 6 — The gate
 
-Unless `automode` is set, **do not edit any file** until the user explicitly approves.
+Unless `automode` is set, **do not edit any file before approval**, except to write the Step 5 proposal to `CONTEXT.md` when `docs` is set.
 
 - "yes, implement", "go ahead", "do it", or "ship it" moves to Step 7.
 - "interview me on risky questions" goes back to Step 4a, then re-proposes.

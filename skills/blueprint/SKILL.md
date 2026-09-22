@@ -5,17 +5,15 @@ description: Brainstorm UI/UX changes into an approved design through interactiv
 
 # Blueprint
 
-> Design it in the browser, approve it at the gate, hand the blueprint to the
-> blacksmith: **blueprint → forge → blacksmith-orchestrate**.
+> Explore UI options in the browser, approve a design, and hand off a spec.
 
 ## Overview
 
-Blueprint owns the whole UI/UX brainstorming arc: harvest the project's real
-design language, push interactive proposal screens, resolve rounds through
-clipboard-pasted responses, gate on approval, write the spec, and hand off to
-plans, tickets, or orchestration. The browser never talks back to the agent —
-the user's paste is the only return channel, so the companion server keeps no
-state and its death mid-session loses nothing.
+Read the project's design language and show interactive proposals in the
+browser. The user pastes each screen's copied response into the agent session.
+That paste is the only return channel; the companion server keeps no session
+state. After approval, write the spec and offer a handoff to plans, tickets,
+or orchestration.
 
 The interactive machinery ships in [scripts/](scripts/serve.mjs) and is never
 reimplemented inline; each session authors only HTML content fragments per

@@ -5,11 +5,11 @@ description: "Orchestrate many forge runs at once: analyze which tasks collide o
 
 # Blacksmith Orchestrate
 
-> Decide **which tasks run, in what order, at what depth, by which model, in which worktree** — then dispatch one forge run per task.
+> Schedule related tasks across worktrees, then dispatch one forge run per task.
 
 ## Overview
 
-This is a wrapper around `forge`, not a fork of it. It never reimplements a forge step: every task it dispatches runs the ordinary twelve-step forge workflow, and everything this skill adds is a decision *about* those runs — which ones may run at the same time, how deep each one goes, and where each one's work lives.
+Each dispatched task runs forge's twelve-step workflow. This skill decides which tasks can run together, what model and review depth each needs, and which worktree holds its changes.
 
 Nine numbered steps, split by one gate, deliberately mirroring forge's shape:
 
@@ -32,13 +32,15 @@ Part 2 — Execute (6–9):  provision → dispatch waves → relay → close-ou
 | 8 | Relay — prove a blocker's changes are on the dependent's base, rebase, release |
 | 9 | Close-out — aggregate report, PR list, worktree cleanup reminders, self-evolution |
 
-Forge's hard floors are inherited unchanged, and orchestrating many runs never relaxes them: every run's Step 12 `/goal` verification still has to pass before that run assembles a commit, and no dispatched run ever writes back to the *source* issue or ticket it was dispatched for — that stays with the user under every flag combination, `afk` included. That is narrower than "never writes to a tracker": Step 2 files *new* issues via `/to-tickets` for the plan and free-form routes, including under `automode`, exactly as forge's own Step 10 sanctions filing spin-off issues it did not author — see [references/entry-routes.md](references/entry-routes.md). Whether a dispatched run may also commit and open a PR for its own task is a separate question, resolved three ways: by default, the Step 5 "yes, forge them" approval *is* the Step 12 commit-and-PR selection forge requires, granted once for every task the approved plan named (see Step 7); under `automode` without `afk`, nobody made that selection, so every dispatched run stops at its own Step 12 plan-only output, exactly as a standalone `automode` forge run does, and nothing is pushed; `afk` is the single sanctioned exception, authorizing unattended commit-and-PR as well as the blocking-PR merge it already governs — it is labelled that way everywhere it appears, so the exception stays auditable instead of becoming a quiet contradiction. Terminal PRs and worktree cleanup stay with the user under every flag combination, `afk` included.
+Every dispatched run must verify its Step 12 `/goal` before preparing a commit. No run writes back to its source issue or ticket, even with `afk`. Step 2 may file *new* issues through `/to-tickets` for plan and free-form routes, including under `automode`; forge Step 10 may likewise file spin-off issues. See [references/entry-routes.md](references/entry-routes.md).
+
+The Step 5 "yes, forge them" approval also selects commit and PR creation for every task named in the approved battle plan (see Step 7). With `automode` alone, no one makes that selection, so dispatched runs stop with a plan at Step 12 and push nothing. `afk` is the single sanctioned exception: it authorizes unattended commits, PRs, and blocking-PR merges. Terminal PRs and worktree cleanup remain with the user under every flag combination.
 
 "The agent" means whatever agent runs this skill, and "one agent per task" means whatever subagent or parallel-run mechanism the runtime exposes. Adapt every reference — config directory, agent guide, interview UI, host CLI — to your runtime, exactly as forge does. If the runtime cannot run work in parallel at all, say so and fall back to running the waves sequentially rather than pretending to fan out.
 
 ## Runtime
 
-This skill is Claude-Code-first, degrading elsewhere in the same way forge's `codex` and `coderabbit` flags do: each surface below is used where the host provides it, and the workflow still completes, one step slower, where it does not.
+Use each runtime tool below when the host provides it. On other hosts, run the workflow sequentially.
 
 | Surface | Used for | Why |
 |---|---|---|
@@ -46,7 +48,7 @@ This skill is Claude-Code-first, degrading elsewhere in the same way forge's `co
 | Agent tool | Step 7 implementation dispatch | per-agent model selection, and the human gates and multi-hour parks live in the main loop |
 | Ledger file | Steps 6–9 state | survives `/compact`, crash and resume |
 
-This is the same runtime-parallelism degradation the Overview already states — "If the runtime cannot run work in parallel at all, say so and fall back to running \[...\] sequentially rather than pretending to fan out." This section does not restate that rule independently; it is the same rule applied to the three Claude-Code surfaces above. Concretely here: on a non-Claude-Code runtime the skill degrades with a one-line warning to sequential forge runs in dependency order, one worktree per component, no `afk`, and inline analysis instead of a scout fan-out.
+On a non-Claude-Code runtime, give a one-line warning and analyze tasks inline. Run forge tasks sequentially in dependency order, with one worktree per component and no `afk`.
 
 ## Parameters
 
