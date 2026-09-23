@@ -12,8 +12,8 @@ function assembleResponse(screenId, answers, nits) {
   answers.forEach(function (a) {
     n += 1;
     if (a.choice === null && !a.note) return;
-    var line = n + ') ' + a.label + ' → ' + (a.choice === null ? '(no selection)' : a.choice.toUpperCase());
-    if (a.note) line += ' — note: ' + a.note;
+    var line = n + ') ' + a.label + ': ' + (a.choice === null ? '(no selection)' : a.choice.toUpperCase());
+    if (a.note) line += ', note: ' + a.note;
     lines.push(line);
   });
   nits.forEach(function (t) {
@@ -41,7 +41,7 @@ if (typeof document !== 'undefined') (function () {
   var root = content.querySelector('[data-screen]');
   var screenId = root ? root.getAttribute('data-screen') : 'unnamed-screen';
   var nameEl = document.getElementById('bp-screen-name');
-  if (nameEl) nameEl.textContent = '· ' + screenId;
+  if (nameEl) nameEl.textContent = screenId;
 
   function questionEls() {
     return Array.prototype.slice.call(content.querySelectorAll('[data-question]'));
@@ -92,7 +92,7 @@ if (typeof document !== 'undefined') (function () {
     var sels = a.filter(function (x) { return x.choice !== null; }).length;
     var notes = a.filter(function (x) { return x.note; }).length;
     var countEl = document.getElementById('bp-count');
-    if (countEl) countEl.textContent = sels + ' selections · ' + notes + ' notes · ' + collectNits().length + ' nits';
+    if (countEl) countEl.textContent = sels + ' selections, ' + notes + ' notes, ' + collectNits().length + ' nits';
   }
 
   function renderPreview() {
@@ -117,7 +117,7 @@ if (typeof document !== 'undefined') (function () {
   function copyText(text, el) {
     var done = function () {
       var old = el.textContent;
-      el.textContent = 'copied — paste it in the terminal';
+      el.textContent = 'Copied. Paste it in the terminal';
       setTimeout(function () { el.textContent = old; }, 1600);
     };
     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -193,7 +193,7 @@ if (typeof document !== 'undefined') (function () {
     if (root && root.getAttribute('data-mode') === 'recap') {
       copyBtn.textContent = 'Copy approval';
       copyBtn.addEventListener('click', function () {
-        copyText(root.getAttribute('data-approve-copy') || 'Approved — proceed to the spec.', copyBtn);
+        copyText(root.getAttribute('data-approve-copy') || 'Approved. Proceed to the spec.', copyBtn);
       });
     } else {
       copyBtn.addEventListener('click', function () {

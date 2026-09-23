@@ -8,8 +8,8 @@ text they typed around it.
 ## The pasted response format (canonical)
 
     [blueprint:briefing-hero-options]
-    1) Status card → A
-    2) Detail layout → A — note: replace the em dash with something more human
+    1) Status card: A
+    2) Detail layout: A, note: replace the em dash with something more human
     Nit on run-config.precision-row: align the precision value right like the other rows
 
 - The header names the screen (`data-screen`). **A paste whose header names a
@@ -21,13 +21,13 @@ text they typed around it.
 - Nit lines follow the questions, one per flagged `data-region`.
 - The format is deliberately prose, not JSON: the user sees what they are
   sending, can edit it inline before sending, and terminal-fallback answers
-  look identical — downstream workflow never branches on mode.
+  look identical. The downstream workflow never branches on mode.
 
 ## Tray behavior
 
-Fixed full-width bottom bar: live `N selections · M notes · K nits` count and
+Fixed full-width bottom bar: live `N selections, M notes, K nits` count and
 one **Copy response** button (`navigator.clipboard` with an `execCommand`
-fallback; the button flashes "copied — paste it in the terminal"). On recap
+fallback; the button flashes "Copied. Paste it in the terminal"). On recap
 screens the button becomes **Copy approval** and copies `data-approve-copy`.
 
 ## Agent-side parsing rules
@@ -41,7 +41,7 @@ screens the button becomes **Copy approval** and copies `data-approve-copy`.
 
 ## Manual verification recipe
 
-Run `sh tests/blueprint_test.sh` — the composer-core assertions check this
+Run `sh tests/blueprint_test.sh`: the composer-core assertions check this
 exact format against `assembleResponse`/`assembleInvocation`. Then perform
 the browser recipe in [screens.md](screens.md) and diff the copied text
 against the format above.

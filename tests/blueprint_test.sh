@@ -85,7 +85,7 @@ if (which === 'response') {
 EOF
 
 RESP=$(BP="$BP" node "$TMP/check-composer.js" response)
-WANT_RESP=$(printf '[blueprint:demo]\n1) Tray → A\n2) Nits → B — note: discoverable\nNit on run.row: align right')
+WANT_RESP=$(printf '[blueprint:demo]\n1) Tray: A\n2) Nits: B, note: discoverable\nNit on run.row: align right')
 assert_eq "$RESP" "$WANT_RESP" "assembleResponse follows the clipboard contract"
 
 INV=$(BP="$BP" node "$TMP/check-composer.js" invocation)
