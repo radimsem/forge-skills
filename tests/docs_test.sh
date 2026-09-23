@@ -37,7 +37,7 @@ broken_links() { # $1=markdown file
 #     defaults) silently adds its first column to the extracted set, so the parity
 #     assertion goes red reading like a drifted flag list when nothing drifted.
 #   * content that is not a flag row therefore belongs in prose under that
-#     heading, not in a table of its own — this is why forge's pass-through
+#     heading, not in a table of its own. This is why forge's pass-through
 #     overrides are written as sentences.
 # Callers must also assert the extracted set is non-empty before comparing two of
 # them: a missing or emptied table extracts to "", and equality alone would report
@@ -115,7 +115,7 @@ assert_contains "$BS/references/plan-sourced.md" 'stale' \
 # scout-fanout.mjs is deliberately NOT `node --check`-able: it is a Workflow
 # script, not a standalone module. The Workflow runtime evaluates its body in
 # a wrapper that supplies agent/parallel/pipeline/phase/log/args/budget as
-# free variables and permits a top-level `return` as the script's result —
+# free variables and permits a top-level `return` as the script's result.
 # that is its real contract, documented in the file's own header comment.
 # `node --check` would reject that on sight, so a parse check here would
 # reward wrapping the body in an exported function, which parses cleanly but
@@ -215,7 +215,7 @@ assert_eq "$(flag_names "$BS/references/flags.md" '^## Flags')" \
 # real markdown link) is checked two ways: if the file exists, the mention is a straggler
 # that should have been converted to a real link when the file was created; if the file
 # does not exist, the mention names a reference that was never written or has since moved
-# — a typo or a stale name that broken_links above cannot catch, because it only walks
+# a typo or a stale name that broken_links above cannot catch, because it only walks
 # real `](...)` links, not inline code.
 stale_ref_mentions() { # $1=markdown file $2=base dir references/ paths resolve against
   grep -oE '`references/[^`]+\.md`' "$1" 2>/dev/null | tr -d '`' | while read -r _t; do

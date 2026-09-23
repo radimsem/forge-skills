@@ -80,7 +80,7 @@ You can combine flags in one invocation. See [`references/flags.md`](skills/forg
 | `codex` / `codex challenge` | Adds Codex as a reviewer (`challenge` runs an adversarial pass). Claude Code only. |
 | `codex impl` | Delegates implementation to Codex (GPT-5.6 Sol/Terra/Luna, auto-tiered by task); Claude reviews the result. Claude Code only. |
 | `coderabbit` | Adds CodeRabbit as a reviewer, with rework via `coderabbit:autofix`. Claude Code only. |
-| `code-review` | Adds `/code-review` (two-axis: Standards + Spec) as a reviewer. A plain skill — works on any runtime. |
+| `code-review` | Adds `/code-review` (two-axis: Standards + Spec) as a reviewer. A plain skill that works on any runtime. |
 | `implement` | Delegates implementation to `/implement`, scoped to the approved plan; forge keeps the review loop. Conflicts with `codex impl`. |
 
 The reviewer flags add to the project's own reviewer agents rather than replacing them, and `codex`, `coderabbit`, and `code-review` can all run in the same pass.
@@ -124,7 +124,7 @@ Orchestrator flags are consumed by `blacksmith-orchestrate` itself and are never
 
 | Flag | What it does |
 |---|---|
-| `afk` | After a 5-minute quiet timeout, self-verify and merge blocking PRs only; combined with `automode`, also authorizes each dispatched run's own Step 12 commit-and-PR — the single sanctioned exception to forge's never-auto-push floor. |
+| `afk` | After a 5-minute quiet timeout, self-verify and merge blocking PRs only; combined with `automode`, also authorizes each dispatched run's own Step 12 commit-and-PR, the single sanctioned exception to forge's never-auto-push floor. |
 | `resume` | Resume a run from its ledger instead of starting a new one. |
 | `budget <n>` | Token ceiling for the run, with a deterministic degradation ladder. |
 | `strict` | No depth downgrade; every task runs full forge. |

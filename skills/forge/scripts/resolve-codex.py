@@ -8,7 +8,7 @@ Contract:
     stdout = "UNAVAILABLE"                          exit 1  -> degrade to the superpowers reviewer
 
 "Unavailable" covers: codex plugin not installed, no script found, node or
-Codex CLI missing, or Codex not authenticated. Conservative by design — a
+Codex CLI missing, or Codex not authenticated. Conservative by design: a
 false UNAVAILABLE only costs a safe fallback, never a wrong review.
 """
 

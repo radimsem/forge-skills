@@ -1,4 +1,4 @@
-# Forge — `tdd` flag
+# Forge: `tdd` flag
 
 Composes the `/tdd` skill at Step 7. Implementation must follow an observed-red test, not precede it.
 
@@ -16,7 +16,7 @@ Step 7, after `/goal` is set and `/karpathy-guidelines` is sourced, before any i
 
 ## What it composes
 
-`/tdd`. Read that skill's contract before using `tdd` — this flag does not duplicate the discipline, it routes Step 7 through it.
+`/tdd`. Read that skill's contract before using `tdd`. This flag does not duplicate the discipline: it routes Step 7 through it.
 
 ## Behavior change vs default
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# install.sh — unified dependency installer for the forge skill.
+# install.sh: unified dependency installer for the forge skill.
 # Installs forge's external skills (npx skills) and plugins (claude plugin), then forge itself last.
 set -u
 
@@ -57,7 +57,7 @@ strip_ansi() {
 # also holds Claude-Code-local skills. Overridable (env or test) for non-default layouts.
 : "${SKILL_DIRS:=$HOME/.claude/skills $HOME/.agents/skills}"
 
-# True if the skill directory exists in any of $SKILL_DIRS — i.e. it is installed somewhere.
+# True if the skill directory exists in any of $SKILL_DIRS, i.e. it is installed somewhere.
 # Detection is agent-agnostic (present anywhere counts as installed), so a re-run does not
 # reinstall skills you already have. A filesystem stat, not an `npx skills list` round-trip.
 # `-e` follows symlinks, so a Claude Code symlink into ~/.agents/skills counts only when its
@@ -102,7 +102,7 @@ skills_for_source() { # $1=source
   deps_table | awk -F'|' -v s="$1" '$2=="skill" && $3==s {print $4}'
 }
 
-# True if forge's repo appears as a skill source (it should — forge installs last).
+# True if forge's repo appears as a skill source (it should: forge installs last).
 has_forge_skill() {
   deps_table | awk -F'|' -v forge="$FORGE_SOURCE" '$2=="skill" && $3==forge{f=1} END{exit !f}'
 }
@@ -189,9 +189,9 @@ preflight() {
   require_cmd git  "Install git: https://git-scm.com" || _ok=1
   [ "$_ok" -eq 0 ] || return 1
   # Non-fatal warnings:
-  have_cmd claude || printf 'warn: `claude` CLI not on PATH — plugin steps will print paste-in commands instead of running.\n' >&2
-  have_cmd gh     || printf 'warn: `gh` (GitHub CLI) not found — needed for GitHub trackers / greploop on GitHub.\n' >&2
-  have_cmd glab   || printf 'warn: `glab` (GitLab CLI) not found — needed for GitLab trackers.\n' >&2
+  have_cmd claude || printf 'warn: `claude` CLI not on PATH; plugin steps will print paste-in commands instead of running.\n' >&2
+  have_cmd gh     || printf 'warn: `gh` (GitHub CLI) not found; needed for GitHub trackers / greploop on GitHub.\n' >&2
+  have_cmd glab   || printf 'warn: `glab` (GitLab CLI) not found; needed for GitLab trackers.\n' >&2
   return 0
 }
 
@@ -241,16 +241,16 @@ install_plugin() { # $1=marketplace-source $2=plugin@marketplace
     claude plugin install "$2" -s user \
       || { printf '  ! failed to install %s (continuing)\n' "$2" >&2; return 1; }
   else
-    printf '  ! claude CLI absent — run these inside Claude Code:\n    /plugin marketplace add %s\n    /plugin install %s\n' "$1" "$2"
+    printf '  ! claude CLI absent: run these inside Claude Code:\n    /plugin marketplace add %s\n    /plugin install %s\n' "$1" "$2"
   fi
 }
 
-# Install order: bare-skill sources (each batched into one npx pass) → plugins → forge's
+# Install order: bare-skill sources (each batched into one npx pass), then plugins, then forge's
 # own repo LAST, so forge is the final thing installed and never resolves before its
 # dependencies. Continues past failures but returns nonzero if any failed.
 run_installs() {
   _rc=0
-  # 1) Bare-skill sources other than forge's — one batched npx pass per source.
+  # 1) Bare-skill sources other than forge's, one batched npx pass per source.
   #    Sources have no spaces, so word-splitting the command substitution is safe.
   for _src in $(skill_sources_before_forge); do
     install_skill_group "$_src" || _rc=1
@@ -265,7 +265,7 @@ run_installs() {
 $(deps_table | awk -F'|' '$2=="plugin"{print $3"|"$4}')
 EOF
   fi
-  # 3) forge's own repo LAST — forge installed after everything it depends on.
+  # 3) forge's own repo LAST: forge installed after everything it depends on.
   if has_forge_skill; then
     install_skill_group "$FORGE_SOURCE" || _rc=1
   fi
@@ -280,7 +280,7 @@ Done. Next steps / runtime notes:
     (bootstraps tracker + triage labels consumed by tdd/to-tickets/diagnosing-bugs/implement/code-review/improve-codebase-architecture).
   - Built-in, no install needed: /goal, /compact, and security-review (Claude Code built-ins).
   - Optional, set up if you use the matching flag/tracker:
-      * context7 MCP — the `lookup` flag's doc source; Atlassian MCP (Jira); Linear MCP (Linear)
+      * context7 MCP: the `lookup` flag's doc source; Atlassian MCP (Jira); Linear MCP (Linear)
       * gh / glab CLIs for GitHub / GitLab trackers
 EOF
 }

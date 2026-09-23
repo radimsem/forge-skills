@@ -1,8 +1,8 @@
-# Forge — `coderabbit` flag (and `coderabbit:autofix` rework path)
+# Forge: `coderabbit` flag (and `coderabbit:autofix` rework path)
 
-Composes the `coderabbit:code-review` skill as a Step 8 generic reviewer, replacing the default `superpowers:requesting-code-review`. Composes with the `codex` flag — set both and both engines run in the same pass.
+Composes the `coderabbit:code-review` skill as a Step 8 generic reviewer, replacing the default `superpowers:requesting-code-review`. Composes with the `codex` flag, set both and both engines run in the same pass.
 
-The companion `coderabbit:autofix` skill is invoked from Step 8b as the rework delegation path when `coderabbit` is the active reviewer — symmetric to how the `codex` flag uses `codex:codex-rescue` in Step 8b.
+The companion `coderabbit:autofix` skill is invoked from Step 8b as the rework delegation path when `coderabbit` is the active reviewer, symmetric to how the `codex` flag uses `codex:codex-rescue` in Step 8b.
 
 ## Manual verification recipe
 
@@ -20,7 +20,7 @@ The CodeRabbit plugin is Claude Code-exclusive. Non-Claude-Code runtimes: forge 
 
 Both flags add an engine to the Step 8 generic-reviewer set. Set both and both run in the same pass, each contributing findings to the shared pass budget. Step 8b rework routes per finding: codex findings to `codex:codex-rescue`, coderabbit findings to `coderabbit:autofix`. Inline or ambiguous fixes stay agent-discretion.
 
-## Step 8a — Generic CodeRabbit reviewer
+## Step 8a: Generic CodeRabbit reviewer
 
 Engine selection at Step 8 (when `coderabbit` is set):
 
@@ -33,9 +33,9 @@ Engine selection at Step 8 (when `coderabbit` is set):
 
 Dispatch the CodeRabbit reviewer in parallel with the project subagents where possible. Collect findings; apply Step 8 termination (zero actionable) and pass-cap rules unchanged.
 
-## Step 8b — Rework delegation (`coderabbit:autofix`)
+## Step 8b: Rework delegation (`coderabbit:autofix`)
 
-When Step 8 surfaces findings that require non-trivial implementation work — multiple files, cross-cutting refactors, or a category of fix the regular pass cannot complete inline — delegate the rework to `coderabbit:autofix`, mirroring the existing `codex:codex-rescue` path.
+When Step 8 surfaces findings that require non-trivial implementation work (multiple files, cross-cutting refactors, or a category of fix the regular pass cannot complete inline) delegate the rework to `coderabbit:autofix`, mirroring the existing `codex:codex-rescue` path.
 
 Before delegating, run the re-hydrate block (per the standard pass discipline) and inline the karpathy constraints in the rework prompt. `coderabbit:autofix` runs as a foreground subagent dispatch with `--wait` semantics so the next Step 8 re-review has the rework diff available.
 
@@ -47,7 +47,7 @@ After delegation returns: re-enter Step 8 with the rework diff as a new pass inp
 |---|---|---|
 | Step 8 generic reviewer | `superpowers:requesting-code-review` | `coderabbit:code-review` |
 | Step 8b rework delegation | (n/a or codex-rescue if `codex` set) | `coderabbit:autofix` |
-| Findings format | Per the reviewer's contract | Per CodeRabbit's contract; map severity → must-fix/should-fix/nit per the file in coderabbit:code-review |
+| Findings format | Per the reviewer's contract | Per CodeRabbit's contract; map severity to must-fix/should-fix/nit per the file in coderabbit:code-review |
 
 ## Composition with other flags
 
@@ -57,4 +57,4 @@ After delegation returns: re-enter Step 8 with the rework diff as a new pass inp
 | `coderabbit` + `secure` | After CodeRabbit converges, `security-review` runs as the post-Step-8 gate (per the `secure` contract). Both must clear before Step 9. |
 | `coderabbit` + project subagents | Project subagents always run; `coderabbit` is the generic-reviewer companion. Both engines contribute findings to the same pass budget. |
 | `coderabbit` + `/forge pr <N>` | PR-review mode uses CodeRabbit as the engine for the existing PR's diff. The reviewer's PR-specific features (line comments, summaries) compose naturally. |
-| `coderabbit` + `codex` | Both engines run in the same Step 8 pass; rework routes per finding (codex → `codex:codex-rescue`, coderabbit → `coderabbit:autofix`). |
+| `coderabbit` + `codex` | Both engines run in the same Step 8 pass; rework routes per finding (codex via `codex:codex-rescue`, coderabbit via `coderabbit:autofix`). |

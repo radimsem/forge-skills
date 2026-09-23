@@ -1,4 +1,4 @@
-# Forge — `worktree` flag
+# Forge: `worktree` flag
 
 Composes the `superpowers:using-git-worktrees` skill at Step 3. The branch is created in a sibling worktree directory rather than switched in-place, so your editor can keep the original working tree open while forge works.
 
@@ -16,7 +16,7 @@ Step 3, after the branch name is resolved (per repo guide or the default `<prefi
 
 ## What it composes
 
-`superpowers:using-git-worktrees`. Read that skill for the worktree creation, layout, and cleanup conventions — this flag routes Step 3 through it.
+`superpowers:using-git-worktrees`. Read that skill for the worktree creation, layout, and cleanup conventions. This flag routes Step 3 through it.
 
 ## Behavior change vs default
 
@@ -31,7 +31,7 @@ Step 3, after the branch name is resolved (per repo guide or the default `<prefi
 
 | Combination | Effect |
 |---|---|
-| `worktree` + `automode` | Worktree is created without prompting. Cleanup at Step 12 stays opt-in even under `automode` — the worktree lives until the user removes it (`automode` never deletes user state). |
+| `worktree` + `automode` | Worktree is created without prompting. Cleanup at Step 12 stays opt-in even under `automode`: the worktree lives until the user removes it (`automode` never deletes user state). |
 | `worktree` + `tdd` | Compose freely. Tests run inside the worktree; the original tree is unaffected by red/green output. |
 | `worktree` + `docs` | `CONTEXT.md` is written inside the worktree, not the original tree. |
 
@@ -39,6 +39,6 @@ Step 3, after the branch name is resolved (per repo guide or the default `<prefi
 
 When `worktree` was set, the Step 12 closing message appends one line:
 
-> Worktree at `<path>` — run `git worktree remove <path>` (or `git worktree prune` if the branch was deleted) when you're done.
+> Worktree at `<path>`, run `git worktree remove <path>` (or `git worktree prune` if the branch was deleted) when you're done.
 
-This addendum is informational. It does NOT auto-remove the worktree, even under `automode` — losing in-progress state because a flag inferred you were "done" is the wrong default.
+This addendum is informational. It does NOT auto-remove the worktree, even under `automode`, losing in-progress state because a flag inferred you were "done" is the wrong default.

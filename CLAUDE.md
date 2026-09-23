@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repo is
 
-This repo **ships two skills, not an application.** The primary deliverable is `forge` — an agent-runtime-agnostic skill that turns an issue/ticket/PR reference into a shipped fix through a gated 12-step workflow. Alongside it, `blacksmith-orchestrate` is forge's orchestration wrapper: it takes several issues, a milestone, or a written plan, decides which of them collide and which can run in parallel, then dispatches one ordinary forge run per task. "The code" is the prose in each skill's markdown; the only executable is the installer.
+This repo **ships two skills, not an application.** The primary deliverable is `forge`, an agent-runtime-agnostic skill that turns an issue/ticket/PR reference into a shipped fix through a gated 12-step workflow. Alongside it, `blacksmith-orchestrate` is forge's orchestration wrapper: it takes several issues, a milestone, or a written plan, decides which of them collide and which can run in parallel, then dispatches one ordinary forge run per task. "The code" is the prose in each skill's markdown; the only executable is the installer.
 
 Because the artifact is instructions an agent reads and follows, edits to `skills/**` are changes to behavior. Treat wording with the same care as code: a sentence in `SKILL.md` is a contract the running agent will obey literally.
 
@@ -22,13 +22,13 @@ sh install.sh -h                  # see installer usage
 - `tests/install_test.sh` sources `install.sh` with `INSTALL_SH_SOURCED=1`, which is the guard that prevents `main()` from running on source (see the bottom of `install.sh`). This lets the suite unit-test individual functions (`parse_args`, `build_skill_group_cmd`, `run_installs`, …) by stubbing `npx`/`claude`.
 - `tests/docs_test.sh` asserts structural invariants across the shipped prose for both skills: relative markdown links resolve, the flag tables agree across `SKILL.md`/`references/flags.md`/`README.md`, no `TBD`/`TODO`/`FIXME` placeholders remain, and every `references/modes/*.md` (forge) or `references/*.md` (blacksmith-orchestrate) file carries a manual verification recipe.
 - There is no single-test selector; each suite is one script. To isolate a check, comment out the others or add a temporary `assert_*` near the function under test.
-- `shellcheck` is not configured or installed here, but the scripts are written to pass it — keep new shell POSIX-clean (no bashisms).
+- `shellcheck` is not configured or installed here, but the scripts are written to pass it. Keep new shell POSIX-clean (no bashisms).
 
 ## Architecture
 
 ### Progressive disclosure (the core pattern)
 
-`skills/forge/SKILL.md` is the **single entry point and master workflow**. It stays deliberately terse and **delegates details to `references/` files that the agent loads only when a step or flag needs them.** This mirrors the discipline forge imposes on its own runs (Step 4: never sweep the whole codebase). When editing, preserve this split — put step-level contract in `SKILL.md`, put the expandable detail in the matching reference, and link to it rather than inlining.
+`skills/forge/SKILL.md` is the **single entry point and master workflow**. It stays deliberately terse and **delegates details to `references/` files that the agent loads only when a step or flag needs them.** This mirrors the discipline forge imposes on its own runs (Step 4: never sweep the whole codebase). When editing, preserve this split: put step-level contract in `SKILL.md`, put the expandable detail in the matching reference, and link to it rather than inlining.
 
 ```
 skills/forge/
@@ -78,14 +78,14 @@ Part 2 — Lifecycle (7–12):   implement → review-loop → refactor → spin
 
 ### Runtime-agnostic by design
 
-"The agent" means whatever runtime runs the skill — config paths, the review engine, and the interview UI all adapt to the host. Do **not** hardcode Claude-Code-specific paths or assumptions into the general workflow. The two reviewer flags (`codex`, `coderabbit`) are explicitly Claude-Code-only and degrade with a one-line warning elsewhere; that's the model for any host-specific feature.
+"The agent" means whatever runtime runs the skill: config paths, the review engine, and the interview UI all adapt to the host. Do **not** hardcode Claude-Code-specific paths or assumptions into the general workflow. The two reviewer flags (`codex`, `coderabbit`) are explicitly Claude-Code-only and degrade with a one-line warning elsewhere; that's the model for any host-specific feature.
 
 ### The installer
 
 `install.sh` installs every external skill/plugin forge composes (see the "What forge uses" table in `README.md`), then installs forge **last**. Key invariants the test suite enforces:
 
 - forge is always the final skill installed (`run_installs` orders the `.` source last).
-- With no `--agents`, **no `-a` flags are emitted** so `npx skills` auto-detects the host's agents — passing a hardcoded agent list installs onto agents the user may not have.
+- With no `--agents`, **no `-a` flags are emitted** so `npx skills` auto-detects the host's agents. Passing a hardcoded agent list installs onto agents the user may not have.
 - Detection is idempotent: present skills/plugins are skipped unless `--force`. A second run is safe.
 - `deps_table` is the single source of truth for what gets installed; the suite asserts its exact row count and tiering, so adding a dependency means updating that table **and** the corresponding assertion in `tests/install_test.sh`.
 
