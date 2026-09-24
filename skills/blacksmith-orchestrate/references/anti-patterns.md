@@ -1,6 +1,6 @@
-# Blacksmith — Anti-patterns
+# Blacksmith: Anti-patterns
 
-This file is the canonical home for lessons learned during an orchestration run, exactly as `references/anti-patterns.md` is forge's — a red flag belongs here the moment it generalizes beyond the run that surfaced it, not scattered into `SKILL.md`.
+This file is the canonical home for lessons learned during an orchestration run, exactly as `references/anti-patterns.md` is forge's, a red flag belongs here the moment it generalizes beyond the run that surfaced it, not scattered into `SKILL.md`.
 
 | Red flag | Why it is wrong |
 |---|---|

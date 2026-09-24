@@ -1,4 +1,4 @@
-# Forge — Flag matrix
+# Forge: Flag matrix
 
 The full set of flags the forge skill understands, with composition rules and conflict handling.
 
@@ -7,9 +7,9 @@ The full set of flags the forge skill understands, with composition rules and co
 | Flag | Effect | Detail |
 |---|---|---|
 | `automode` | No user gates; auto-decide Steps 6/9/10/11; emit Step 12 as plan only | [autonomy.md](autonomy.md) |
-| `docs` | Source plan from `CONTEXT.md`; Step 12 proposal → `/tmp/forge-<ref>.md` | — |
+| `docs` | Source plan from `CONTEXT.md`; Step 12 proposal goes to `/tmp/forge-<ref>.md` | none |
 | `codex` | Add Codex to the generic-reviewer set (resolve via `scripts/resolve-codex.py`). Claude Code only | [reviewers/codex.md](reviewers/codex.md) |
-| `codex challenge` | Codex `review` → `adversarial-review`. Implies `codex` | [reviewers/codex.md](reviewers/codex.md) |
+| `codex challenge` | Codex runs `adversarial-review` instead of `review`. Implies `codex` | [reviewers/codex.md](reviewers/codex.md) |
 | `codex impl` | Codex (GPT-5.6 auto-tiered: Sol/Terra/Luna) implements Step 7 and handles Step 8b rework; the generic reviewer reverts to the default. Claude Code only | [modes/codex-impl.md](modes/codex-impl.md) |
 | `tdd` | Compose `/tdd` at Step 7; observe failing test before implementation | [modes/tdd.md](modes/tdd.md) |
 | `worktree` | Compose `superpowers:using-git-worktrees` at Step 3 instead of in-place branch switch | [modes/worktree.md](modes/worktree.md) |
@@ -44,6 +44,6 @@ In addition to the flags above, the skill supports an entry-mode verb:
 | `/forge pr <N>` ignores all lifecycle flags except `automode` and reviewer flags | PR-review mode skips Step 7 implementation; only Step 8 reviewer engines and the `automode` no-gates property apply. |
 | `compress` composes with every flag and entry mode, including `pr` | It shapes session output, not the lifecycle; no step depends on it. Inert (one-line note) when neither `ponytail` nor `caveman` is installed. |
 | `code-review` composes with `codex` and `coderabbit` | All set engines run in the same Step 8 pass; a `code-review` finding has no dedicated rework skill, so it is fixed in-pass. |
-| `implement` conflicts with `codex impl` | Two engines cannot own the same Step 7. Stop and report the conflict rather than applying a precedence — silently honouring one would hide which engine actually built the diff. |
+| `implement` conflicts with `codex impl` | Two engines cannot own the same Step 7. Stop and report the conflict rather than applying a precedence, silently honouring one would hide which engine actually built the diff. |
 | `implement` makes `tdd` redundant | `/implement` already drives `/tdd` at pre-agreed seams. Accept the combination with a one-line note; the discipline is not doubled. |
-| `implement` is inert at Step 7 under `/forge pr <N>` | PR mode has no Step 7. One-line note, no error — same rule as `codex impl`. |
+| `implement` is inert at Step 7 under `/forge pr <N>` | PR mode has no Step 7. One-line note, no error, same rule as `codex impl`. |

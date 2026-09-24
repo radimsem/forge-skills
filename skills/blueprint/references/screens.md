@@ -3,13 +3,13 @@
 Screens are HTML *content fragments* written to `<project>/.brainstorm/screens/`.
 The companion wraps them in the frame (header, tray, harvested `style.css`,
 `composer.js`) automatically; a file starting with `<!DOCTYPE` or `<html` is
-served as-is for full-control pages. Never write screens with heredocs — use
+served as-is for full-control pages. Never write screens with heredocs. Use
 the file-creation tool.
 
 ## Fragment contract
 
 Every interactive element is declared with data attributes; `composer.js` does
-the rest. Attribute names are load-bearing — they must match this contract
+the rest. Attribute names are load-bearing. They must match this contract
 exactly.
 
     <div data-screen="briefing-hero-options">
@@ -22,13 +22,13 @@ exactly.
       </div>
     </div>
 
-- `data-screen` — round id; it becomes the `[blueprint:…]` header of the
+- `data-screen`: round id; it becomes the `[blueprint:…]` header of the
   pasted response, so name it after the screen file (sans `.html`).
-- `data-question` + `data-label` — one per question; the label is what the
+- `data-question` + `data-label`: one per question; the label is what the
   pasted response calls it.
-- `data-choice` — lowercase letter per option card; click selects, re-click
+- `data-choice`: lowercase letter per option card; click selects, re-click
   another card moves the selection.
-- `data-region` — stable id on any mockup part worth a nit; alt-click flags
+- `data-region`: stable id on any mockup part worth a nit; alt-click flags
   it and asks for a note. Include one hint line per screen teaching the
   gesture ("⌥/Alt-click any part of a mockup to flag a nit").
 - Recap screens set `data-mode="recap"` and `data-approve-copy` on the root;

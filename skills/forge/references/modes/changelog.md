@@ -1,6 +1,6 @@
-# Forge — `changelog` flag
+# Forge: `changelog` flag
 
-At Step 12, drafts a changelog entry per the repo's existing convention and includes it in the proposed commit list. The entry covers what the implementation diff actually shipped — not the original issue text — so the changelog reflects the merged code.
+At Step 12, drafts a changelog entry per the repo's existing convention and includes it in the proposed commit list. The entry covers what the implementation diff actually shipped (not the original issue text) so the changelog reflects the merged code.
 
 ## Manual verification recipe
 

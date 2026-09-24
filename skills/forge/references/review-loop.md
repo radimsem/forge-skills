@@ -1,4 +1,4 @@
-# Forge — Step 8 Review Loop
+# Forge: Step 8 Review Loop
 
 Disciplined critique cycle. Runs after each implementation pass. Terminates when reviewers agree the diff is shippable; caps iterations to prevent infinite refinement.
 
@@ -7,12 +7,12 @@ Disciplined critique cycle. Runs after each implementation pass. Terminates when
 | Mode | Engines | When it runs |
 |---|---|---|
 | Default | Project reviewer subagents from `.agents/agents/` (or runtime equivalent, e.g. `.claude/agents/`) matched to the diff **+** generic reviewer `superpowers:requesting-code-review` | Every Step 8 pass |
-| `codex` / `codex challenge` | Project subagents **+** Codex (`review` or `adversarial-review`) — see [reviewers/codex.md](reviewers/codex.md) | Step 8 when the flag is set; Claude Code runtime only |
-| `coderabbit` | Project subagents **+** `coderabbit:code-review` — see [reviewers/coderabbit.md](reviewers/coderabbit.md) | Step 8 when the flag is set; Claude Code runtime only |
+| `codex` / `codex challenge` | Project subagents **+** Codex (`review` or `adversarial-review`), see [reviewers/codex.md](reviewers/codex.md) | Step 8 when the flag is set; Claude Code runtime only |
+| `coderabbit` | Project subagents **+** `coderabbit:code-review`, see [reviewers/coderabbit.md](reviewers/coderabbit.md) | Step 8 when the flag is set; Claude Code runtime only |
 | Fallback (no project reviewer agents, PR exists) | `/greploop` against the pushed PR | When no project reviewers configured AND a PR exists. Never auto-push to create one. |
 | Sub-pass (suspected bug or perf regression) | `/diagnosing-bugs` | Surface findings, return to the main loop |
 
-**Project subagents always run.** Reviewer flags (`codex`, `coderabbit`) add to the generic-reviewer set; they never replace project agents. `codex` and `coderabbit` compose — set both and both engines run in the same pass.
+**Project subagents always run.** Reviewer flags (`codex`, `coderabbit`) add to the generic-reviewer set; they never replace project agents. `codex` and `coderabbit` compose, set both and both engines run in the same pass.
 
 ## Rework delegation (Step 8b paths)
 
@@ -26,32 +26,32 @@ Findings that exceed a single in-pass fix can be delegated to a companion rework
 
 After the rework returns, re-enter Step 8 with the rework diff as a new pass input. The pass cap applies to subsequent passes.
 
-With both reviewer flags set, route each finding's rework to the engine that raised it — codex findings to `codex:codex-rescue`, coderabbit findings to `coderabbit:autofix`. Inline or ambiguous fixes stay agent-discretion.
+With both reviewer flags set, route each finding's rework to the engine that raised it, codex findings to `codex:codex-rescue`, coderabbit findings to `coderabbit:autofix`. Inline or ambiguous fixes stay agent-discretion.
 
 ## Termination
 
 Terminate at **zero actionable findings**. Actionable = must-fix **or** should-fix. Nits do not block. Stop the loop and proceed to Step 9.
 
-A reviewer that errored or returned nothing did not converge — re-dispatch that engine once before counting the pass clean.
+A reviewer that errored or returned nothing did not converge, re-dispatch that engine once before counting the pass clean.
 
 ## Pass cap
 
-Cap **3 passes**. On each non-converged pass, run the re-hydrate block (defined in SKILL.md), fix the findings, then re-review. If pass 3 still has actionable findings, do not start pass 4 — summarize the remainder and ask the user. Under `automode`, pick the safest finding to act on and continue.
+Cap **3 passes**. On each non-converged pass, run the re-hydrate block (defined in SKILL.md), fix the findings, then re-review. If pass 3 still has actionable findings, do not start pass 4, summarize the remainder and ask the user. Under `automode`, pick the safest finding to act on and continue.
 
 ## Pass discipline
 
 | Pass | Action |
 |---|---|
-| 1 | Implement → dispatch all configured engines in parallel where possible → collect findings |
-| 2+ | re-hydrate first (`/compact` + re-source `/karpathy-guidelines`) → apply fixes → dispatch engines again |
+| 1 | Implement, dispatch all configured engines in parallel where possible, collect findings |
+| 2+ | re-hydrate first (`/compact` + re-source `/karpathy-guidelines`), apply fixes, dispatch engines again |
 
 The re-hydrate block exists to shed stale reviewer-transcript tokens and reload clean-code discipline. It does not restate `/goal`; `/goal` is set once at Step 7.
 
 ## Skip-the-rerun rule (trim-only cleanup)
 
-After a clean substantive pass (project reviewers + generic reviewer return 0 must-fix / 0 should-fix on correctness / architecture), if the only remaining should-fixes are pure trims — doc-comment edits, blank-line grouping, naming touch-ups, no logic touched — apply them inline, run the repo verify command, and move to Step 9. Do not consume a pass on nit verification. The matching anti-pattern is in [anti-patterns.md](anti-patterns.md).
+After a clean substantive pass (project reviewers + generic reviewer return 0 must-fix / 0 should-fix on correctness / architecture), if the only remaining should-fixes are pure trims (doc-comment edits, blank-line grouping, naming touch-ups, no logic touched) apply them inline, run the repo verify command, and move to Step 9. Do not consume a pass on nit verification. The matching anti-pattern is in [anti-patterns.md](anti-patterns.md).
 
 ## Reviewer specifics
 
-- [reviewers/codex.md](reviewers/codex.md) — Step 8a Codex reviewer resolution + graceful degrade; Step 8b rework delegation to `codex:codex-rescue`.
-- [reviewers/coderabbit.md](reviewers/coderabbit.md) — Step 8a CodeRabbit reviewer; Step 8b rework delegation to `coderabbit:autofix`; composes with `codex` (per-finding rework routing).
+- [reviewers/codex.md](reviewers/codex.md). Step 8a Codex reviewer resolution + graceful degrade; Step 8b rework delegation to `codex:codex-rescue`.
+- [reviewers/coderabbit.md](reviewers/coderabbit.md). Step 8a CodeRabbit reviewer; Step 8b rework delegation to `coderabbit:autofix`; composes with `codex` (per-finding rework routing).

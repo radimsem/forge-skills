@@ -1,4 +1,4 @@
-# Blueprint — Flag matrix
+# Blueprint: Flag matrix
 
 Flags are orthogonal and parsed from anywhere in the invocation.
 

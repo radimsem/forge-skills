@@ -2,7 +2,7 @@
 // body in its own wrapper, which supplies `agent`, `parallel`, `pipeline`,
 // `phase`, `log`, `args` and `budget` as free variables and permits a
 // top-level `return` as the script's result value. That is this file's
-// actual contract — do not "fix" the bare `return` or the free variables by
+// actual contract: do not "fix" the bare `return` or the free variables by
 // wrapping the body in an exported function; doing so makes `node --check`
 // pass while making the script fail when the Workflow runtime actually
 // invokes it. There is deliberately no `node --check` assertion for this

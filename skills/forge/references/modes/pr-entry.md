@@ -1,4 +1,4 @@
-# Forge — `/forge pr <N>` entry mode
+# Forge: `/forge pr <N>` entry mode
 
 A new top-level entry verb. `/forge pr <N>` enters the lifecycle at Step 8 against an existing pull request's diff instead of starting from an issue. Used when the user wants to review someone else's PR (or their own pre-merge) with the full forge reviewer pipeline.
 
@@ -31,7 +31,7 @@ Step 1 routing detects the `pr` keyword first, before the issue/Jira-key shape m
 | Step 1 | Resolve issue/ticket ref via tracker | Resolve PR via host CLI (`gh pr view <N>`, `glab mr view <N>`, …) |
 | Step 2 | Fetch issue body + comments | Fetch PR title + body + comments + diff |
 | Step 3 | Branch off base, optional in-place switch | Check out the PR's head ref; worktree if `worktree` set |
-| Steps 4-7 | Interview, propose, gate, implement | **Skipped** — there is no implementation; the diff already exists |
+| Steps 4-7 | Interview, propose, gate, implement | **Skipped**: there is no implementation; the diff already exists |
 | Step 8 | Review loop against in-progress implementation | Review loop against the PR's existing diff |
 | Step 9 | Refactor opportunities | Refactor opportunities surfaced as PR comments (not direct commits without user approval) |
 | Step 10 | Spinoff issues | Same; spinoff items become PR comments or new issues per user choice |
@@ -43,40 +43,40 @@ Step 1 routing detects the `pr` keyword first, before the issue/Jira-key shape m
 Different options than issue mode:
 
 ```
-PR-review done — how should the findings land?
+PR-review done: how should the findings land?
   - Leave the findings as PR comments only, no fixup commits (Recommended)
   - Push fixup commits for the must-fix findings to the PR's head ref + leave comments for the rest
   - Approve the PR (requires zero remaining must-fix from Step 8)
   - Request changes on the PR with the Step 8 finding summary
   - Write the full review (findings + suggested commits) to /tmp/forge-pr-<N>.md and stop
-  - Hold — leave the working tree as-is for manual review
+  - Hold: leave the working tree as-is for manual review
 ```
 
 The `ci-watch` flag is meaningful here too: if the user picked option 2 (push fixup commits), `ci-watch` polls the PR's CI for the new HEAD.
 
-If landing fixup commits requires bringing the PR's head ref up to date with its base and that merge or rebase conflicts, resolve through **`/resolving-merge-conflicts`** — hunk by hunk, by intent traced to each side's primary source, finishing the operation rather than `--abort`ing — instead of resolving ad hoc.
+If landing fixup commits requires bringing the PR's head ref up to date with its base and that merge or rebase conflicts, resolve through **`/resolving-merge-conflicts`** (hunk by hunk, by intent traced to each side's primary source, finishing the operation rather than `--abort`ing) instead of resolving ad hoc.
 
 ## Allowed and ignored flags
 
 Flags that operate **at Step 8 or later** apply in PR-entry mode:
 
-- `automode` — applies (no user gates)
-- `codex` / `codex challenge` — applies (swaps generic reviewer)
-- `secure` — applies (post-Step-8 security pass)
-- `changelog` — applies (drafts entry for the fixup commits if option 2)
-- `ci-watch` — applies (polls CI after option 2 push)
-- `coderabbit` — applies
-- `code-review` — applies (adds the two-axis skill reviewer; see [../reviewers/code-review.md](../reviewers/code-review.md))
-- `codex impl` — partially applies: Step 7 delegation is inert (no Step 7), the Step 8b rework tiering applies; see [codex-impl.md](codex-impl.md)
-- `implement` — inert: PR mode has no Step 7. One-line note, no error; see [implement.md](implement.md)
-- `compress` — applies (session-wide output mode, sourced before Step 1; see [compress.md](compress.md))
+- `automode`, applies (no user gates)
+- `codex` / `codex challenge`, applies (swaps generic reviewer)
+- `secure`, applies (post-Step-8 security pass)
+- `changelog`, applies (drafts entry for the fixup commits if option 2)
+- `ci-watch`, applies (polls CI after option 2 push)
+- `coderabbit`, applies
+- `code-review`, applies (adds the two-axis skill reviewer; see [../reviewers/code-review.md](../reviewers/code-review.md))
+- `codex impl` partially applies: Step 7 delegation is inert (no Step 7), the Step 8b rework tiering applies; see [codex-impl.md](codex-impl.md)
+- `implement`, inert: PR mode has no Step 7. One-line note, no error; see [implement.md](implement.md)
+- `compress`, applies (session-wide output mode, sourced before Step 1; see [compress.md](compress.md))
 
 Flags that operate **before Step 8** are ignored with a one-line warning:
 
-- `docs` — no plan to source from
-- `tdd` — no implementation step
-- `worktree` — actually composes: use worktree for the PR head checkout. Not ignored — see composition table below.
-- `lookup` — no proposal to ground
+- `docs`. No plan to source from
+- `tdd`. No implementation step
+- `worktree` (actually composes: use worktree for the PR head checkout. Not ignored) see composition table below.
+- `lookup`. No proposal to ground
 
 ## Composition with other flags
 
@@ -84,6 +84,6 @@ Flags that operate **before Step 8** are ignored with a one-line warning:
 |---|---|
 | `/forge pr <N>` + `automode` | Skip closing menu; emit review summary to `/tmp/forge-pr-<N>.md`; no auto-push of fixup commits. |
 | `/forge pr <N>` + `codex challenge` | Codex `adversarial-review` runs against the PR diff; arguably the highest-leverage combination for design critique on a peer PR. |
-| `/forge pr <N>` + `secure` | Security pass runs after the regular reviewer loop converges. Must-fix → can be addressed via option 2 fixup commits. |
+| `/forge pr <N>` + `secure` | Security pass runs after the regular reviewer loop converges. Must-fix: can be addressed via option 2 fixup commits. |
 | `/forge pr <N>` + `worktree` | The PR head checkout happens in a sibling worktree, not in-place. Useful when the user has uncommitted work in the original tree. |
 | `/forge pr <N>` + `ci-watch` + option 2 | Push fixup commits, poll the PR's CI; on red, re-enter Step 8 against the now-failing state. |

@@ -7,10 +7,10 @@ both the recap screen and the spec.
 ## Per-round block
 
     ## Round: briefing-hero-options  (screen: briefing-hero-options.html)
-    - Q: Status card — options: A progress bar / B step dots / C ring gauge
-      - **Chosen: A — progress bar.** Full option description copied here.
+    - Q: Status card, options: A progress bar / B step dots / C ring gauge
+      - **Chosen: A, progress bar.** Full option description copied here.
       - Note: replace the em dash in the status text.
-    - Nit on run-config.precision-row: align right — resolved in …-v2.html
+    - Nit on run-config.precision-row: align right, resolved in …-v2.html
 
 ## Consumers
 
@@ -30,4 +30,4 @@ The ledger is session ephemera: gitignored, superseded by the committed spec.
 Mid-session, kill the server and the agent process. Re-invoke with `resume`:
 the agent must restate every recorded decision from the ledger without
 re-asking, the tab must reconnect on the same port, and the next screen must
-be the last unresolved one — not round one.
+be the last unresolved one, not round one.

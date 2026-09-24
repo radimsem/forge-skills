@@ -5,11 +5,11 @@ description: "Forge an issue, ticket, or PR into a shipped fix: propose a plan, 
 
 # Forge
 
-> Forge an issue into a shipped fix: heat it (implement), hammer it (review loop), then temper it (refactor).
+> Plan an issue, implement the approved fix, review it, and verify the result.
 
 ## Overview
 
-Turn an issue or ticket reference into a verified, branch-correct, user-approved plan. Then, only after the user confirms (or immediately under `automode`), run the implementation lifecycle.
+Read the issue or ticket, check the branch and relevant code, and present a plan for approval. After approval, implement and verify the fix. `automode` skips the approval gate.
 
 One numbered workflow (Steps 1–12), split by a single gate:
 
@@ -17,11 +17,11 @@ One numbered workflow (Steps 1–12), split by a single gate:
 Part 1 — Gate (Steps 1–6):   classify → fetch → branch → context → propose → [GATE] approve
 Part 2 — Lifecycle (7–12):   implement → review-loop → refactor → spin-off → self-evolve → close
 
-  gate held: nothing touches the codebase until "yes, implement"  (automode = only sanctioned bypass)
+  gate held: no implementation edits until "yes, implement" (except under automode)
 ```
 
-- **Part 1 — The gate.** The contract; do not weaken it.
-- **Part 2 — Lifecycle.** Runs autonomously after approval, stopping only at substantive gates (the Autonomy section).
+- **Part 1: The gate.** Show one proposal and wait for approval, except under `automode`. With `docs`, Step 5 writes the proposal to `CONTEXT.md` before approval.
+- **Part 2: Implementation.** Run after approval and pause only at the decisions listed in the Autonomy section.
 
 "The agent" means whatever agent runs this skill. Adapt every reference (config directory, agent guide, interview UI) to your runtime. Nothing is hardcoded to one assistant.
 
@@ -31,15 +31,15 @@ Parse the invocation as `/forge <ref> [automode] [docs] [tdd] [worktree] [lookup
 
 Full flag matrix (effects, composition rules, conflicts): **[references/flags.md](references/flags.md)**.
 
-### Target grammar — `<ref>`
+### Target grammar: `<ref>`
 
 The target is the first reference-shaped token, or the token right after a `ticket` or `pr` keyword. Routing works by keyword or by key-shape:
 
 | Form | Routes to | Examples |
 |---|---|---|
 | bare number, `#N`, `issue N` | **git-host issue** (Step 1b) | `forge 42`, `fix #123`, `issue 7` |
-| matches `[A-Z]+-\d+` | **Jira ticket** OR **Linear issue** (disambiguate if both configured — see [references/trackers/linear.md](references/trackers/linear.md)) | `forge PROJ-123`, `solve ENG-42`, `forge AB12-9` |
-| after `ticket` keyword | **Jira ticket**; number-only → ask project key | `forge ticket PROJ-123`, `solve ticket 42` |
+| matches `[A-Z]+-\d+` | **Jira ticket** OR **Linear issue** (disambiguate if both configured, see [references/trackers/linear.md](references/trackers/linear.md)) | `forge PROJ-123`, `solve ENG-42`, `forge AB12-9` |
+| after `ticket` keyword | **Jira ticket**; number-only: ask project key | `forge ticket PROJ-123`, `solve ticket 42` |
 | after `linear` keyword | **Linear issue** (forces Linear routing, skips disambiguation) | `forge linear ENG-42` |
 | after `pr` keyword | **PR-review entry mode** (skips Steps 4–7; enters at Step 8 against the PR diff) | `forge pr 47`, `forge pr #123` |
 | after `plan` keyword | **plan-entry mode** (replaces Steps 1, 2, 4–6 with a single Step P validation pass; Step 3 still runs; enters at Step 7 against the plan slice) | `forge plan docs/superpowers/plans/x.md#task-3` |
@@ -54,21 +54,21 @@ Read **[references/modes/plan-entry.md](references/modes/plan-entry.md)** for th
 
 Each line says what the flag does and where it acts; the linked file owns the details.
 
-- *(none)* — interview the user if a required field is missing, propose, then wait at the gate. The review uses the project reviewer agents plus `superpowers:requesting-code-review`.
-- `automode` — runs with no user gates and the agent decides Steps 6, 9, and 11. It never auto-commits, auto-pushes, or writes back to Jira; that is a hard floor. See [references/autonomy.md](references/autonomy.md).
-- `docs` — works from documentation: the proposal goes to `CONTEXT.md` and the plan is sourced from it, and grilling uses `/grill-with-docs` instead of `/grill-me`.
-- `tdd` — Step 7 writes the failing test first, observes it fail, then implements. See [references/modes/tdd.md](references/modes/tdd.md).
-- `worktree` — Step 3 creates a sibling worktree instead of switching branch in place. See [references/modes/worktree.md](references/modes/worktree.md).
-- `lookup` — Step 4 fetches current docs for every library the issue names. See [references/modes/lookup.md](references/modes/lookup.md).
-- `secure` — adds a `security-review` pass at Step 8 once the regular review converges, before Step 9. See [references/modes/secure.md](references/modes/secure.md).
-- `changelog` — Step 12 drafts a changelog entry in the repo's existing format. See [references/modes/changelog.md](references/modes/changelog.md).
-- `ci-watch` — after a Step 12 push, polls CI; a red result reopens Step 8. See [references/modes/ci-watch.md](references/modes/ci-watch.md).
-- `compress` — sources a token-saving output skill for the whole session before Step 1: `ponytail` if installed, else `caveman`; if neither is installed, the flag is ignored with a one-line note. See [references/modes/compress.md](references/modes/compress.md).
-- `implement` — delegates Step 7 implementation to `/implement`, scoped to the approved Step 5 plan; its built-in `/code-review` closeout is skipped because forge's Step 8 owns review. Conflicts with `codex impl` (two engines for one step — stop and report); makes `tdd` redundant (accepted with a one-line note, since `/implement` drives `/tdd` itself). See [references/modes/implement.md](references/modes/implement.md).
-- `codex` / `codex challenge` — adds Codex as a Step 8 generic reviewer; `challenge` runs an adversarial review instead. Claude Code only. See [references/reviewers/codex.md](references/reviewers/codex.md).
-- `codex impl` — Codex (GPT-5.6, auto-tiered Sol/Terra/Luna) implements at Step 7 and handles Step 8b rework; the Step 8 generic reviewer reverts to the default for cross-model review, and `challenge` composes as an extra adversarial engine. Claude Code only. See [references/modes/codex-impl.md](references/modes/codex-impl.md).
-- `coderabbit` — adds CodeRabbit as a Step 8 generic reviewer, with rework handled by `coderabbit:autofix`. Claude Code only; composes with `codex` (both run, rework routes per finding). See [references/reviewers/coderabbit.md](references/reviewers/coderabbit.md).
-- `code-review` — adds `/code-review` (two-axis: Standards + Spec) as a Step 8 generic reviewer. A plain skill, so unlike `codex` and `coderabbit` it runs on any runtime. See [references/reviewers/code-review.md](references/reviewers/code-review.md).
+- *(none)*: interview the user if a required field is missing, propose, then wait at the gate. The review uses the project reviewer agents plus `superpowers:requesting-code-review`.
+- `automode`, runs with no user gates and the agent decides Steps 6, 9, and 11. It never auto-commits, auto-pushes, or writes back to Jira; that is a hard floor. See [references/autonomy.md](references/autonomy.md).
+- `docs`, works from documentation: the proposal goes to `CONTEXT.md` and the plan is sourced from it, and grilling uses `/grill-with-docs` instead of `/grill-me`.
+- `tdd`. Step 7 writes the failing test first, observes it fail, then implements. See [references/modes/tdd.md](references/modes/tdd.md).
+- `worktree`. Step 3 creates a sibling worktree instead of switching branch in place. See [references/modes/worktree.md](references/modes/worktree.md).
+- `lookup`. Step 4 fetches current docs for every library the issue names. See [references/modes/lookup.md](references/modes/lookup.md).
+- `secure`, adds a `security-review` pass at Step 8 once the regular review converges, before Step 9. See [references/modes/secure.md](references/modes/secure.md).
+- `changelog`. Step 12 drafts a changelog entry in the repo's existing format. See [references/modes/changelog.md](references/modes/changelog.md).
+- `ci-watch`, after a Step 12 push, polls CI; a red result reopens Step 8. See [references/modes/ci-watch.md](references/modes/ci-watch.md).
+- `compress`: sources a token-saving output skill for the whole session before Step 1: `ponytail` if installed, else `caveman`; if neither is installed, the flag is ignored with a one-line note. See [references/modes/compress.md](references/modes/compress.md).
+- `implement`, delegates Step 7 implementation to `/implement`, scoped to the approved Step 5 plan; its built-in `/code-review` closeout is skipped because forge's Step 8 owns review. Conflicts with `codex impl` (two engines for one step, stop and report); makes `tdd` redundant (accepted with a one-line note, since `/implement` drives `/tdd` itself). See [references/modes/implement.md](references/modes/implement.md).
+- `codex` / `codex challenge`, adds Codex as a Step 8 generic reviewer; `challenge` runs an adversarial review instead. Claude Code only. See [references/reviewers/codex.md](references/reviewers/codex.md).
+- `codex impl`. Codex (GPT-5.6, auto-tiered Sol/Terra/Luna) implements at Step 7 and handles Step 8b rework; the Step 8 generic reviewer reverts to the default for cross-model review, and `challenge` composes as an extra adversarial engine. Claude Code only. See [references/modes/codex-impl.md](references/modes/codex-impl.md).
+- `coderabbit`, adds CodeRabbit as a Step 8 generic reviewer, with rework handled by `coderabbit:autofix`. Claude Code only; composes with `codex` (both run, rework routes per finding). See [references/reviewers/coderabbit.md](references/reviewers/coderabbit.md).
+- `code-review`, adds `/code-review` (two-axis: Standards + Spec) as a Step 8 generic reviewer. A plain skill, so unlike `codex` and `coderabbit` it runs on any runtime. See [references/reviewers/code-review.md](references/reviewers/code-review.md).
 
 The reviewer flags add to the generic-reviewer set; the project reviewer agents always run alongside, and `codex`, `coderabbit`, and `code-review` can all be set in one run. For example, `forge ticket PROJ-7 automode docs codex challenge coderabbit` is a valid invocation.
 
@@ -86,9 +86,9 @@ The reviewer flags add to the generic-reviewer set; the project reviewer agents 
 - No issue or ticket ref is given. Ask rather than guess.
 - Asking *about* an issue/ticket, not to *resolve* it.
 
-## Step 1 — Classify the ref, resolve the repo & tracker
+## Step 1: Classify the ref, resolve the repo & tracker
 
-### Step 1a — Classify `<ref>` (see Parameters, Target grammar)
+### Step 1a: Classify `<ref>` (see Parameters, Target grammar)
 
 - If the ref is key-shaped (`[A-Z][A-Z0-9]+-\d+`) or follows a `ticket` keyword, treat it as Jira and go to Step 1c.
 - Otherwise (a bare number, `#N`, or `issue N`), treat it as a git-host issue and go to Step 1b.
@@ -96,7 +96,7 @@ The reviewer flags add to the generic-reviewer set; the project reviewer agents 
 
 Always run `git remote get-url origin` (falling back to `upstream`) regardless of the ref kind, because Part 2 commits and branches against this repo even for Jira tickets.
 
-### Step 1b — git-host issue
+### Step 1b: git-host issue
 
 Route by host in `origin` (fallback `upstream`):
 
@@ -109,11 +109,11 @@ Route by host in `origin` (fallback `upstream`):
 
 If neither `origin` nor `upstream` resolves to a known issue host: stop, tell the user, do nothing else.
 
-### Step 1c — Jira ticket
+### Step 1c: Jira ticket
 
 Read **[references/trackers/jira.md](references/trackers/jira.md)**, which covers resolving the ticket, fetching it, the absent-source fallback, the key-in-branch convention, and write-back. Load it now; the rest of Steps 1 through 3 and Step 12 defer their Jira specifics to it. Git-host issues never read it.
 
-## Step 2 — Fetch the issue / ticket
+## Step 2: Fetch the issue / ticket
 
 ### git-host issue
 
@@ -123,7 +123,7 @@ Use the loaded tracker ref for the fetch command and the REST fallback: [referen
 
 Follow **[references/trackers/jira.md](references/trackers/jira.md)** Step 2 to pull the fields and comments, and its Jira-absent fallback section when the source is unreachable. The fallback warns the user and offers three choices (paste, authenticate, or abort), and it stops even under `automode`.
 
-## Step 3 — Verify the branch
+## Step 3: Verify the branch
 
 ```bash
 git branch --show-current
@@ -145,7 +145,7 @@ Compare the chosen branch name to the current branch:
 
 When the **`worktree`** flag is set, create a sibling worktree on the chosen branch instead of switching in place. See **[references/modes/worktree.md](references/modes/worktree.md)**; it composes `superpowers:using-git-worktrees`, and the Step 12 closing appends a cleanup reminder.
 
-## Step 4 — Check context sufficiency
+## Step 4: Check context sufficiency
 
 Use the context you already have, and do not sweep the codebase. Inventory what is already in the context window first: the agent guide, memory, and rulesets the runtime loaded at startup, such as `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `CONTEXT.md`, or `.agents/rules/*`. That is usually enough for the design. Only then read further, and no more than this:
 
@@ -177,7 +177,7 @@ The flags change how the interview runs:
 
 When the **`lookup`** flag is set, fetch current docs for every library, framework, SDK, CLI, or cloud service the issue mentions, querying the `context7` MCP (or context7 resources if the MCP is not connected) before writing the proposal. See **[references/modes/lookup.md](references/modes/lookup.md)** for the attribution format, when to skip, and `automode` behavior.
 
-### Step 4a — Optional grilling for risky design forks
+### Step 4a: Optional grilling for risky design forks
 
 The Step 4 interview is about missing facts. When the context is enough to propose but a design or approach fork is genuinely ambiguous and a wrong pick means expensive rework, run a deeper interview before the proposal:
 
@@ -187,7 +187,7 @@ The Step 4 interview is about missing facts. When the context is enough to propo
 
 Do this only when getting the approach wrong is costly. For a clear, low-risk fix, go straight to Step 5.
 
-## Step 5 — Propose the solution
+## Step 5: Propose the solution
 
 Emit exactly one proposal. The block format is in **[references/proposal-template.md](references/proposal-template.md)** Step 5 and covers the issue line, the restated problem, the root cause or design, the files to touch, the plan, the pass criteria, the tests, and the risks. Verify that file paths exist with Read or Grep before listing them, and drop the `:line` suffix if you have not opened the file.
 
@@ -197,9 +197,9 @@ End the proposal by stating the user's next-turn choices, using the options in t
 
 Under **`automode`**, there are no options and no wait: go straight to Step 7, and with `docs`, do so after writing `CONTEXT.md`.
 
-## Step 6 — The gate
+## Step 6: The gate
 
-Unless `automode` is set, **do not edit any file** until the user explicitly approves.
+Unless `automode` is set, **do not edit any file before approval**, except to write the Step 5 proposal to `CONTEXT.md` when `docs` is set.
 
 - "yes, implement", "go ahead", "do it", or "ship it" moves to Step 7.
 - "interview me on risky questions" goes back to Step 4a, then re-proposes.
@@ -209,7 +209,7 @@ This is the most important rule of the skill. Skip it (outside `automode`) and t
 
 ---
 
-# Part 2 — Post-Approval Lifecycle (Steps 7–12)
+# Part 2: Post-Approval Lifecycle (Steps 7–12)
 
 This part is deliberately terse. Each step delegates to a referenced skill, so read that skill rather than restating it here.
 
@@ -221,9 +221,9 @@ Steps 8 and 9 reference this block. It is two actions, in order:
 /compact  →  re-source /karpathy-guidelines
 ```
 
-Run it before touching code on every non-converged review pass and before approved refactor work. The point is to shed stale reviewer-transcript tokens and reload clean-code discipline. On a review pass, capture the must-fix and should-fix findings before `/compact` so they survive it, then fix from that list. Do not restate `/goal` here; it is set once, in Step 7. With `compress`, also re-source the compression skill chosen at startup, since `/compact` can shed its persistence — see [references/modes/compress.md](references/modes/compress.md).
+Run it before touching code on every non-converged review pass and before approved refactor work. The point is to shed stale reviewer-transcript tokens and reload clean-code discipline. On a review pass, capture the must-fix and should-fix findings before `/compact` so they survive it, then fix from that list. Do not restate `/goal` here; it is set once, in Step 7. With `compress`, also re-source the compression skill chosen at startup, since `/compact` can shed its persistence, see [references/modes/compress.md](references/modes/compress.md).
 
-## Step 7 — Implement
+## Step 7: Implement
 
 Open the step with two actions, in order:
 
@@ -234,13 +234,13 @@ When the **`tdd`** flag is set, write the failing test first, run it, watch it f
 
 With `docs`, load the plan from `CONTEXT.md` and check its stamp matches this ref; on a mismatch, warn and re-propose rather than implement a stale plan. Implement the approved plan and keep it minimal, surgical, and in scope. Make no edits before the opener is done, and before the observed-red test is done if `tdd` is set.
 
-When the **`codex impl`** flag is set, delegate the implementation to Codex (GPT-5.6, auto-tiered) after the opener — and after the observed-red test if `tdd` is set — then conformance-check the returned diff against the plan before Step 8. See **[references/modes/codex-impl.md](references/modes/codex-impl.md)**; on preflight failure it degrades to inline implementation.
+When the **`codex impl`** flag is set, delegate the implementation to Codex (GPT-5.6, auto-tiered) after the opener (and after the observed-red test if `tdd` is set) then conformance-check the returned diff against the plan before Step 8. See **[references/modes/codex-impl.md](references/modes/codex-impl.md)**; on preflight failure it degrades to inline implementation.
 
-When the **`implement`** flag is set, delegate the implementation to `/implement` after the opener, scoped to the approved Step 5 plan, with its own `/code-review` closeout skipped — forge's Step 8 owns review. See **[references/modes/implement.md](references/modes/implement.md)**; `implement` and `codex impl` together is a conflict (stop and report — two engines cannot own one step).
+When the **`implement`** flag is set, delegate the implementation to `/implement` after the opener, scoped to the approved Step 5 plan, with its own `/code-review` closeout skipped, forge's Step 8 owns review. See **[references/modes/implement.md](references/modes/implement.md)**; `implement` and `codex impl` together is a conflict (stop and report, two engines cannot own one step).
 
-## Step 8 — Review loop
+## Step 8: Review loop
 
-Run the project reviewer subagents (from `.agents/agents/` or the runtime equivalent) together with the generic reviewer. The generic reviewer is `superpowers:requesting-code-review` by default, or Codex under `codex` or `codex challenge`, or `/code-review` under `code-review`. Under `codex impl`, the generic reviewer stays the default — the model family that wrote the diff must never be the only reviewer — and `codex impl challenge` adds Codex adversarial review as an extra engine. The project subagents always run.
+Run the project reviewer subagents (from `.agents/agents/` or the runtime equivalent) together with the generic reviewer. The generic reviewer is `superpowers:requesting-code-review` by default, or Codex under `codex` or `codex challenge`, or `/code-review` under `code-review`. Under `codex impl`, the generic reviewer stays the default (the model family that wrote the diff must never be the only reviewer) and `codex impl challenge` adds Codex adversarial review as an extra engine. The project subagents always run.
 
 Terminate the loop at zero actionable findings; nits do not block. Cap the loop at a fixed number of passes. On each non-converged pass, run the re-hydrate block, fix the findings, then re-review.
 
@@ -248,13 +248,13 @@ See **[references/review-loop.md](references/review-loop.md)** for engine-select
 
 When the **`secure`** flag is set, run a `security-review` pass once there are zero actionable findings. Must-fix security findings reopen Step 8 with one dedicated security-pass budget. See **[references/modes/secure.md](references/modes/secure.md)**; security must clear before Step 9.
 
-### Step 8a/8b — Generic reviewer swaps
+### Step 8a/8b: Generic reviewer swaps
 
 A flag adds an engine to the Step 8 generic-reviewer set, replacing the default `superpowers:requesting-code-review` when at least one is set. Each engine brings its own Step 8a reviewer pass and Step 8b rework path mirrored to its companion skill. The project subagents always run alongside. The reviewer flags compose: set both and both engines run in the same pass; each finding's rework routes to the engine that raised it.
 
 | Flag | Step 8a engine | Step 8b rework path |
 |---|---|---|
-| *(none — default)* | `superpowers:requesting-code-review` | (no dedicated rework skill; in-pass fixes only) |
+| *(none: default)* | `superpowers:requesting-code-review` | (no dedicated rework skill; in-pass fixes only) |
 | `codex` / `codex challenge` | Codex `review` / `adversarial-review` via `scripts/resolve-codex.py` foreground | `codex:codex-rescue` foreground `--wait` (re-hydrate first, inline karpathy constraints) |
 | `codex impl` [+ `challenge`] | default reviewer (+ Codex `adversarial-review` with `challenge`) | companion `task --write` at the Terra/Luna tier (re-hydrate first) per [references/modes/codex-impl.md](references/modes/codex-impl.md) |
 | `coderabbit` | `coderabbit:code-review` | `coderabbit:autofix` foreground `--wait` (re-hydrate first, inline karpathy constraints) |
@@ -264,7 +264,7 @@ See **[references/reviewers/codex.md](references/reviewers/codex.md)** for Codex
 
 Both `codex` and `coderabbit` are Claude Code only. On other runtimes the flag is ignored with a one-line warning, and the default generic reviewer stays in place. `code-review` is exempt from that rule: it is a plain skill and runs on any runtime.
 
-## Step 9 — Refactor (propose-only)
+## Step 9: Refactor (propose-only)
 
 Run **`/improve-codebase-architecture`**.
 
@@ -273,15 +273,15 @@ Run **`/improve-codebase-architecture`**.
 
 Never silently rewrite beyond the issue's scope.
 
-## Step 10 — Out-of-scope findings via `/to-tickets`
+## Step 10: Out-of-scope findings via `/to-tickets`
 
 For bugs or improvements that belong in a separate issue, draft them via **`/to-tickets`**, show the drafts, and post only on an explicit user yes. Under `automode`, post them directly. If nothing qualifies, skip this step silently.
 
-## Step 11 — Self-evolution
+## Step 11: Self-evolution
 
 If you hit a caveat that could be automated for future agentic sessions, propose **`/writing-for-agents`** or an edit to the project agent config (the agent guide, rules, or reviewer-agent directory for the runtime). Also consider recording the caveat in the agent's project memory so a later session does not repeat it. Use whatever memory store the runtime exposes for this project. If the user has installed an external memory provider they favor (a memory plugin or MCP seen earlier in the conversation), write there instead of the built-in store. Show the exact diff and path, and confirm before writing. Under `automode`, the agent decides on its own and applies the smaller-blast-radius option with no proposal or confirmation. Memory writes are included: it picks the built-in store or the user's preferred external provider and writes directly. It still prefers a rule or guide edit over a new skill unless the pattern is clearly broad. If nothing can be automated, skip this step silently.
 
-## Step 12 — Closing
+## Step 12: Closing
 
 Verify `/goal` before anything else. Before assembling the proposal, run the Step 7 `/goal` pass criteria and the repo's standard pre-commit checks (build, test, and lint per the repo guide). Show the exact commands and their output. A command that exits 0 without running tests, such as "no tests collected" or empty output, does not prove `/goal`; treat it as not done. If anything fails, or you cannot run the checks, you are not done: return to Step 8 with the failure as a finding. Never assemble a commit proposal on an unverified `/goal`, because an unproven "done" is the one failure mode forge must not ship. `automode` does not lift this gate; it runs the checks itself and proceeds only on green.
 

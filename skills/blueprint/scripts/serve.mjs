@@ -45,7 +45,7 @@ function newestScreen() {
 function page() {
   const fragment = newestScreen();
   if (fragment === null) {
-    return frame.replace('<!--BLUEPRINT:CONTENT-->', '<p>No screens yet — waiting for the first round…</p>');
+    return frame.replace('<!--BLUEPRINT:CONTENT-->', '<p>No screens yet. Waiting for the first round.</p>');
   }
   const head = fragment.trimStart().slice(0, 9).toLowerCase();
   if (head.startsWith('<!doctype') || head.startsWith('<html')) return fragment;

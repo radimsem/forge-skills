@@ -4,32 +4,30 @@
 
 <h1 align="center">Forge</h1>
 
-<p align="center">a blacksmith for agentic workflows</p>
+<p align="center">Plan, implement, and review issues with an agent</p>
 
-<p align="center"><em>Forge an issue into a shipped fix: heat it (implement), hammer it (review), then temper it (refactor).</em></p>
+<p align="center"><em>See the plan before the agent changes your code.</em></p>
 
 ## Why this exists
 
-Most "agent does the whole task" tools have the same problem: they start editing your code before you've agreed on what they're going to do. By the time you see the plan, it's already half-built, and unwinding a wrong assumption costs more than writing the fix yourself would have.
+An agent can start editing before you have agreed on the approach. If its first assumption is wrong, reviewing a half-finished fix takes more work than correcting a plan.
 
-Forge splits the work in half with a single gate in the middle. The first half reads the issue, picks the branch, gathers just enough context, and writes you a plan. Then it stops. Nothing touches the codebase until you say "yes, implement." The second half, which runs only after you approve, does the actual work: implement, review until the reviewers stop complaining, propose refactors, file any spin-off issues, and help you commit or open a PR.
+Forge reads the issue, checks the branch and relevant code, and shows you a plan. It waits for "yes, implement" before changing implementation files. After approval, it implements the fix, runs reviews, proposes refactors and related issues, and prepares a commit or PR for your decision. With the `docs` flag, it saves the proposal to `CONTEXT.md` before approval.
 
-If you want it to run unattended, `automode` drops the gates. Even then it will never commit, push, or write back to your tracker on its own. That floor doesn't move.
+Use `automode` to skip the approval pauses. It still stops before committing, pushing, or writing back to the source ticket.
 
 ## Features
 
-- **A plan you sign off on first.** Part 1 ends with one proposal and waits. Nothing gets edited until you say "yes, implement", so a wrong assumption costs a sentence instead of a rewrite. `automode` lifts the wait, never the no-commit-without-asking floor.
-- **Re-hydration that keeps discipline fresh.** Before each implement and refactor turn, forge compacts the conversation to drop stale reviewer transcript, then re-sources the Karpathy guidelines. The clean-code rules stay loaded on every pass instead of fading as the window fills, and the compaction keeps the token bill down.
-- **Self-evolution at the end of a run.** When forge hits a caveat it could have sidestepped, it offers to write the lesson back: a new skill, a rule in your agent guide, or a note in project memory. The next session starts ahead of this one. The idea comes from the Hermes agent's self-improving workflow, pointed here at whatever agent runs the skill rather than at one framework.
-- **One `/goal`, verified before it ships.** Forge turns the issue's acceptance criteria into a single `/goal` at the start, so the whole run aims at the same target. Step 12 won't assemble a commit until that goal actually runs green; a command that exits 0 without running any tests counts as not done.
-- **Isolated worktrees when you want them.** Pass the `worktree` flag and forge builds the fix in a sibling git worktree instead of switching your current branch in place. Your working tree stays where it is, and the run ends with a reminder to remove the worktree once you're done.
-- **Flags that stack.** Test-first, a security pass, library-doc lookup, CI watching, extra reviewers. Turn on what a job needs, in any combination, in a single invocation.
-- **Trackers and hosts it already speaks.** GitHub, GitLab, Jira, and Linear, plus a mode that enters straight into reviewing an existing PR. Forge follows your repo's own branch and commit conventions instead of imposing its own.
-- **Not wired to one assistant.** "The agent" is whatever runtime runs the skill. The config paths, the review engine, and the interview UI all adapt to the host.
+- **Approval before implementation.** Forge shows one proposal and waits for your decision unless you use `automode`.
+- **Review until findings are resolved.** Forge reloads its coding guidelines between review and refactor passes, and keeps the issue's acceptance criteria in one `/goal`. It verifies that goal before preparing a commit.
+- **A place for lessons learned.** Forge can propose a skill, agent-guide rule, or project-memory note after a run. The default run asks before saving it; `automode` makes that decision itself.
+- **Optional worktree isolation.** The `worktree` flag puts the fix in a sibling git worktree and leaves your current checkout on its branch.
+- **Flexible scope.** Add test-first work, current library docs, a security pass, CI watching, or extra reviewers with modifier flags.
+- **Tracker and runtime support.** Forge handles GitHub, GitLab, Jira, Linear, and existing PRs. It follows your repository's branch and commit conventions and adapts to the agent runtime.
 
 ## Install
 
-Run the installer straight from `curl`. It checks what you already have and skips it, so a second run is safe.
+Run the installer. It skips dependencies already present, so you can run it again.
 
 ```sh
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/radimsem/forge-skills/main/install.sh)"
@@ -53,26 +51,20 @@ The full set:
 
 The installer pulls in everything forge composes (see [What forge uses](#what-forge-uses)) and installs forge last, using `npx skills` for the bare skills and `claude plugin` for the reviewer plugins. On a non-Claude-Code host, pass `--skills-only` to skip the plugin step.
 
-Once it's installed, forge wakes up on `/forge <ref>` or any phrasing that matches the trigger in [`SKILL.md`](skills/forge/SKILL.md).
+Once installed, run `/forge <ref>` or ask the agent to resolve a specific issue. The full trigger is in [`SKILL.md`](skills/forge/SKILL.md).
 
 ## How it works
 
-Twelve numbered steps, split by one gate.
+Forge has twelve steps and one approval gate.
 
-```
-Part 1 — Gate (1–6):        classify → fetch → branch → context → propose → [GATE] approve
-Part 2 — Lifecycle (7–12):  implement → review loop → refactor → spin-off → self-evolve → close
-```
-
-Part 1 is the contract. It reads the issue or ticket, works out the right branch from your repo's own conventions, reads only the files the issue actually points at (no full-tree sweep), and hands you one proposal: the problem restated, the root cause, the files it will touch, the plan, the pass criteria, and the risks. If a required detail is missing, it interviews you for it instead of guessing.
-
-Part 2 runs on its own once you approve, and only pauses at decisions that are genuinely yours to make: whether to apply a refactor, whether to file a spin-off issue, and the final commit. The review loop repeats until there are zero actionable findings, re-loading clean-code discipline between passes. Step 12 refuses to assemble a commit until the goal you set in Step 7 actually verifies green, because shipping an unproven "done" is the one failure forge is built to prevent.
+1. **Plan (steps 1–6).** Read the issue, choose a branch using repository conventions, inspect the relevant files, and present the problem, approach, affected files, pass criteria, and risks. Forge asks about missing requirements before proceeding.
+2. **Implement (steps 7–12).** After approval, implement and review until no actionable findings remain. The default run asks before optional refactors, related issues, or a commit. It checks the `/goal` and repository checks before preparing a commit.
 
 The full step-by-step contract lives in [`skills/forge/SKILL.md`](skills/forge/SKILL.md).
 
 ## Modifier flags
 
-Flags are orthogonal and compose freely. You can stack as many as you want in one invocation. The full matrix, with conflicts and composition rules, is in [`references/flags.md`](skills/forge/references/flags.md).
+You can combine flags in one invocation. See [`references/flags.md`](skills/forge/references/flags.md) for conflicts and detailed rules.
 
 | Flag | What it does |
 |---|---|
@@ -88,7 +80,7 @@ Flags are orthogonal and compose freely. You can stack as many as you want in on
 | `codex` / `codex challenge` | Adds Codex as a reviewer (`challenge` runs an adversarial pass). Claude Code only. |
 | `codex impl` | Delegates implementation to Codex (GPT-5.6 Sol/Terra/Luna, auto-tiered by task); Claude reviews the result. Claude Code only. |
 | `coderabbit` | Adds CodeRabbit as a reviewer, with rework via `coderabbit:autofix`. Claude Code only. |
-| `code-review` | Adds `/code-review` (two-axis: Standards + Spec) as a reviewer. A plain skill — works on any runtime. |
+| `code-review` | Adds `/code-review` (two-axis: Standards + Spec) as a reviewer. A plain skill that works on any runtime. |
 | `implement` | Delegates implementation to `/implement`, scoped to the approved plan; forge keeps the review loop. Conflicts with `codex impl`. |
 
 The reviewer flags add to the project's own reviewer agents rather than replacing them, and `codex`, `coderabbit`, and `code-review` can all run in the same pass.
@@ -116,14 +108,9 @@ The reference token can sit anywhere in the request. "solve issue 42 with tests"
 
 ## Orchestrating many issues at once
 
-`blacksmith-orchestrate` is a wrapper around forge, not a fork of it: it decides which tasks collide on the same files, schedules the colliding ones sequentially, and runs the rest in parallel worktrees at the model tier and forge depth each one earns, then dispatches one ordinary forge run per task. It never reimplements a forge step — every dispatched run is the normal twelve-step workflow above, gate included.
+`blacksmith-orchestrate` handles several forge tasks together. It checks which tasks touch the same files or depend on each other, schedules those in order, and runs independent tasks in parallel worktrees. Each task still follows forge's twelve steps.
 
-```
-Part 1 — Plan (1–5):     normalize → materialize → analyze → schedule → [GATE] battle plan
-Part 2 — Execute (6–9):  provision → dispatch waves → relay → close-out
-```
-
-Wakes up on `/blacksmith-orchestrate <work-source>` or a request naming several issues, a milestone, or a plan. The full step-by-step contract lives in [`skills/blacksmith-orchestrate/SKILL.md`](skills/blacksmith-orchestrate/SKILL.md).
+It first shows you one battle plan. After approval, it creates the worktrees, dispatches the tasks, and tracks their progress. Run `/blacksmith-orchestrate <work-source>` or ask the agent to ship several issues, a milestone, or a written plan. The full contract is in [`skills/blacksmith-orchestrate/SKILL.md`](skills/blacksmith-orchestrate/SKILL.md).
 
 ```sh
 /blacksmith-orchestrate 42 43 51 60          # four issues, scheduled by file collisions
@@ -137,7 +124,7 @@ Orchestrator flags are consumed by `blacksmith-orchestrate` itself and are never
 
 | Flag | What it does |
 |---|---|
-| `afk` | After a 5-minute quiet timeout, self-verify and merge blocking PRs only; combined with `automode`, also authorizes each dispatched run's own Step 12 commit-and-PR — the single sanctioned exception to forge's never-auto-push floor. |
+| `afk` | After a 5-minute quiet timeout, self-verify and merge blocking PRs only; combined with `automode`, also authorizes each dispatched run's own Step 12 commit-and-PR, the single sanctioned exception to forge's never-auto-push floor. |
 | `resume` | Resume a run from its ledger instead of starting a new one. |
 | `budget <n>` | Token ceiling for the run, with a deterministic degradation ladder. |
 | `strict` | No depth downgrade; every task runs full forge. |
@@ -152,15 +139,12 @@ Every flag forge understands also passes through unchanged to every dispatched r
 
 ## blueprint
 
-Design it before you forge it: `/blueprint` runs an interactive UI/UX
-brainstorming session in the browser. Proposal screens are rendered from the
-project's own design language (DESIGN.md + harvested tokens and components);
-clicking options, notes, and nit flags assembles a response prompt copied to
-your clipboard — paste it back into the session to resolve the round. An
-approval gate, a generated spec, and a handoff screen (plans, `/to-tickets`,
-or a `/blacksmith-orchestrate` invocation builder) close the loop. The
-pipeline reads: **blueprint** (design it) → **forge** (ship one task) →
-**blacksmith-orchestrate** (ship many).
+Use `/blueprint` to explore UI changes in the browser before implementation.
+It builds proposal screens from the project's design guide, tokens, and
+components. Choose options and add notes on a screen, then paste the copied
+response into the agent session. After you approve a design, blueprint writes
+a spec and offers a handoff to a plan, `/to-tickets`, or
+`/blacksmith-orchestrate`.
 
 ## Blueprint flags
 
@@ -172,7 +156,7 @@ pipeline reads: **blueprint** (design it) → **forge** (ship one task) →
 
 ## What forge uses
 
-Forge leans on a handful of other skills and plugins, all installed for you by `./install.sh`:
+`./install.sh` installs the skills and plugins Forge uses:
 
 | Dependency | From | Used for |
 |---|---|---|
@@ -183,7 +167,7 @@ Forge leans on a handful of other skills and plugins, all installed for you by `
 | `coderabbit` plugin | [`coderabbitai/skills`](https://github.com/coderabbitai/skills) | the `coderabbit` flag (Claude Code only) |
 | `greploop`, `check-pr` | [`greptileai/skills`](https://github.com/greptileai/skills) | the review-loop fallback |
 
-The installer leaves a few things alone, because they belong to your environment rather than to forge. They only need to be present when you reach for the feature that depends on them. `/goal` and `/compact` come from the agent runtime. `security-review` is a Claude Code built-in that the `secure` flag calls. The context7 MCP backs the `lookup` flag, and a tracker MCP backs ticket routing: the Atlassian MCP for Jira, the Linear MCP for Linear issues. Set each up yourself, and only if you use the flag or tracker that asks for it.
+Some features need tools from your runtime. `/goal` and `/compact` come from the agent runtime. The `secure` flag uses Claude Code's `security-review`; `lookup` uses the context7 MCP. Jira and Linear routing need their respective tracker MCPs. Set up these tools if you use the corresponding feature.
 
 ## License
 

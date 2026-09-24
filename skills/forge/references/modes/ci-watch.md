@@ -1,4 +1,4 @@
-# Forge — `ci-watch` flag
+# Forge: `ci-watch` flag
 
 After Step 12 pushes the branch, polls the repo's CI for the pushed commit's status. On red, re-enters Step 8 with the CI failure as a finding so the loop can fix it. On green, reports the result and exits cleanly.
 
@@ -13,7 +13,7 @@ Expected: after the push completes, forge polls the CI status for the pushed HEA
 
 ## When it fires
 
-After Step 12 closing-menu actions complete the push. The polling only happens for menu options that actually push (2 and 3). Options 1, 4, 5, 6 silently skip `ci-watch` — polling without a published target is pointless.
+After Step 12 closing-menu actions complete the push. The polling only happens for menu options that actually push (2 and 3). Options 1, 4, 5, 6 silently skip `ci-watch`, polling without a published target is pointless.
 
 If the push is rejected (non-fast-forward, auth), surface the error and stop. Do not force-push, and do not poll a HEAD that never landed.
 
@@ -47,6 +47,6 @@ Confirm a run exists for the pushed SHA before reading status; "no run found" is
 
 | Combination | Effect |
 |---|---|
-| `ci-watch` + `automode` | At Step 12, `automode` skips the closing menu and emits a plan only (no push). With no push, `ci-watch` has nothing to poll — silently skips. Combination is valid but functionally inert under `automode`. |
+| `ci-watch` + `automode` | At Step 12, `automode` skips the closing menu and emits a plan only (no push). With no push, `ci-watch` has nothing to poll and silently skips. Combination is valid but functionally inert under `automode`. |
 | `ci-watch` + `secure` | If CI fails on a security check, the failure re-enters Step 8 as a regular must-fix; `secure`'s dedicated post-pass runs again after the regular loop reconverges. |
-| `ci-watch` + `changelog` | Changelog entry was drafted before the push; if CI fails, the entry is already in the pushed commits. After re-fix, decide whether to update the entry — usually yes if the fix is non-trivial. |
+| `ci-watch` + `changelog` | Changelog entry was drafted before the push; if CI fails, the entry is already in the pushed commits. After re-fix, decide whether to update the entry; usually yes if the fix is non-trivial. |
